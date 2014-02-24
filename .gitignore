@@ -1,0 +1,5 @@
+*.o
+ativayeban
+ativayeban-od
+ativayeban-od.opk
+.opk_data/
