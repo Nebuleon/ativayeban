@@ -13,6 +13,11 @@ struct Player
 
 	// Used to animate the player rolling
 	float Roll;
+
+	// Blink until counter runs out
+	int BlinkCounter;
+	// Blink when counter reaches zero
+	int NextBlinkCounter;
 };
 
 extern SDL_Surface* PlayerSpritesheet;

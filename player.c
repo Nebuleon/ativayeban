@@ -13,6 +13,10 @@
 #define PLAYER_SPRITESHEET_STRIDE 8
 #define PLAYER_SPRITESHEET_COUNT 16
 #define PLAYER_ROLL_SCALE 0.015f
+#define PLAYER_BLINK_FRAME_OFFSET 16
+#define PLAYER_BLINK_FRAMES 200
+#define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 500) + 500)
+#define PLAYER_BLINK_CHANCE 50
 
 SDL_Surface* PlayerSpritesheet = NULL;
 
@@ -56,12 +60,25 @@ void PlayerUpdate(struct Player *player)
 	{
 		player->Roll -= PLAYER_SPRITESHEET_COUNT;
 	}
+
+	// Randomly blink after not blinking for a while
+	player->BlinkCounter--;
+	player->NextBlinkCounter--;
+	if (player->NextBlinkCounter <= 0)
+	{
+		player->BlinkCounter = PLAYER_BLINK_FRAMES;
+		player->NextBlinkCounter = PLAYER_BLINK_INTERVAL_FRAMES;
+	}
 }
 
 void PlayerDraw(const struct Player *player)
 {
 	// Draw the character.
 	int rollFrame = (int)floor(player->Roll);
+	if (player->BlinkCounter > 0)
+	{
+		rollFrame += PLAYER_BLINK_FRAME_OFFSET;
+	}
 	SDL_Rect src = {
 		(rollFrame % PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_WIDTH,
 		(rollFrame / PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_HEIGHT,
@@ -85,4 +102,6 @@ void PlayerReset(struct Player *player)
 	player->SpeedY = GRAVITY / 200 - FIELD_SCROLL / 200;
 	player->AccelX = 0;
 	player->Roll = 0.0f;
+	player->BlinkCounter = 0;
+	player->NextBlinkCounter = 1;
 }
