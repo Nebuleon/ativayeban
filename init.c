@@ -26,6 +26,7 @@
 #include "main.h"
 #include "init.h"
 #include "platform.h"
+#include "player.h"
 #include "title.h"
 
 void Initialize(bool* Continue, bool* Error)
@@ -57,6 +58,15 @@ void Initialize(bool* Continue, bool* Error)
 	}
 	else
 		printf("SDL_SetVideoMode succeeded\n");
+
+	PlayerSpritesheet = IMG_Load("penguin_ball.png");
+	if (PlayerSpritesheet == NULL)
+	{
+		*Continue = false;  *Error = true;
+		printf("IMG_Load failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
 
 	SDL_ShowCursor(0);
 

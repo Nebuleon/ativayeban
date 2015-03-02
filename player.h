@@ -10,7 +10,12 @@ struct Player
 
 	// The last value returned by GetMovement.
 	int16_t AccelX;
+
+	// Used to animate the player rolling
+	float Roll;
 };
+
+extern SDL_Surface* PlayerSpritesheet;
 
 extern void PlayerUpdate(struct Player *player);
 extern void PlayerDraw(const struct Player *player);
