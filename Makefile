@@ -14,9 +14,9 @@ SYSROOT     := $(shell $(CC) --print-sysroot)
 SDL_CFLAGS  := $(shell $(SYSROOT)/usr/bin/sdl-config --cflags)
 SDL_LIBS    := $(shell $(SYSROOT)/usr/bin/sdl-config --libs)
 
-OBJS        += main.o init.o title.o game.o score.o bg.o draw.o text.o unifont.o
+OBJS        += main.o init.o player.o title.o game.o score.o bg.o draw.o text.o unifont.o
               
-HEADERS     += main.h init.h platform.h title.h game.h score.h bg.h draw.h text.h unifont.h
+HEADERS     += main.h init.h platform.h player.h title.h game.h score.h bg.h draw.h text.h unifont.h
 
 INCLUDE     := -I.
 DEFS        :=
