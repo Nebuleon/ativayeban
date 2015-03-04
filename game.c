@@ -30,6 +30,7 @@
 #include "main.h"
 #include "init.h"
 #include "platform.h"
+#include "player.h"
 #include "game.h"
 #include "score.h"
 #include "draw.h"
@@ -41,15 +42,7 @@ static uint32_t               Score;
 static bool                   Boost;
 static bool                   Pause;
 
-// Where the player is. (Center, meters.)
-static float                  PlayerX;
-static float                  PlayerY;
-// Where the player is going. (Meters per second.)
-static float                  PlayerSpeedX;
-static float                  PlayerSpeedY;
-
-// The last value returned by GetMovement.
-static int16_t                PlayerAccelX;
+static struct Player          Player;
 
 // What the player avoids.
 static struct AtivayebanRect* Rectangles     = NULL;
@@ -63,7 +56,7 @@ void GameGatherInput(bool* Continue)
 
 	while (SDL_PollEvent(&ev))
 	{
-		PlayerAccelX = GetMovement(&ev);
+		Player.AccelX = GetMovement(&ev);
 		if (IsPauseEvent(&ev))
 			Pause = !Pause;
 		else if (IsExitGameEvent(&ev))
@@ -95,7 +88,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 				// If the player is past a rectangle, award the player with a
 				// point. But there is a pair of them per row!
 				if (!Rectangles[i].Passed
-				 && Rectangles[i].Top > PlayerY + PLAYER_SIZE / 2)
+				 && Rectangles[i].Top > Player.Y + PLAYER_SIZE / 2)
 				{
 					Rectangles[i].Passed = true;
 					if (!PointAwarded)
@@ -111,8 +104,6 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 					RectangleCount--;
 				}
 			}
-			// ... as well as the ball.
-			PlayerY += FIELD_SCROLL / 1000;
 			// Generate a pair of rectangles now if needed.
 			if (RectangleCount == 0 || Rectangles[RectangleCount - 1].Bottom >= GenDistance)
 			{
@@ -136,30 +127,8 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 				Rectangles[RectangleCount - 1].Left = GapLeft + GAP_WIDTH;
 				Rectangles[RectangleCount - 1].Right = FIELD_WIDTH;
 			}
-			// Update the speed at which the player is going.
-			PlayerSpeedX += ((float) PlayerAccelX / 32767.0f) * ACCELERATION / 1000;
-
-			// Update the player's position and speed.
-
-			// Left and right edges (X). If the horizontal speed would run the
-			// ball into an edge, use up some of the energy in the impact and
-			// rebound the ball.
-			if (PlayerSpeedX < 0 && PlayerX - PLAYER_SIZE / 2 + PlayerSpeedX / 1000 < 0)
-			{
-				PlayerX = PLAYER_SIZE / 2
-					+ ((PlayerX - PLAYER_SIZE / 2) - (PlayerSpeedX / 1000)) * FIELD_REBOUND;
-				PlayerSpeedX = -PlayerSpeedX * FIELD_REBOUND;
-			}
-			else if (PlayerSpeedX > 0 && PlayerX + PLAYER_SIZE / 2 + PlayerSpeedX / 1000 > FIELD_WIDTH)
-			{
-				PlayerX = FIELD_WIDTH - PLAYER_SIZE / 2
-					+ (FIELD_WIDTH - (PlayerX + PLAYER_SIZE / 2) - (PlayerSpeedX / 1000)) * FIELD_REBOUND;
-				PlayerSpeedX = -PlayerSpeedX * FIELD_REBOUND;
-			}
-			else
-			{
-				PlayerX += PlayerSpeedX / 1000;
-			}
+			
+			PlayerUpdate(&Player);
 
 			// Is the ball on a rectangle?
 			bool OnRectangle = false;
@@ -168,35 +137,35 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 			{
 				// Stop considering rectangles if they are higher than the ball
 				// (Y).
-				if (PlayerY - PLAYER_SIZE / 2 < Rectangles[i].Top + LOWER_EPSILON)
+				if (Player.Y - PLAYER_SIZE / 2 < Rectangles[i].Top + LOWER_EPSILON)
 					break;
 				// If the ball is in range (X)...
 				// TODO Circle physics.
-				if ((PlayerX - PLAYER_SIZE / 2 >= Rectangles[i].Left
-				  && PlayerX - PLAYER_SIZE / 2 <= Rectangles[i].Right)
-				 || (PlayerX + PLAYER_SIZE / 2 >= Rectangles[i].Left
-				  && PlayerX + PLAYER_SIZE / 2 <= Rectangles[i].Right))
+				if ((Player.X - PLAYER_SIZE / 2 >= Rectangles[i].Left
+				  && Player.X - PLAYER_SIZE / 2 <= Rectangles[i].Right)
+				 || (Player.X + PLAYER_SIZE / 2 >= Rectangles[i].Left
+				  && Player.X + PLAYER_SIZE / 2 <= Rectangles[i].Right))
 				{
 					// Is the distance in range, and is the ball going up slowly
 					// enough (Y)?
-					if (PlayerY - PLAYER_SIZE / 2 <  Rectangles[i].Top + UPPER_EPSILON
-					 && PlayerSpeedY              >= 0.0f
-					 && PlayerSpeedY              <  UPPER_EPSILON)
+					if (Player.Y - PLAYER_SIZE / 2 <  Rectangles[i].Top + UPPER_EPSILON
+					 && Player.SpeedY              >= 0.0f
+					 && Player.SpeedY              <  UPPER_EPSILON)
 					{
 						OnRectangle = true;
-						PlayerSpeedY = 0.0f;
+						Player.SpeedY = 0.0f;
 						// Also make sure the ball appears to be on the rectangle (Y).
-						PlayerY = Rectangles[i].Top + PLAYER_SIZE / 2;
+						Player.Y = Rectangles[i].Top + PLAYER_SIZE / 2;
 						break;
 					}
 					// If the ball would cross the rectangle during this
 					// millisecond, make it rebound instead (Y).
-					else if (PlayerY - PLAYER_SIZE / 2                       >= Rectangles[i].Top
-					      && PlayerY - PLAYER_SIZE / 2 + PlayerSpeedY / 1000 <  Rectangles[i].Top)
+					else if (Player.Y - PLAYER_SIZE / 2                       >= Rectangles[i].Top
+					      && Player.Y - PLAYER_SIZE / 2 + Player.SpeedY / 1000 <  Rectangles[i].Top)
 					{
-						PlayerY = PlayerY
-							+ ((PlayerY - PLAYER_SIZE / 2) - Rectangles[i].Top - (PlayerSpeedY / 1000)) * RECT_REBOUND;
-						PlayerSpeedY = -PlayerSpeedY * RECT_REBOUND;
+						Player.Y = Player.Y
+							+ ((Player.Y - PLAYER_SIZE / 2) - Rectangles[i].Top - (Player.SpeedY / 1000)) * RECT_REBOUND;
+						Player.SpeedY = -Player.SpeedY * RECT_REBOUND;
 						break;
 					}
 				}
@@ -205,28 +174,28 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 			if (OnRectangle)
 			{
 				// If so, apply friction to the player's speed (X).
-				PlayerSpeedX *= 1.0f - FRICTION;
+				Player.SpeedX *= 1.0f - FRICTION;
 			}
 			else
 			{
 				// If not, apply gravity (Y).
-				PlayerSpeedY += GRAVITY / 1000;
-				PlayerY += PlayerSpeedY / 1000;
+				Player.SpeedY += GRAVITY / 1000;
+				Player.Y += Player.SpeedY / 1000;
 			}
 
 			// Bottom edge (Y).
 			// If the ball arrives below the bottom edge, act as if it had
 			// arrived on the bottom edge.
-			if (PlayerY - PLAYER_SIZE / 2 < 0)
+			if (Player.Y - PLAYER_SIZE / 2 < 0)
 			{
-				PlayerY = PLAYER_SIZE / 2;
-				PlayerSpeedY = -PlayerSpeedY * FIELD_REBOUND;
+				Player.Y = PLAYER_SIZE / 2;
+				Player.SpeedY = -Player.SpeedY * FIELD_REBOUND;
 			}
 
 			// If the ball has collided with the top of the field,
 			// and it is not going down, the player's game is over.
-			if (PlayerY + PLAYER_SIZE / 2 >= FIELD_HEIGHT
-			 && PlayerSpeedY              >= 0.0f)
+			if (Player.Y + PLAYER_SIZE / 2 >= FIELD_HEIGHT
+			 && Player.SpeedY              >= 0.0f)
 			{
 				ToScore(Score);
 				break;
@@ -257,8 +226,7 @@ void GameOutputFrame()
 		SDL_FillRect(Screen, &ColumnDestRect, SDL_MapRGB(Screen->format, 128, 128, 128));
 	}
 
-	// Draw the character.
-	DRAW_FillCircle(Screen, (int) roundf(PlayerX * SCREEN_WIDTH / FIELD_WIDTH), (int) roundf(SCREEN_HEIGHT - PlayerY * SCREEN_HEIGHT / FIELD_HEIGHT), (int) ((PLAYER_SIZE / 2) * SCREEN_WIDTH / FIELD_WIDTH), SDL_MapRGB(Screen->format, 255, 255, 255));
+	PlayerDraw(&Player);
 
 	// Draw the player's current score.
 	char ScoreString[17];
@@ -287,11 +255,7 @@ void ToGame(void)
 	Score = 0;
 	Boost = false;
 	Pause = false;
-	PlayerX = FIELD_WIDTH / 2;
-	PlayerY = FIELD_HEIGHT - PLAYER_SIZE / 2;
-	PlayerSpeedX = 0.0f;
-	PlayerSpeedY = GRAVITY / 200 - FIELD_SCROLL / 200;
-	PlayerAccelX = 0;
+	PlayerReset(&Player);
 	if (Rectangles != NULL)
 	{
 		free(Rectangles);
