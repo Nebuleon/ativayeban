@@ -32,6 +32,7 @@
 #include "platform.h"
 #include "player.h"
 #include "game.h"
+#include "gap.h"
 #include "score.h"
 #include "draw.h"
 #include "bg.h"
@@ -45,8 +46,8 @@ static bool                   Pause;
 static struct Player          Player;
 
 // What the player avoids.
-static struct AtivayebanRect* Rectangles     = NULL;
-static uint32_t               RectangleCount = 0;
+static struct Gap*            Gaps     = NULL;
+static uint32_t               GapCount = 0;
 
 static float                  GenDistance;
 
@@ -79,99 +80,88 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 		uint32_t Millisecond;
 		for (Millisecond = 0; Millisecond < Milliseconds; Millisecond++)
 		{
-			// Scroll all rectangles toward the top...
+			// Scroll all gaps toward the top...
 			int32_t i;
-			for (i = RectangleCount - 1; i >= 0; i--)
+			for (i = GapCount - 1; i >= 0; i--)
 			{
-				Rectangles[i].Top += FIELD_SCROLL / 1000;
-				Rectangles[i].Bottom += FIELD_SCROLL / 1000;
-				// If the player is past a rectangle, award the player with a
+				bool PastTop = GapUpdate(&Gaps[i], FIELD_SCROLL / 1000);
+				// If the player is past a gap, award the player with a
 				// point. But there is a pair of them per row!
-				if (!Rectangles[i].Passed
-				 && Rectangles[i].Top > Player.Y + PLAYER_SIZE / 2)
+				if (!Gaps[i].Passed
+				 && Gaps[i].Y > Player.Y + PLAYER_SIZE / 2)
 				{
-					Rectangles[i].Passed = true;
+					Gaps[i].Passed = true;
 					if (!PointAwarded)
 					{
 						Score++;
 						PointAwarded = true;
 					}
 				}
-				// If a rectangle is past the top side, remove it.
-				if (Rectangles[i].Bottom > FIELD_HEIGHT)
+				// If a gap is past the top side, remove it.
+				if (PastTop)
 				{
-					memmove(&Rectangles[i], &Rectangles[i + 1], (RectangleCount - i) * sizeof(struct AtivayebanRect));
-					RectangleCount--;
+					memmove(&Gaps[i], &Gaps[i + 1], (GapCount - i) * sizeof(struct Gap));
+					GapCount--;
 				}
 			}
-			// Generate a pair of rectangles now if needed.
-			if (RectangleCount == 0 || Rectangles[RectangleCount - 1].Bottom >= GenDistance)
+			// Generate a gap now if needed.
+			if (GapCount == 0 || GapBottom(&Gaps[GapCount - 1]) >= GenDistance)
 			{
 				float Top;
-				if (RectangleCount == 0)
+				if (GapCount == 0)
 					Top = FIELD_SCROLL / 1000;
 				else
 				{
-					Top = Rectangles[RectangleCount - 1].Bottom - GenDistance;
-					GenDistance += RECT_GEN_SPEED;
+					Top = GapBottom(&Gaps[GapCount - 1]) - GenDistance;
+					GenDistance += GAP_GEN_SPEED;
 				}
-				Rectangles = realloc(Rectangles, (RectangleCount + 2) * sizeof(struct AtivayebanRect));
-				RectangleCount += 2;
-				Rectangles[RectangleCount - 2].Passed = Rectangles[RectangleCount - 1].Passed = false;
-				Rectangles[RectangleCount - 2].Top = Rectangles[RectangleCount - 1].Top = Top;
-				Rectangles[RectangleCount - 2].Bottom = Rectangles[RectangleCount - 1].Bottom = Top - RECT_HEIGHT;
+				Gaps = realloc(Gaps, (GapCount + 1) * sizeof(struct Gap));
+				GapCount++;
 				// Where's the place for the player to go through?
 				float GapLeft = (FIELD_WIDTH / 16.0f) + ((float) rand() / (float) RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
-				Rectangles[RectangleCount - 2].Left = 0;
-				Rectangles[RectangleCount - 2].Right = GapLeft;
-				Rectangles[RectangleCount - 1].Left = GapLeft + GAP_WIDTH;
-				Rectangles[RectangleCount - 1].Right = FIELD_WIDTH;
+				GapInit(&Gaps[GapCount - 1], Top, GapLeft);
 			}
 			
 			PlayerUpdate(&Player);
 
-			// Is the ball on a rectangle?
-			bool OnRectangle = false;
+			// Is the ball on a gap?
+			bool OnGap = false;
 
-			for (i = RectangleCount - 1; i >= 0; i--)
+			for (i = GapCount - 1; i >= 0; i--)
 			{
-				// Stop considering rectangles if they are higher than the ball
+				// Stop considering gaps if they are higher than the ball
 				// (Y).
-				if (Player.Y - PLAYER_SIZE / 2 < Rectangles[i].Top + LOWER_EPSILON)
+				if (Player.Y - PLAYER_SIZE / 2 < Gaps[i].Y + LOWER_EPSILON)
 					break;
 				// If the ball is in range (X)...
-				// TODO Circle physics.
-				if ((Player.X - PLAYER_SIZE / 2 >= Rectangles[i].Left
-				  && Player.X - PLAYER_SIZE / 2 <= Rectangles[i].Right)
-				 || (Player.X + PLAYER_SIZE / 2 >= Rectangles[i].Left
-				  && Player.X + PLAYER_SIZE / 2 <= Rectangles[i].Right))
+				if (GapIsOn(&Gaps[i], Player.X, PLAYER_SIZE / 2))
 				{
 					// Is the distance in range, and is the ball going up slowly
 					// enough (Y)?
-					if (Player.Y - PLAYER_SIZE / 2 <  Rectangles[i].Top + UPPER_EPSILON
+					if (Player.Y - PLAYER_SIZE / 2 <  Gaps[i].Y + UPPER_EPSILON
 					 && Player.SpeedY              >= 0.0f
 					 && Player.SpeedY              <  UPPER_EPSILON)
 					{
-						OnRectangle = true;
+						OnGap = true;
 						Player.SpeedY = 0.0f;
-						// Also make sure the ball appears to be on the rectangle (Y).
-						Player.Y = Rectangles[i].Top + PLAYER_SIZE / 2;
+						// Also make sure the ball appears to be on the gap (Y).
+						Player.Y = Gaps[i].Y + PLAYER_SIZE / 2;
 						break;
 					}
-					// If the ball would cross the rectangle during this
+					// If the ball would cross the gap during this
 					// millisecond, make it rebound instead (Y).
-					else if (Player.Y - PLAYER_SIZE / 2                       >= Rectangles[i].Top
-					      && Player.Y - PLAYER_SIZE / 2 + Player.SpeedY / 1000 <  Rectangles[i].Top)
+					else if (Player.Y - PLAYER_SIZE / 2                        >= Gaps[i].Y
+					      && Player.Y - PLAYER_SIZE / 2 + Player.SpeedY / 1000 <  Gaps[i].Y)
 					{
 						Player.Y = Player.Y
-							+ ((Player.Y - PLAYER_SIZE / 2) - Rectangles[i].Top - (Player.SpeedY / 1000)) * RECT_REBOUND;
-						Player.SpeedY = -Player.SpeedY * RECT_REBOUND;
+							+ ((Player.Y - PLAYER_SIZE / 2) - Gaps[i].Y - (Player.SpeedY / 1000)) * GAP_REBOUND;
+						Player.SpeedY = -Player.SpeedY * GAP_REBOUND;
 						break;
 					}
 				}
 			}
 
-			if (OnRectangle)
+			if (OnGap)
 			{
 				// If so, apply friction to the player's speed (X).
 				Player.SpeedX *= 1.0f - FRICTION;
@@ -213,17 +203,11 @@ void GameOutputFrame()
 	// Draw the background.
 	DrawBackground();
 
-	// Draw the rectangles.
+	// Draw the gaps.
 	uint32_t i;
-	for (i = 0; i < RectangleCount; i++)
+	for (i = 0; i < GapCount; i++)
 	{
-		SDL_Rect ColumnDestRect = {
-			.x = (int) roundf(Rectangles[i].Left * SCREEN_WIDTH / FIELD_WIDTH),
-			.y = SCREEN_HEIGHT - (int) roundf(Rectangles[i].Top * SCREEN_HEIGHT / FIELD_HEIGHT),
-			.w = (int) ((Rectangles[i].Right - Rectangles[i].Left) * SCREEN_WIDTH / FIELD_WIDTH),
-			.h = (int) ((Rectangles[i].Top - Rectangles[i].Bottom) * SCREEN_HEIGHT / FIELD_HEIGHT)
-		};
-		SDL_FillRect(Screen, &ColumnDestRect, SDL_MapRGB(Screen->format, 128, 128, 128));
+		GapDraw(&Gaps[i]);
 	}
 
 	PlayerDraw(&Player);
@@ -256,13 +240,13 @@ void ToGame(void)
 	Boost = false;
 	Pause = false;
 	PlayerReset(&Player);
-	if (Rectangles != NULL)
+	if (Gaps != NULL)
 	{
-		free(Rectangles);
-		Rectangles = NULL;
+		free(Gaps);
+		Gaps = NULL;
 	}
-	RectangleCount = 0;
-	GenDistance = RECT_GEN_START;
+	GapCount = 0;
+	GenDistance = GAP_GEN_START;
 
 	GatherInput = GameGatherInput;
 	DoLogic     = GameDoLogic;

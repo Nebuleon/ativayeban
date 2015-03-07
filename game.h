@@ -20,15 +20,17 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-// When determining whether the ball is on a rectangle, the distance between
-// the bottom of the ball and the top of the rectangle can be less than this
-// and the ball will be considered to be on the rectangle. This avoids rebound
+ #include "init.h"
+
+// When determining whether the ball is on a gap, the distance between
+// the bottom of the ball and the top of the gap can be less than this
+// and the ball will be considered to be on the gap. This avoids rebound
 // from applying indefinitely.
 // Given in meters.
 #define UPPER_EPSILON    0.02f
 
-// When determining whether the ball is on a rectangle, the distance between
-// the bottom of the ball and the top of the rectangle must be more than this.
+// When determining whether the ball is on a gap, the distance between
+// the bottom of the ball and the top of the gap must be more than this.
 // This is meant to guard against fuzzy floating-point equality comparisons.
 // Given in meters.
 #define LOWER_EPSILON   -0.001f
@@ -54,8 +56,8 @@
 #define FRICTION         0.002f
 
 // The proportion of the ball's energy that remains in it after hitting a
-// rectangle. The ball goes against its collision trajectory after rebounding.
-#define RECT_REBOUND     0.20f
+// gap. The ball goes against its collision trajectory after rebounding.
+#define GAP_REBOUND     0.20f
 
 // The proportion of the ball's energy that remains in it after hitting one of
 // the edges of the field. The ball goes against its collision trajectory,
@@ -66,18 +68,14 @@
 // Given in meters per second (m/s).
 #define FIELD_SCROLL     1.00f
 
-// The distance between the edges of two successive rectangles to begin with.
+// The distance between the edges of two successive gaps to begin with.
 // Given in meters.
-#define RECT_GEN_START   2.00f
+#define GAP_GEN_START   2.00f
 
-// The change in distance between the edges of two successive rectangles as
+// The change in distance between the edges of two successive gaps as
 // the player passes through each of them.
 // Given in meters (per rectangle).
-#define RECT_GEN_SPEED  -0.01f
-
-// The height of each rectangle.
-// Given in meters.
-#define RECT_HEIGHT      0.25f
+#define GAP_GEN_SPEED  -0.01f
 
 // The width of the area to leave empty for the player to pass through.
 // Given in meters.
@@ -93,14 +91,9 @@
 
 #define FIELD_HEIGHT     (SCREEN_HEIGHT * (FIELD_WIDTH / SCREEN_WIDTH))
 
-struct AtivayebanRect
-{
-	float Left;
-	float Top;
-	float Right;
-	float Bottom;
-	bool  Passed;
-};
+// Convert game coordinates to screen coordinates
+#define SCREEN_X(_x) ((int)roundf(_x * SCREEN_WIDTH / FIELD_WIDTH))
+#define SCREEN_Y(_y) ((int)roundf(SCREEN_HEIGHT - _y * SCREEN_HEIGHT / FIELD_HEIGHT))
 
 extern void ToGame(void);
 

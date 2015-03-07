@@ -86,8 +86,8 @@ void PlayerDraw(const struct Player *player)
 		PLAYER_SPRITESHEET_HEIGHT
 	};
 	SDL_Rect dest = {
-		(int) roundf(player->X * SCREEN_WIDTH / FIELD_WIDTH) - (PLAYER_SPRITESHEET_WIDTH / 2),
-		(int) roundf(SCREEN_HEIGHT - player->Y * SCREEN_HEIGHT / FIELD_HEIGHT) - (PLAYER_SPRITESHEET_HEIGHT / 2),
+		SCREEN_X(player->X) - PLAYER_SPRITESHEET_WIDTH / 2,
+		SCREEN_Y(player->Y) - PLAYER_SPRITESHEET_HEIGHT / 2,
 		0,
 		0
 	};

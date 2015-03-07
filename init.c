@@ -23,6 +23,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
+#include "gap.h"
 #include "main.h"
 #include "init.h"
 #include "platform.h"
@@ -68,6 +69,14 @@ void Initialize(bool* Continue, bool* Error)
 		return;
 	}
 
+	if (!GapSurfacesLoad(&GapSurfaces))
+	{
+		*Continue = false;  *Error = true;
+		printf("IMG_Load failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+
 	SDL_ShowCursor(0);
 
 	InitializePlatform();
@@ -78,5 +87,7 @@ void Initialize(bool* Continue, bool* Error)
 
 void Finalize()
 {
+	SDL_FreeSurface(PlayerSpritesheet);
+	GapSurfacesFree(&GapSurfaces);
 	SDL_Quit();
 }
