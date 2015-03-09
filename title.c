@@ -29,11 +29,11 @@
 #include "game.h"
 #include "title.h"
 #include "bg.h"
+#include "sys_specifics.h"
 #include "text.h"
 
 static bool  WaitingForRelease = false;
-static char* WelcomeMessage    = NULL;
-
+static char* WelcomeMessage[256];
 void TitleScreenGatherInput(bool* Continue)
 {
 	SDL_Event ev;
@@ -46,21 +46,11 @@ void TitleScreenGatherInput(bool* Continue)
 		{
 			WaitingForRelease = false;
 			ToGame();
-			if (WelcomeMessage != NULL)
-			{
-				free(WelcomeMessage);
-				WelcomeMessage = NULL;
-			}
 			return;
 		}
 		else if (IsExitGameEvent(&ev))
 		{
 			*Continue = false;
-			if (WelcomeMessage != NULL)
-			{
-				free(WelcomeMessage);
-				WelcomeMessage = NULL;
-			}
 			return;
 		}
 	}
@@ -96,16 +86,10 @@ void TitleScreenOutputFrame()
 
 void ToTitleScreen(void)
 {
-	if (WelcomeMessage == NULL)
-	{
-		int Length = 2, NewLength;
-		WelcomeMessage = malloc(Length);
-		while ((NewLength = snprintf(WelcomeMessage, Length, "Welcome to ATIVAYEBAN\n\nPress %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit", GetEnterGamePrompt(), GetExitGamePrompt(), GetMovementPrompt(), GetPausePrompt(), GetExitGamePrompt())) >= Length)
-		{
-			Length = NewLength + 1;
-			WelcomeMessage = realloc(WelcomeMessage, Length);
-		}
-	}
+	sprintf(
+		WelcomeMessage,
+		"Welcome to ATIVAYEBAN\n\nPress %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
+		GetEnterGamePrompt(), GetExitGamePrompt(), GetMovementPrompt(), GetPausePrompt(), GetExitGamePrompt());
 
 	GatherInput = TitleScreenGatherInput;
 	DoLogic     = TitleScreenDoLogic;

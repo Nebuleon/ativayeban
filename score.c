@@ -30,6 +30,7 @@
 #include "game.h"
 #include "score.h"
 #include "bg.h"
+#include "sys_specifics.h"
 #include "text.h"
 
 static bool  WaitingForRelease = false;
