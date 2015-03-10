@@ -156,6 +156,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 						Player.Y = Player.Y
 							+ ((Player.Y - PLAYER_SIZE / 2) - Gaps[i].Y - (Player.SpeedY / 1000)) * GAP_REBOUND;
 						Player.SpeedY = -Player.SpeedY * GAP_REBOUND;
+						Mix_PlayChannel(-1, SoundPlayerBounce, 0);
 						break;
 					}
 				}
@@ -180,6 +181,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 			{
 				Player.Y = PLAYER_SIZE / 2;
 				Player.SpeedY = -Player.SpeedY * FIELD_REBOUND;
+				Mix_PlayChannel(-1, SoundPlayerBounce, 0);
 			}
 
 			// If the ball has collided with the top of the field,

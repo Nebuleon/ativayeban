@@ -19,6 +19,7 @@
 #define PLAYER_BLINK_CHANCE 50
 
 SDL_Surface* PlayerSpritesheet = NULL;
+Mix_Chunk* SoundPlayerBounce = NULL;
 
 void PlayerUpdate(struct Player *player)
 {
@@ -29,6 +30,7 @@ void PlayerUpdate(struct Player *player)
 	player->SpeedX += ((float) player->AccelX / 32767.0f) * ACCELERATION / 1000;
 
 	// Update the player's position and speed.
+	bool bounce = false;
 
 	// Left and right edges (X). If the horizontal speed would run the
 	// ball into an edge, use up some of the energy in the impact and
@@ -38,16 +40,23 @@ void PlayerUpdate(struct Player *player)
 		player->X = PLAYER_SIZE / 2
 			+ ((player->X - PLAYER_SIZE / 2) - (player->SpeedX / 1000)) * FIELD_REBOUND;
 		player->SpeedX = -player->SpeedX * FIELD_REBOUND;
+		bounce = true;
 	}
 	else if (player->SpeedX > 0 && player->X + PLAYER_SIZE / 2 + player->SpeedX / 1000 > FIELD_WIDTH)
 	{
 		player->X = FIELD_WIDTH - PLAYER_SIZE / 2
 			+ (FIELD_WIDTH - (player->X + PLAYER_SIZE / 2) - (player->SpeedX / 1000)) * FIELD_REBOUND;
 		player->SpeedX = -player->SpeedX * FIELD_REBOUND;
+		bounce = true;
 	}
 	else
 	{
 		player->X += player->SpeedX / 1000;
+	}
+
+	if (bounce)
+	{
+		Mix_PlayChannel(-1, SoundPlayerBounce, 0);
 	}
 
 	// Update roll animation based on speed

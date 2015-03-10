@@ -45,6 +45,12 @@ if(NOT SDLIMAGE_FOUND)
 else()
   include_directories(${SDLIMAGE_INCLUDE_DIR})
 endif()
+find_package(SDL_mixer REQUIRED)
+if(NOT SDLMIXER_FOUND)
+  message(FATAL_ERROR "Couldn't find SDL-mixer development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl-mixer1.2-dev' package.")
+else()
+  include_directories(${SDLMIXER_INCLUDE_DIR})
+endif()
 
 include_directories(.)
 
@@ -63,4 +69,4 @@ if(NOT SDLMAIN_LIBRARY)
   set(SDLMAIN_LIBRARY "")
 endif()
 
-target_link_libraries(ativayeban ${CMAKE_LD_FLAGS} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMAIN_LIBRARY})
+target_link_libraries(ativayeban ${CMAKE_LD_FLAGS} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLMAIN_LIBRARY})

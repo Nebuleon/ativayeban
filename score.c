@@ -35,7 +35,7 @@
 
 static bool  WaitingForRelease = false;
 
-static char* ScoreMessage      = NULL;
+static char ScoreMessage[256];
 
 void ScoreGatherInput(bool* Continue)
 {
@@ -49,21 +49,11 @@ void ScoreGatherInput(bool* Continue)
 		{
 			WaitingForRelease = false;
 			ToGame();
-			if (ScoreMessage != NULL)
-			{
-				free(ScoreMessage);
-				ScoreMessage = NULL;
-			}
 			return;
 		}
 		else if (IsExitGameEvent(&ev))
 		{
 			*Continue = false;
-			if (ScoreMessage != NULL)
-			{
-				free(ScoreMessage);
-				ScoreMessage = NULL;
-			}
 			return;
 		}
 	}
@@ -98,19 +88,10 @@ void ScoreOutputFrame()
 
 void ToScore(uint32_t Score)
 {
-	if (ScoreMessage != NULL)
-	{
-		free(ScoreMessage);
-		ScoreMessage = NULL;
-	}
-	int Length = 2, NewLength;
-	ScoreMessage = malloc(Length);
-
-	while ((NewLength = snprintf(ScoreMessage, Length, "GAME OVER\n\nYour score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit", Score, GetEnterGamePrompt(), GetExitGamePrompt())) >= Length)
-	{
-		Length = NewLength + 1;
-		ScoreMessage = realloc(ScoreMessage, Length);
-	}
+	sprintf(
+		ScoreMessage,
+		"GAME OVER\n\nYour score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",
+		Score, GetEnterGamePrompt(), GetExitGamePrompt());
 
 	GatherInput = ScoreGatherInput;
 	DoLogic     = ScoreDoLogic;

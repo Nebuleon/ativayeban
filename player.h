@@ -1,5 +1,6 @@
-#ifndef _PLAYER_H_
-#define _PLAYER_H_
+#pragma once
+
+#include <SDL_mixer.h>
 
 struct Player
 {
@@ -21,9 +22,8 @@ struct Player
 };
 
 extern SDL_Surface* PlayerSpritesheet;
+extern Mix_Chunk* SoundPlayerBounce;
 
 extern void PlayerUpdate(struct Player *player);
 extern void PlayerDraw(const struct Player *player);
 extern void PlayerReset(struct Player *player);
-
-#endif /* !defined(_PLAYER_H_) */

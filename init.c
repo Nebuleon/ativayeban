@@ -32,7 +32,7 @@
 
 void Initialize(bool* Continue, bool* Error)
 {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
 	{
 		*Continue = false;  *Error = true;
 		printf("SDL initialisation failed: %s\n", SDL_GetError());
@@ -60,6 +60,16 @@ void Initialize(bool* Continue, bool* Error)
 	else
 		printf("SDL_SetVideoMode succeeded\n");
 
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == -1)
+	{
+		*Continue = false;  *Error = true;
+		printf("Mix_OpenAudio failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+	else
+		printf("Mix_OpenAudio succeeded\n");
+
 	PlayerSpritesheet = IMG_Load("penguin_ball.png");
 	if (PlayerSpritesheet == NULL)
 	{
@@ -77,6 +87,15 @@ void Initialize(bool* Continue, bool* Error)
 		return;
 	}
 
+	SoundPlayerBounce = Mix_LoadWAV("bounce.ogg");
+	if (SoundPlayerBounce == NULL)
+	{
+		*Continue = false;  *Error = true;
+		printf("Mix_LoadWAV failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+
 	SDL_ShowCursor(0);
 
 	InitializePlatform();
@@ -89,5 +108,6 @@ void Finalize()
 {
 	SDL_FreeSurface(PlayerSpritesheet);
 	GapSurfacesFree(&GapSurfaces);
+	Mix_FreeChunk(SoundPlayerBounce);
 	SDL_Quit();
 }
