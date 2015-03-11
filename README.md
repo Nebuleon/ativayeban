@@ -1,11 +1,11 @@
 ativayeban
 
-You are a ball and you must fall into the holes to avoid being crushed by the top of the screen!
+Like the fall down games, you are a ball and you must fall into the holes to avoid being crushed by the top of the screen!
 
-This game requires SDL 1.2 and a C compiler. It is optimised for low-resolution screens.
+This game requires SDL 1.2, CMake and a C compiler. It is optimised for low-resolution screens.
 
-Everything's under the GPL version 2.
+Code is under the GPL version 2; for asset licenses see the `COPYRIGHT` file.
 
-To compile this for PC, use `make clean; make` on a PC with SDL. You'll then get a windowed SDL game.
+To compile this for PC, use `cmake . && make` on a PC with SDL. You'll then get a windowed SDL game.
 
-To compile this for OpenDingux, use `make TARGET=ativayeban-od clean; make TARGET=ativayeban-od opk` on a PC with the `PATH` set to include your OpenDingux mipsel toolchain.
+To compile this for GCW-Zero, do the same but provide a `CMAKE_TOOLCHAIN_FILE` as specified in the developer docs.
