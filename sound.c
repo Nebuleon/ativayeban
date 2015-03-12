@@ -18,6 +18,5 @@ void SoundPlay(Mix_Chunk *sound, const float volume)
 
 void SoundPlayBounce(const float speed)
 {
-	printf("%f\n", fabs(speed));
 	SoundPlay(SoundPlayerBounce, (float)fabs(speed) / BOUNCE_SPEED_MAX_VOLUME);
 }
