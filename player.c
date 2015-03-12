@@ -7,6 +7,7 @@
 #include "init.h"
 #include "main.h"
 #include "player.h"
+#include "sound.h"
 
 #define PLAYER_SPRITESHEET_WIDTH 35
 #define PLAYER_SPRITESHEET_HEIGHT 35
@@ -17,6 +18,7 @@
 #define PLAYER_BLINK_FRAMES 200
 #define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 500) + 500)
 #define PLAYER_BLINK_CHANCE 50
+#define BOUNCE_SPEED_MAX_VOLUME 3.0f
 
 SDL_Surface* PlayerSpritesheet = NULL;
 Mix_Chunk* SoundPlayerBounce = NULL;
@@ -56,7 +58,7 @@ void PlayerUpdate(struct Player *player)
 
 	if (bounce)
 	{
-		Mix_PlayChannel(-1, SoundPlayerBounce, 0);
+		SoundPlayBounce(player->SpeedX);
 	}
 
 	// Update roll animation based on speed
@@ -89,14 +91,14 @@ void PlayerDraw(const struct Player *player)
 		rollFrame += PLAYER_BLINK_FRAME_OFFSET;
 	}
 	SDL_Rect src = {
-		(rollFrame % PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_WIDTH,
-		(rollFrame / PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_HEIGHT,
+		(Sint16)((rollFrame % PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_WIDTH),
+		(Sint16)((rollFrame / PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_HEIGHT),
 		PLAYER_SPRITESHEET_WIDTH,
 		PLAYER_SPRITESHEET_HEIGHT
 	};
 	SDL_Rect dest = {
-		SCREEN_X(player->X) - PLAYER_SPRITESHEET_WIDTH / 2,
-		SCREEN_Y(player->Y) - PLAYER_SPRITESHEET_HEIGHT / 2,
+		(Sint16)(SCREEN_X(player->X) - PLAYER_SPRITESHEET_WIDTH / 2),
+		(Sint16)(SCREEN_Y(player->Y) - PLAYER_SPRITESHEET_HEIGHT / 2),
 		0,
 		0
 	};

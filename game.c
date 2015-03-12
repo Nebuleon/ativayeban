@@ -31,6 +31,7 @@
 #include "init.h"
 #include "platform.h"
 #include "player.h"
+#include "sound.h"
 #include "game.h"
 #include "gap.h"
 #include "score.h"
@@ -70,10 +71,13 @@ void GameGatherInput(bool* Continue)
 
 static void AnimationControl(Uint32 Milliseconds)
 {
+	(void)Milliseconds;
 }
 
 void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
+	(void)Continue;
+	(void)Error;
 	if (!Pause)
 	{
 		bool PointAwarded = false;
@@ -156,7 +160,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 						Player.Y = Player.Y
 							+ ((Player.Y - PLAYER_SIZE / 2) - Gaps[i].Y - (Player.SpeedY / 1000)) * GAP_REBOUND;
 						Player.SpeedY = -Player.SpeedY * GAP_REBOUND;
-						Mix_PlayChannel(-1, SoundPlayerBounce, 0);
+						SoundPlayBounce(Player.SpeedY);
 						break;
 					}
 				}
@@ -181,7 +185,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 			{
 				Player.Y = PLAYER_SIZE / 2;
 				Player.SpeedY = -Player.SpeedY * FIELD_REBOUND;
-				Mix_PlayChannel(-1, SoundPlayerBounce, 0);
+				SoundPlayBounce(Player.SpeedY);
 			}
 
 			// If the ball has collided with the top of the field,
@@ -200,7 +204,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	AnimationControl(Milliseconds);
 }
 
-void GameOutputFrame()
+void GameOutputFrame(void)
 {
 	// Draw the background.
 	DrawBackground();

@@ -37,26 +37,26 @@ void GapDraw(const struct Gap* gap)
 	// Left part
 	int x = SCREEN_X(gap->GapLeft) - GAP_SPRITE_WIDTH;
 	int y = SCREEN_Y(gap->Y);
-	SDL_Rect dest = { x, y, 0, 0 };
+	SDL_Rect dest = { (Sint16)x, (Sint16)y, 0, 0 };
 	SDL_BlitSurface(GapSurfaces.Right, NULL, Screen, &dest);
 	while (x >= 0)
 	{
 		x -= GAP_SPRITE_WIDTH;
-		dest.x = x;
-		dest.y = y;
+		dest.x = (Sint16)x;
+		dest.y = (Sint16)y;
 		SDL_BlitSurface(GapSurfaces.Middle, NULL, Screen, &dest);
 	}
 
 	// Right part
 	x = SCREEN_X(gap->GapRight);
-	dest.x = x;
-	dest.y = y;
+	dest.x = (Sint16)x;
+	dest.y = (Sint16)y;
 	SDL_BlitSurface(GapSurfaces.Left, NULL, Screen, &dest);
 	while (x < SCREEN_X(FIELD_WIDTH))
 	{
 		x += GAP_SPRITE_WIDTH;
-		dest.x = x;
-		dest.y = y;
+		dest.x = (Sint16)x;
+		dest.y = (Sint16)y;
 		SDL_BlitSurface(GapSurfaces.Middle, NULL, Screen, &dest);
 	}
 }

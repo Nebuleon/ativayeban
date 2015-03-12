@@ -38,6 +38,8 @@ static bool         Error                            = false;
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
 	Initialize(&Continue, &Error);
 	Uint32 Duration = 16;
 	while (Continue)

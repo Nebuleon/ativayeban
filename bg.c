@@ -25,10 +25,10 @@
 
 void AdvanceBackground(uint32_t Milliseconds)
 {
+	(void)Milliseconds;
 }
 
 void DrawBackground(void)
 {
-	SDL_Rect ScreenRect = { .x = 0, .y = 0, .w = Screen->w, .h = Screen->h };
-	SDL_FillRect(Screen, &ScreenRect, SDL_MapRGB(Screen->format, 0, 0, 0));
+	SDL_FillRect(Screen, NULL, SDL_MapRGB(Screen->format, 0, 0, 0));
 }

@@ -29,7 +29,7 @@ static uint32_t CutString(const char* String, const uint32_t MaxWidth,
 {
 	uint32_t Cut = 0;
 	uint32_t CutStart = 0, Cur = 0, CutWidth = 0;
-	uint32_t LastSpace = -1;
+	uint32_t LastSpace = 0;
 	bool SpaceInCut = false;
 	while (String[Cur] != '\0')
 	{

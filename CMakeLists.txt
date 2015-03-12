@@ -13,9 +13,9 @@ endif()
 
 # Default definitions
 if(MSVC)
-    add_definitions(-Wall -W4 -wd"4996")
+    add_definitions(-Wall -W4 -WX -wd"4996" -wd"4204")
 else()
-    add_definitions(-Wall -Wextra -Wunused -Wshadow -Wunreachable-code -std=c99)
+    add_definitions(-Wall -Wextra -Wunused -Wshadow -Wunreachable-code -Werror -std=c99)
     add_definitions(-fno-math-errno -fno-exceptions)
 endif()
 

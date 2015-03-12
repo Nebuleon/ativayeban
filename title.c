@@ -33,7 +33,7 @@
 #include "text.h"
 
 static bool  WaitingForRelease = false;
-static char* WelcomeMessage[256];
+static char WelcomeMessage[256];
 void TitleScreenGatherInput(bool* Continue)
 {
 	SDL_Event ev;
@@ -58,10 +58,12 @@ void TitleScreenGatherInput(bool* Continue)
 
 void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
+	(void)Continue;
+	(void)Error;
 	AdvanceBackground(Milliseconds);
 }
 
-void TitleScreenOutputFrame()
+void TitleScreenOutputFrame(void)
 {
 	DrawBackground();
 

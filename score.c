@@ -61,10 +61,12 @@ void ScoreGatherInput(bool* Continue)
 
 void ScoreDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
+	(void)Continue;
+	(void)Error;
 	AdvanceBackground(Milliseconds);
 }
 
-void ScoreOutputFrame()
+void ScoreOutputFrame(void)
 {
 	DrawBackground();
 	if (SDL_MUSTLOCK(Screen))

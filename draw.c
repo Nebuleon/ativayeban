@@ -43,7 +43,7 @@ void DRAW_FillCircle(SDL_Surface *surface, int cx, int cy, int radius, Uint32 pi
 		// with a center and we need left/right coordinates.
 
 		float dx = floorf(sqrtf((2.0f * r * dy) - (dy * dy)));
-		int x = cx - dx;
+		int x = (int)(cx - dx);
 		if (x < 0)
 			x = 0;
 
