@@ -18,10 +18,10 @@
 #define PLAYER_BLINK_FRAMES 200
 #define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 500) + 500)
 #define PLAYER_BLINK_CHANCE 50
-#define BOUNCE_SPEED_MAX_VOLUME 3.0f
 
 SDL_Surface* PlayerSpritesheet = NULL;
 Mix_Chunk* SoundPlayerBounce = NULL;
+Mix_Chunk* SoundPlayerRoll = NULL;
 
 void PlayerUpdate(struct Player *player)
 {
@@ -59,6 +59,20 @@ void PlayerUpdate(struct Player *player)
 	if (bounce)
 	{
 		SoundPlayBounce(player->SpeedX);
+	}
+
+	if (player->OnSurface)
+	{
+		// If on surface, apply friction to the player's speed (X).
+		player->SpeedX *= 1.0f - FRICTION;
+		SoundPlayRoll(player->SpeedX);
+	}
+	else
+	{
+		// If not, apply gravity (Y).
+		player->SpeedY += GRAVITY / 1000;
+		player->Y += player->SpeedY / 1000;
+		SoundStopRoll();
 	}
 
 	// Update roll animation based on speed
@@ -113,6 +127,7 @@ void PlayerReset(struct Player *player)
 	player->SpeedY = GRAVITY / 200 - FIELD_SCROLL / 200;
 	player->AccelX = 0;
 	player->Roll = 0.0f;
+	player->OnSurface = false;
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
 }

@@ -27,6 +27,7 @@
 #include "main.h"
 #include "init.h"
 #include "platform.h"
+#include "sound.h"
 #include "game.h"
 #include "score.h"
 #include "bg.h"
@@ -90,6 +91,9 @@ void ScoreOutputFrame(void)
 
 void ToScore(uint32_t Score)
 {
+	SoundStopRoll();
+	ResetMovement();
+	WaitingForRelease = false;
 	sprintf(
 		ScoreMessage,
 		"GAME OVER\n\nYour score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",

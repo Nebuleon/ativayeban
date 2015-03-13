@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include <SDL.h>
 #include <SDL_mixer.h>
 
@@ -16,6 +18,9 @@ struct Player
 	// Used to animate the player rolling
 	float Roll;
 
+	// Whether player is on a surface
+	bool OnSurface;
+
 	// Blink until counter runs out
 	int BlinkCounter;
 	// Blink when counter reaches zero
@@ -24,6 +29,8 @@ struct Player
 
 extern SDL_Surface* PlayerSpritesheet;
 extern Mix_Chunk* SoundPlayerBounce;
+extern Mix_Chunk* SoundPlayerRoll;
+extern int SoundPlayerRollChannel;
 
 extern void PlayerUpdate(struct Player *player);
 extern void PlayerDraw(const struct Player *player);

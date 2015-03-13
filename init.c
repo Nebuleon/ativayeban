@@ -87,14 +87,17 @@ void Initialize(bool* Continue, bool* Error)
 		return;
 	}
 
-	SoundPlayerBounce = Mix_LoadWAV("bounce.ogg");
-	if (SoundPlayerBounce == NULL)
-	{
-		*Continue = false;  *Error = true;
-		printf("Mix_LoadWAV failed: %s\n", SDL_GetError());
-		SDL_ClearError();
-		return;
+#define LOAD_SOUND(_sound, _path)\
+	_sound = Mix_LoadWAV(_path);\
+	if (_sound == NULL)\
+	{\
+		*Continue = false;  *Error = true;\
+		printf("Mix_LoadWAV failed: %s\n", SDL_GetError());\
+		SDL_ClearError();\
+		return;\
 	}
+	LOAD_SOUND(SoundPlayerBounce, "bounce.ogg");
+	LOAD_SOUND(SoundPlayerRoll, "roll.ogg");
 
 	SDL_ShowCursor(0);
 
@@ -109,5 +112,6 @@ void Finalize()
 	SDL_FreeSurface(PlayerSpritesheet);
 	GapSurfacesFree(&GapSurfaces);
 	Mix_FreeChunk(SoundPlayerBounce);
+	Mix_FreeChunk(SoundPlayerRoll);
 	SDL_Quit();
 }

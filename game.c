@@ -125,12 +125,9 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 				float GapLeft = (FIELD_WIDTH / 16.0f) + ((float) rand() / (float) RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
 				GapInit(&Gaps[GapCount - 1], Top, GapLeft);
 			}
-			
-			PlayerUpdate(&Player);
 
 			// Is the ball on a gap?
-			bool OnGap = false;
-
+			Player.OnSurface = false;
 			for (i = GapCount - 1; i >= 0; i--)
 			{
 				// Stop considering gaps if they are higher than the ball
@@ -143,10 +140,10 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 					// Is the distance in range, and is the ball going up slowly
 					// enough (Y)?
 					if (Player.Y - PLAYER_SIZE / 2 <  Gaps[i].Y + UPPER_EPSILON
-					 && Player.SpeedY              >= 0.0f
-					 && Player.SpeedY              <  UPPER_EPSILON)
+						&& Player.SpeedY >= 0.0f
+						&& Player.SpeedY              <  UPPER_EPSILON)
 					{
-						OnGap = true;
+						Player.OnSurface = true;
 						Player.SpeedY = 0.0f;
 						// Also make sure the ball appears to be on the gap (Y).
 						Player.Y = Gaps[i].Y + PLAYER_SIZE / 2;
@@ -154,8 +151,8 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 					}
 					// If the ball would cross the gap during this
 					// millisecond, make it rebound instead (Y).
-					else if (Player.Y - PLAYER_SIZE / 2                        >= Gaps[i].Y
-					      && Player.Y - PLAYER_SIZE / 2 + Player.SpeedY / 1000 <  Gaps[i].Y)
+					else if (Player.Y - PLAYER_SIZE / 2 >= Gaps[i].Y
+						&& Player.Y - PLAYER_SIZE / 2 + Player.SpeedY / 1000 <  Gaps[i].Y)
 					{
 						Player.Y = Player.Y
 							+ ((Player.Y - PLAYER_SIZE / 2) - Gaps[i].Y - (Player.SpeedY / 1000)) * GAP_REBOUND;
@@ -165,18 +162,8 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 					}
 				}
 			}
-
-			if (OnGap)
-			{
-				// If so, apply friction to the player's speed (X).
-				Player.SpeedX *= 1.0f - FRICTION;
-			}
-			else
-			{
-				// If not, apply gravity (Y).
-				Player.SpeedY += GRAVITY / 1000;
-				Player.Y += Player.SpeedY / 1000;
-			}
+			
+			PlayerUpdate(&Player);
 
 			// Bottom edge (Y).
 			// If the ball arrives below the bottom edge, act as if it had
