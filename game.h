@@ -1,6 +1,7 @@
 /*
  * Ativayeban, game header
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,11 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#pragma once
 
-#ifndef _GAME_H_
-#define _GAME_H_
+#include <SDL_mixer.h>
 
- #include "init.h"
+#include "init.h"
 
 // When determining whether the ball is on a gap, the distance between
 // the bottom of the ball and the top of the gap can be less than this
@@ -95,6 +96,8 @@
 #define SCREEN_X(_x) ((int)roundf(_x * SCREEN_WIDTH / FIELD_WIDTH))
 #define SCREEN_Y(_y) ((int)roundf(SCREEN_HEIGHT - _y * SCREEN_HEIGHT / FIELD_HEIGHT))
 
-extern void ToGame(void);
+extern Mix_Chunk* SoundStart;
+extern Mix_Chunk* SoundLose;
+extern Mix_Chunk* SoundScore;
 
-#endif /* !defined(_GAME_H_) */
+extern void ToGame(void);

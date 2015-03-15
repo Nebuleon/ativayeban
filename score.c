@@ -94,6 +94,7 @@ void ToScore(uint32_t Score)
 	SoundStopRoll();
 	ResetMovement();
 	WaitingForRelease = false;
+	SoundPlay(SoundLose, 1.0);
 	sprintf(
 		ScoreMessage,
 		"GAME OVER\n\nYour score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",

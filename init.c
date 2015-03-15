@@ -24,6 +24,7 @@
 #include "SDL_image.h"
 
 #include "gap.h"
+#include "game.h"
 #include "main.h"
 #include "init.h"
 #include "platform.h"
@@ -98,6 +99,9 @@ void Initialize(bool* Continue, bool* Error)
 	}
 	LOAD_SOUND(SoundPlayerBounce, "bounce.ogg");
 	LOAD_SOUND(SoundPlayerRoll, "roll.ogg");
+	LOAD_SOUND(SoundStart, "start.ogg");
+	LOAD_SOUND(SoundLose, "lose.ogg");
+	LOAD_SOUND(SoundScore, "score.ogg");
 
 	SDL_ShowCursor(0);
 
@@ -113,5 +117,8 @@ void Finalize()
 	GapSurfacesFree(&GapSurfaces);
 	Mix_FreeChunk(SoundPlayerBounce);
 	Mix_FreeChunk(SoundPlayerRoll);
+	Mix_FreeChunk(SoundStart);
+	Mix_FreeChunk(SoundLose);
+	Mix_FreeChunk(SoundScore);
 	SDL_Quit();
 }

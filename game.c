@@ -52,6 +52,10 @@ static uint32_t               GapCount = 0;
 
 static float                  GenDistance;
 
+Mix_Chunk* SoundStart = NULL;
+Mix_Chunk* SoundLose = NULL;
+Mix_Chunk* SoundScore = NULL;
+
 void GameGatherInput(bool* Continue)
 {
 	SDL_Event ev;
@@ -98,6 +102,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 					if (!PointAwarded)
 					{
 						Score++;
+						SoundPlay(SoundScore, 1.0);
 						PointAwarded = true;
 					}
 				}
@@ -240,6 +245,7 @@ void ToGame(void)
 	}
 	GapCount = 0;
 	GenDistance = GAP_GEN_START;
+	SoundPlay(SoundStart, 1.0);
 
 	GatherInput = GameGatherInput;
 	DoLogic     = GameDoLogic;
