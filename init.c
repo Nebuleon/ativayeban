@@ -87,6 +87,13 @@ void Initialize(bool* Continue, bool* Error)
 		SDL_ClearError();
 		return;
 	}
+	if (!BackgroundsLoad(&BG))
+	{
+		*Continue = false;  *Error = true;
+		printf("IMG_Load failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
 
 #define LOAD_SOUND(_sound, _path)\
 	_sound = Mix_LoadWAV(_path);\
@@ -115,6 +122,7 @@ void Finalize()
 {
 	SDL_FreeSurface(PlayerSpritesheet);
 	GapSurfacesFree(&GapSurfaces);
+	BackgroundsFree(&BG);
 	Mix_FreeChunk(SoundPlayerBounce);
 	Mix_FreeChunk(SoundPlayerRoll);
 	Mix_FreeChunk(SoundStart);

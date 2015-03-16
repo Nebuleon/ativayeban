@@ -16,13 +16,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#pragma once
 
-#ifndef _BG_H_
-#define _BG_H_
-
+#include <stdbool.h>
 #include <stdint.h>
 
-extern void AdvanceBackground(uint32_t Milliseconds);
-extern void DrawBackground(void);
+#include <SDL.h>
 
-#endif /* !defined(_BG_H_) */
+typedef struct
+{
+	SDL_Surface *Layer0;
+	SDL_Surface *Layer1;
+	SDL_Surface *Layer2;
+	SDL_Surface *Layer3;
+	float scroll;
+} Backgrounds;
+extern Backgrounds BG;
+
+void BackgroundsInit(Backgrounds *bg);
+
+extern void AdvanceBackground(Backgrounds *bg, uint32_t Milliseconds);
+extern void DrawBackground(Backgrounds *bg);
+
+bool BackgroundsLoad(Backgrounds *bg);
+void BackgroundsFree(Backgrounds *bg);

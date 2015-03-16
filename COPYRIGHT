@@ -3,10 +3,15 @@ The code for Ativayeban is licensed under the GNU General Public License, versio
 Code (c) Nebuleon Fumika <nebuleon@gcw-zero.com>
 
 The following assets are under the licenses:
+
+Audio:
 - bounce.ogg by wubitog (CC0)
 - lose.ogg by Joe DeShon (CC-BY)
-- penguin_ball.png by Gab1975 (CC-BY-SA)
 - roll.ogg by qubodup (CC0)
 - score.ogg by NenadSimic (CC-BY)
 - start.ogg by Ulrich Metzner (CC-BY-SA)
+
+Graphics:
+- bgX.png by http://bonsaiheld.org (CC0)
+- penguin_ball.png by Gab1975 (CC-BY-SA)
 - stoneHalfXXX.png by Kenney.nl (CC0)

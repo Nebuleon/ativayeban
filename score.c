@@ -64,12 +64,12 @@ void ScoreDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
 	(void)Continue;
 	(void)Error;
-	AdvanceBackground(Milliseconds);
+	(void)Milliseconds;
 }
 
 void ScoreOutputFrame(void)
 {
-	DrawBackground();
+	DrawBackground(&BG);
 	if (SDL_MUSTLOCK(Screen))
 		SDL_LockSurface(Screen);
 	PrintStringOutline32(ScoreMessage,

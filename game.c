@@ -190,7 +190,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 			}
 		}
 
-		AdvanceBackground(Milliseconds);
+		AdvanceBackground(&BG, Milliseconds);
 	}
 
 	AnimationControl(Milliseconds);
@@ -199,7 +199,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 void GameOutputFrame(void)
 {
 	// Draw the background.
-	DrawBackground();
+	DrawBackground(&BG);
 
 	// Draw the gaps.
 	uint32_t i;
@@ -245,6 +245,7 @@ void ToGame(void)
 	}
 	GapCount = 0;
 	GenDistance = GAP_GEN_START;
+	BackgroundsInit(&BG);
 	SoundPlay(SoundStart, 1.0);
 
 	GatherInput = GameGatherInput;

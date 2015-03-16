@@ -74,21 +74,15 @@ bool GapIsOn(const struct Gap* gap, float x, float radius)
 
 bool GapSurfacesLoad(struct GapSurfaces* surfaces)
 {
-	surfaces->Left = IMG_Load("stoneHalfLeft.png");
-	if (surfaces->Left == NULL)
-	{
-		return false;
+#define LOAD_SURFACE(_surface, _filename)\
+	_surface = IMG_Load(_filename);\
+	if (_surface == NULL)\
+	{\
+		return false;\
 	}
-	surfaces->Middle = IMG_Load("stoneHalfMid.png");
-	if (surfaces->Middle == NULL)
-	{
-		return false;
-	}
-	surfaces->Right = IMG_Load("stoneHalfRight.png");
-	if (surfaces->Right == NULL)
-	{
-		return false;
-	}
+	LOAD_SURFACE(surfaces->Left, "stoneHalfLeft.png");
+	LOAD_SURFACE(surfaces->Middle, "stoneHalfMid.png");
+	LOAD_SURFACE(surfaces->Right, "stoneHalfRight.png");
 	return true;
 }
 extern void GapSurfacesFree(struct GapSurfaces* surfaces)
