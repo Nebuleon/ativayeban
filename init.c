@@ -74,7 +74,7 @@ void Initialize(bool* Continue, bool* Error)
 		printf("Mix_OpenAudio succeeded\n");
 
 #define LOAD_IMG(_surface, _path)\
-	_surface = IMG_Load(_path);\
+	_surface = IMG_Load("data/graphics/" _path);\
 	if (_surface == NULL)\
 	{\
 		*Continue = false;  *Error = true;\
@@ -102,7 +102,7 @@ void Initialize(bool* Continue, bool* Error)
 	}
 
 #define LOAD_SOUND(_sound, _path)\
-	_sound = Mix_LoadWAV(_path);\
+	_sound = Mix_LoadWAV("data/sounds/" _path);\
 	if (_sound == NULL)\
 	{\
 		*Continue = false;  *Error = true;\

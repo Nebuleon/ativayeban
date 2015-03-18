@@ -93,7 +93,7 @@ bool GapSurfacesLoad(void)
 	for (int i = 0; i < 6; i++)
 	{
 		char buf[256];
-		sprintf(buf, "floor%d.png", i);
+		sprintf(buf, "data/graphics/floor%d.png", i);
 		GapSurfaces[i] = IMG_Load(buf);
 		if (GapSurfaces[i] == NULL)
 		{

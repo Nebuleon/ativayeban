@@ -68,7 +68,7 @@ static void DrawBackgroundScroll(
 bool BackgroundsLoad(Backgrounds* bg)
 {
 #define LOAD_SURFACE(_surface, _filename)\
-	_surface = IMG_Load(_filename);\
+	_surface = IMG_Load("data/graphics/" _filename);\
 	if (_surface == NULL)\
 	{\
 		return false;\
