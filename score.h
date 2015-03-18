@@ -1,6 +1,7 @@
 /*
  * Ativayeban, score screen header
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,12 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#pragma once
 
-#ifndef _SCORE_H_
-#define _SCORE_H_
+#include <SDL.h>
 
-#include <stdbool.h>
+extern SDL_Surface *GameOverImages[2];
 
 extern void ToScore(uint32_t Score);
-
-#endif /* !defined(_SCORE_H_) */

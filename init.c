@@ -1,6 +1,7 @@
 /*
  * Ativayeban, initialisation code file
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +30,7 @@
 #include "init.h"
 #include "platform.h"
 #include "player.h"
+#include "score.h"
 #include "title.h"
 
 void Initialize(bool* Continue, bool* Error)
@@ -71,14 +73,18 @@ void Initialize(bool* Continue, bool* Error)
 	else
 		printf("Mix_OpenAudio succeeded\n");
 
-	PlayerSpritesheet = IMG_Load("penguin_ball.png");
-	if (PlayerSpritesheet == NULL)
-	{
-		*Continue = false;  *Error = true;
-		printf("IMG_Load failed: %s\n", SDL_GetError());
-		SDL_ClearError();
-		return;
+#define LOAD_IMG(_surface, _path)\
+	_surface = IMG_Load(_path);\
+	if (_surface == NULL)\
+	{\
+		*Continue = false;  *Error = true;\
+		printf("IMG_Load failed: %s\n", SDL_GetError());\
+		SDL_ClearError();\
+		return;\
 	}
+	LOAD_IMG(PlayerSpritesheet, "penguin_ball.png");
+	LOAD_IMG(GameOverImages[0], "gameover_01.png");
+	LOAD_IMG(GameOverImages[1], "gameover_02.png");
 
 	if (!GapSurfacesLoad(&GapSurfaces))
 	{
@@ -121,6 +127,8 @@ void Initialize(bool* Continue, bool* Error)
 void Finalize()
 {
 	SDL_FreeSurface(PlayerSpritesheet);
+	SDL_FreeSurface(GameOverImages[0]);
+	SDL_FreeSurface(GameOverImages[1]);
 	GapSurfacesFree(&GapSurfaces);
 	BackgroundsFree(&BG);
 	Mix_FreeChunk(SoundPlayerBounce);

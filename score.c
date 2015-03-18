@@ -1,6 +1,7 @@
 /*
  * Ativayeban, score screen code file
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,6 +39,11 @@ static bool  WaitingForRelease = false;
 
 static char ScoreMessage[256];
 
+SDL_Surface *GameOverImages[2];
+static int gameOverImageIndex = 0;
+#define GAME_OVER_IMAGE_COUNTER 20
+static int gameOverImageCounter = GAME_OVER_IMAGE_COUNTER;
+
 void ScoreGatherInput(bool* Continue)
 {
 	SDL_Event ev;
@@ -67,11 +73,19 @@ void ScoreDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	(void)Milliseconds;
 }
 
+static void DrawGameoverImg(const int i);
 void ScoreOutputFrame(void)
 {
 	DrawBackground(&BG);
 	if (SDL_MUSTLOCK(Screen))
 		SDL_LockSurface(Screen);
+	gameOverImageCounter--;
+	if (gameOverImageCounter == 0)
+	{
+		gameOverImageCounter = GAME_OVER_IMAGE_COUNTER;
+		gameOverImageIndex = 1 - gameOverImageIndex;
+	}
+	DrawGameoverImg(gameOverImageIndex);
 	PrintStringOutline32(ScoreMessage,
 		SDL_MapRGB(Screen->format, 255, 255, 255),
 		SDL_MapRGB(Screen->format, 0, 0, 0),
@@ -88,6 +102,16 @@ void ScoreOutputFrame(void)
 
 	SDL_Flip(Screen);
 }
+static void DrawGameoverImg(const int i)
+{
+	SDL_Rect dest = {
+		(Sint16)((SCREEN_WIDTH - GameOverImages[i]->w) / 2),
+		(Sint16)((SCREEN_HEIGHT - GameOverImages[i]->h) / 2 - SCREEN_HEIGHT / 6),
+		0,
+		0
+	};
+	SDL_BlitSurface(GameOverImages[i], NULL, Screen, &dest);
+}
 
 void ToScore(uint32_t Score)
 {
@@ -97,7 +121,7 @@ void ToScore(uint32_t Score)
 	SoundPlay(SoundLose, 1.0);
 	sprintf(
 		ScoreMessage,
-		"GAME OVER\n\nYour score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",
+		"\n\nYour score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",
 		Score, GetEnterGamePrompt(), GetExitGamePrompt());
 
 	GatherInput = ScoreGatherInput;
