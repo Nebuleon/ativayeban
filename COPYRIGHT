@@ -1,6 +1,7 @@
 The code for Ativayeban is licensed under the GNU General Public License, version 2 or later at your option.
 
 Code (c) Nebuleon Fumika <nebuleon@gcw-zero.com>
+Cong Xu <congusbongus@gmail.com>
 
 The following assets are under the licenses:
 
@@ -13,6 +14,6 @@ Audio:
 
 Graphics:
 - bgX.png by http://bonsaiheld.org (CC0)
+- floor_XX.png by Gab1975 (CC-BY-SA)
 - gameover_XX.png by Gab1975 (CC-BY-SA)
 - penguin_ball.png by Gab1975 (CC-BY-SA)
-- stoneHalfXXX.png by Kenney.nl (CC0)

@@ -86,7 +86,7 @@ void Initialize(bool* Continue, bool* Error)
 	LOAD_IMG(GameOverImages[0], "gameover_01.png");
 	LOAD_IMG(GameOverImages[1], "gameover_02.png");
 
-	if (!GapSurfacesLoad(&GapSurfaces))
+	if (!GapSurfacesLoad())
 	{
 		*Continue = false;  *Error = true;
 		printf("IMG_Load failed: %s\n", SDL_GetError());
@@ -129,7 +129,7 @@ void Finalize()
 	SDL_FreeSurface(PlayerSpritesheet);
 	SDL_FreeSurface(GameOverImages[0]);
 	SDL_FreeSurface(GameOverImages[1]);
-	GapSurfacesFree(&GapSurfaces);
+	GapSurfacesFree();
 	BackgroundsFree(&BG);
 	Mix_FreeChunk(SoundPlayerBounce);
 	Mix_FreeChunk(SoundPlayerRoll);
