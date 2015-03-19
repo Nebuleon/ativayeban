@@ -1,6 +1,7 @@
 /*
  * Ativayeban, title screen code file
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,24 +17,28 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include "title.h"
 
-#include <stdbool.h>
 #include <stdlib.h>
 
-#include "SDL.h"
 #include "SDL_image.h"
 
 #include "main.h"
 #include "init.h"
 #include "platform.h"
 #include "game.h"
-#include "title.h"
 #include "bg.h"
 #include "sys_specifics.h"
 #include "text.h"
 
 static bool  WaitingForRelease = false;
 static char WelcomeMessage[256];
+SDL_Surface *TitleImages[12];
+static int titleImageIndex = 0;
+#define TITLE_IMAGE_COUNTER 5
+static int titleImageCounter = TITLE_IMAGE_COUNTER;
+
+
 void TitleScreenGatherInput(bool* Continue)
 {
 	SDL_Event ev;
@@ -63,12 +68,24 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	(void)Milliseconds;
 }
 
+static void DrawTitleImg(const int i);
 void TitleScreenOutputFrame(void)
 {
 	DrawBackground(&BG);
 
 	if (SDL_MUSTLOCK(Screen))
 		SDL_LockSurface(Screen);
+	titleImageCounter--;
+	if (titleImageCounter == 0)
+	{
+		titleImageCounter = TITLE_IMAGE_COUNTER;
+		titleImageIndex++;
+		if (titleImageIndex == 12)
+		{
+			titleImageIndex = 0;
+		}
+	}
+	DrawTitleImg(titleImageIndex);
 	PrintStringOutline32(WelcomeMessage,
 		SDL_MapRGB(Screen->format, 255, 255, 255),
 		SDL_MapRGB(Screen->format, 0, 0, 0),
@@ -85,15 +102,47 @@ void TitleScreenOutputFrame(void)
 
 	SDL_Flip(Screen);
 }
+static void DrawTitleImg(const int i)
+{
+	SDL_Rect dest = {
+		(Sint16)((SCREEN_WIDTH - TitleImages[i]->w) / 2),
+		(Sint16)((SCREEN_HEIGHT - TitleImages[i]->h) / 2 - SCREEN_HEIGHT / 4),
+		0,
+		0
+	};
+	SDL_BlitSurface(TitleImages[i], NULL, Screen, &dest);
+}
 
 void ToTitleScreen(void)
 {
 	sprintf(
 		WelcomeMessage,
-		"Welcome to ATIVAYEBAN\n\nPress %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
+		"\n\nPress %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
 		GetEnterGamePrompt(), GetExitGamePrompt(), GetMovementPrompt(), GetPausePrompt(), GetExitGamePrompt());
 
 	GatherInput = TitleScreenGatherInput;
 	DoLogic     = TitleScreenDoLogic;
 	OutputFrame = TitleScreenOutputFrame;
+}
+
+bool TitleImagesLoad(void)
+{
+	for (int i = 0; i < 12; i++)
+	{
+		char buf[256];
+		sprintf(buf, "data/graphics/anim%02d.png", i + 1);
+		TitleImages[i] = IMG_Load(buf);
+		if (TitleImages[i] == NULL)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+void TitleImagesFree(void)
+{
+	for (int i = 0; i < 12; i++)
+	{
+		SDL_FreeSurface(TitleImages[i]);
+	}
 }

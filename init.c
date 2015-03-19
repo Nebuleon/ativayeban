@@ -33,6 +33,8 @@
 #include "score.h"
 #include "title.h"
 
+SDL_Surface *icon = NULL;
+
 void Initialize(bool* Continue, bool* Error)
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
@@ -73,6 +75,8 @@ void Initialize(bool* Continue, bool* Error)
 	else
 		printf("Mix_OpenAudio succeeded\n");
 
+	SDL_WM_SetCaption("FallingTime", NULL);
+
 #define LOAD_IMG(_surface, _path)\
 	_surface = IMG_Load("data/graphics/" _path);\
 	if (_surface == NULL)\
@@ -82,11 +86,21 @@ void Initialize(bool* Continue, bool* Error)
 		SDL_ClearError();\
 		return;\
 	}
+	LOAD_IMG(icon, "icon.png");
+	SDL_WM_SetIcon(icon, NULL);
+
 	LOAD_IMG(PlayerSpritesheet, "penguin_ball.png");
 	LOAD_IMG(GameOverImages[0], "gameover_01.png");
 	LOAD_IMG(GameOverImages[1], "gameover_02.png");
 
 	if (!GapSurfacesLoad())
+	{
+		*Continue = false;  *Error = true;
+		printf("IMG_Load failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+	if (!TitleImagesLoad())
 	{
 		*Continue = false;  *Error = true;
 		printf("IMG_Load failed: %s\n", SDL_GetError());
@@ -129,7 +143,9 @@ void Finalize()
 	SDL_FreeSurface(PlayerSpritesheet);
 	SDL_FreeSurface(GameOverImages[0]);
 	SDL_FreeSurface(GameOverImages[1]);
+	SDL_FreeSurface(icon);
 	GapSurfacesFree();
+	TitleImagesFree();
 	BackgroundsFree(&BG);
 	Mix_FreeChunk(SoundPlayerBounce);
 	Mix_FreeChunk(SoundPlayerRoll);
