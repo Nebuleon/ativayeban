@@ -1,4 +1,4 @@
-project(ativayeban)
+project(FallingTime)
 cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -82,4 +82,4 @@ if(NOT SDLMAIN_LIBRARY)
   set(SDLMAIN_LIBRARY "")
 endif()
 
-target_link_libraries(ativayeban ${CMAKE_LD_FLAGS} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLMAIN_LIBRARY})
+target_link_libraries(falling_time ${CMAKE_LD_FLAGS} ${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})
