@@ -75,7 +75,7 @@ else()
 endif()
 file(GLOB HEADERS *.h)
 
-add_executable(ativayeban ${SOURCES} ${HEADERS})
+add_executable(falling_time ${SOURCES} ${HEADERS})
 
 # libSDLMain comes with libSDL if needed on certain platforms
 if(NOT SDLMAIN_LIBRARY)
