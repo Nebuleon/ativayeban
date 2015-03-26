@@ -75,6 +75,16 @@ void Initialize(bool* Continue, bool* Error)
 	else
 		printf("Mix_OpenAudio succeeded\n");
 
+	if (TTF_Init() == -1)
+	{
+		*Continue = false;  *Error = true;
+		printf("TTF_Init failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+	else
+		printf("TTF_Init succeeded\n");
+
 	SDL_WM_SetCaption("FallingTime", NULL);
 
 #define LOAD_IMG(_surface, _path)\
@@ -130,6 +140,15 @@ void Initialize(bool* Continue, bool* Error)
 	LOAD_SOUND(SoundLose, "lose.ogg");
 	LOAD_SOUND(SoundScore, "score.ogg");
 
+	font = TTF_OpenFont("data/LondrinaSolid-Regular.otf", 20);
+	if (font == NULL)
+	{
+		*Continue = false;  *Error = true;
+		printf("TTF_OpenFont failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+
 	SDL_ShowCursor(0);
 
 	InitializePlatform();
@@ -152,5 +171,6 @@ void Finalize()
 	Mix_FreeChunk(SoundStart);
 	Mix_FreeChunk(SoundLose);
 	Mix_FreeChunk(SoundScore);
+	TTF_CloseFont(font);
 	SDL_Quit();
 }

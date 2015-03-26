@@ -29,11 +29,11 @@
 #include "init.h"
 #include "platform.h"
 #include "sound.h"
+#include "text.h"
 #include "game.h"
 #include "score.h"
 #include "bg.h"
 #include "sys_specifics.h"
-#include "text.h"
 
 static bool  WaitingForRelease = false;
 
@@ -86,17 +86,7 @@ void ScoreOutputFrame(void)
 		gameOverImageIndex = 1 - gameOverImageIndex;
 	}
 	DrawGameoverImg(gameOverImageIndex);
-	PrintStringOutline32(ScoreMessage,
-		SDL_MapRGB(Screen->format, 255, 255, 255),
-		SDL_MapRGB(Screen->format, 0, 0, 0),
-		Screen->pixels,
-		Screen->pitch,
-		0,
-		0,
-		SCREEN_WIDTH,
-		SCREEN_HEIGHT,
-		CENTER,
-		MIDDLE);
+	TextRenderCentered(Screen, font, ScoreMessage, SCREEN_HEIGHT / 2 - 10);
 	if (SDL_MUSTLOCK(Screen))
 		SDL_UnlockSurface(Screen);
 
@@ -121,7 +111,7 @@ void ToScore(uint32_t Score)
 	SoundPlay(SoundLose, 1.0);
 	sprintf(
 		ScoreMessage,
-		"\n\nYour score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",
+		"Your score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",
 		Score, GetEnterGamePrompt(), GetExitGamePrompt());
 
 	GatherInput = ScoreGatherInput;

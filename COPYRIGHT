@@ -1,4 +1,4 @@
-The code for Ativayeban is licensed under the GNU General Public License, version 2 or later at your option.
+﻿The code for FallingTime is licensed under the GNU General Public License, version 2 or later at your option.
 
 Code (c) Nebuleon Fumika <nebuleon@gcw-zero.com>
 Cong Xu <congusbongus@gmail.com>
@@ -15,8 +15,12 @@ Audio:
 Graphics:
 - animXX.png by Gab1975 (CC-BY-SA)
 - bg0.png by Scribe (CC0)
-- bg1.png by nazzyc (CC-BY)
-- bgX.png by http://bonsaiheld.org (CC0)
+- bg1.png by arikel (CC0)
+- bg2.png by nazzyc (CC-BY)
+- bg3.png by http://bonsaiheld.org (CC0)
 - floor_XX.png by Gab1975 (CC-BY-SA)
 - gameover_XX.png by Gab1975 (CC-BY-SA)
 - penguin_ball.png by Gab1975 (CC-BY-SA)
+
+Font:
+- LondrinaSolid-Regular.otf by Marcelo Magalhães Pereira (CC-BY-SA)

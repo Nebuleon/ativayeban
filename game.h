@@ -20,6 +20,7 @@
 #pragma once
 
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 
 #include "init.h"
 
@@ -99,5 +100,7 @@
 extern Mix_Chunk* SoundStart;
 extern Mix_Chunk* SoundLose;
 extern Mix_Chunk* SoundScore;
+
+extern TTF_Font *font;
 
 extern void ToGame(void);

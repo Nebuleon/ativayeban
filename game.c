@@ -25,7 +25,6 @@
 #include <math.h>
 
 #include "SDL.h"
-#include "SDL_image.h"
 
 #include "main.h"
 #include "init.h"
@@ -37,7 +36,6 @@
 #include "score.h"
 #include "draw.h"
 #include "bg.h"
-#include "text.h"
 
 static uint32_t               Score;
 
@@ -55,6 +53,9 @@ static float                  GenDistance;
 Mix_Chunk* SoundStart = NULL;
 Mix_Chunk* SoundLose = NULL;
 Mix_Chunk* SoundScore = NULL;
+
+TTF_Font *font = NULL;
+
 
 void GameGatherInput(bool* Continue)
 {
@@ -213,23 +214,17 @@ void GameOutputFrame(void)
 	// Draw the player's current score.
 	char ScoreString[17];
 	sprintf(ScoreString, "Score%10" PRIu32, Score);
+	SDL_Color white = { 255, 255, 255, 255 };
+	SDL_Surface *t = TTF_RenderText_Blended(font, ScoreString, white);
+	SDL_Rect dest = { (Sint16)(SCREEN_WIDTH - t->w), 0, 0, 0 };
 	if (SDL_MUSTLOCK(Screen))
 		SDL_LockSurface(Screen);
-	PrintStringOutline32(ScoreString,
-		SDL_MapRGB(Screen->format, 255, 255, 255),
-		SDL_MapRGB(Screen->format, 0, 0, 0),
-		Screen->pixels,
-		Screen->pitch,
-		0,
-		0,
-		SCREEN_WIDTH,
-		SCREEN_HEIGHT,
-		RIGHT,
-		TOP);
+	SDL_BlitSurface(t, NULL, Screen, &dest);
 	if (SDL_MUSTLOCK(Screen))
 		SDL_UnlockSurface(Screen);
 
 	SDL_Flip(Screen);
+	SDL_FreeSurface(t);
 }
 
 void ToGame(void)

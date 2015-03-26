@@ -26,10 +26,10 @@
 #include "main.h"
 #include "init.h"
 #include "platform.h"
+#include "text.h"
 #include "game.h"
 #include "bg.h"
 #include "sys_specifics.h"
-#include "text.h"
 
 static bool  WaitingForRelease = false;
 static char WelcomeMessage[256];
@@ -86,17 +86,7 @@ void TitleScreenOutputFrame(void)
 		}
 	}
 	DrawTitleImg(titleImageIndex);
-	PrintStringOutline32(WelcomeMessage,
-		SDL_MapRGB(Screen->format, 255, 255, 255),
-		SDL_MapRGB(Screen->format, 0, 0, 0),
-		Screen->pixels,
-		Screen->pitch,
-		0,
-		0,
-		SCREEN_WIDTH,
-		SCREEN_HEIGHT,
-		CENTER,
-		MIDDLE);
+	TextRenderCentered(Screen, font, WelcomeMessage, SCREEN_HEIGHT / 2 - 30);
 	if (SDL_MUSTLOCK(Screen))
 		SDL_UnlockSurface(Screen);
 
@@ -117,7 +107,7 @@ void ToTitleScreen(void)
 {
 	sprintf(
 		WelcomeMessage,
-		"\n\nPress %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
+		"Press %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
 		GetEnterGamePrompt(), GetExitGamePrompt(), GetMovementPrompt(), GetPausePrompt(), GetExitGamePrompt());
 
 	GatherInput = TitleScreenGatherInput;

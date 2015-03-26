@@ -1,7 +1,7 @@
 *.o
-ativayeban
-ativayeban-od
-ativayeban-od.opk
+falling_time
+falling_time-od
+falling_time-od.opk
 .opk_data/
 
 # CMake
@@ -16,5 +16,5 @@ install_manifest.txt
 *.opensdf
 *.sdf
 *.sln
-ativayeban.dir/
+falling_time.dir/
 Win32/
