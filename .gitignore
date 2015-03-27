@@ -16,5 +16,5 @@ install_manifest.txt
 *.opensdf
 *.sdf
 *.sln
-falling_time.dir/
+*.dir/
 Win32/

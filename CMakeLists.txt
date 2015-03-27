@@ -11,6 +11,11 @@ if(CMAKE_CROSSCOMPILING)
     endif()
 endif()
 
+# Chipmunk 2D
+set(BUILD_STATIC ON FORCE)
+set(chipmunk_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk)
+add_subdirectory(chipmunk/src)
+
 # Default definitions
 if(MSVC)
     add_definitions(-Wall -W4 -WX -wd"4996" -wd"4204")
