@@ -119,6 +119,9 @@
 	#define M_E 2.71828182845904523536028747135266250
 #endif
 
+#ifdef _MSC_VER
+#define inline __inline
+#endif
 
 /// Return the max of two cpFloats.
 static inline cpFloat cpfmax(cpFloat a, cpFloat b)

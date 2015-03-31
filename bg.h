@@ -29,14 +29,12 @@ typedef struct
 	SDL_Surface *Layer1;
 	SDL_Surface *Layer2;
 	SDL_Surface *Layer3;
-	float scroll;
 } Backgrounds;
 extern Backgrounds BG;
 
 void BackgroundsInit(Backgrounds *bg);
 
-extern void AdvanceBackground(Backgrounds *bg, uint32_t Milliseconds);
-extern void DrawBackground(Backgrounds *bg);
+void DrawBackground(Backgrounds *bg, const float y);
 
 bool BackgroundsLoad(Backgrounds *bg);
 void BackgroundsFree(Backgrounds *bg);

@@ -159,6 +159,7 @@ void Initialize(bool* Continue, bool* Error)
 
 void Finalize()
 {
+	cpSpaceFree(Space);
 	SDL_FreeSurface(PlayerSpritesheet);
 	SDL_FreeSurface(GameOverImages[0]);
 	SDL_FreeSurface(GameOverImages[1]);

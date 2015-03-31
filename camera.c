@@ -23,39 +23,41 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#pragma once
+#include "camera.h"
 
-#include <stdbool.h>
+#include "game.h"
 
-#include <chipmunk/chipmunk.h>
-#include <SDL.h>
+Camera camera;
 
-// Gaps are a pair of rectangles with a gap in between.
-// The player scores after falling through a gap.
-
-struct Gap
+void CameraInit(Camera *c)
 {
-	cpBody *BodyLeft;
-	cpBody *BodyRight;
-	// Where the gap layer is.
-	float Y;
-	// Where the gap starts and ends
-	float GapLeft;
-	float GapRight;
-	// Surfaces to use for the left/right parts
-	SDL_Surface *GapLeftSurface;
-	SDL_Surface *GapRightSurface;
+	c->DY = FIELD_HEIGHT / 2;
+	c->Y = 0;
+	c->ScrollRate = FIELD_SCROLL;
+	c->ScrollCounter = 0;
+}
 
-	bool Passed;
-};
-
-extern SDL_Surface *GapSurfaces[6];
-
-void GapInit(struct Gap* gap, float y, float gapX);
-void GapRemove(struct Gap* gap);
-void GapDraw(const struct Gap* gap, const float y);
-
-extern float GapBottom(const struct Gap* gap);
-
-bool GapSurfacesLoad(void);
-void GapSurfacesFree(void);
+void CameraUpdate(Camera *c, const Player *p, const uint32_t ms)
+{
+	c->DY -= ms * c->ScrollRate / 1000;
+	if (c->DY < p->Y)
+	{
+		c->Y = c->DY;
+	}
+	else
+	{
+		c->Y = 0.8f * p->Y + 0.2f * c->DY;
+	}
+	c->DY = min(c->DY, p->Y + FIELD_HEIGHT / 2);
+	c->ScrollCounter += ms;
+	if (c->ScrollCounter >= 1000)
+	{
+		c->ScrollRate += FIELD_SCROLL_SPEED;
+		c->ScrollRate = min(FIELD_SCROLL_MAX, c->ScrollRate);
+		c->ScrollCounter -= 1000;
+	}
+	//printf("%f\n", c->ScrollRate);
+	// Disable scrolling
+	//printf("%f %f\n", c->DY, c->Y);
+	//c->Y = p->Y;
+}

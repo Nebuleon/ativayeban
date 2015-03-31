@@ -76,7 +76,7 @@ void ScoreDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 static void DrawGameoverImg(const int i);
 void ScoreOutputFrame(void)
 {
-	DrawBackground(&BG);
+	DrawBackground(&BG, 0);
 	if (SDL_MUSTLOCK(Screen))
 		SDL_LockSurface(Screen);
 	gameOverImageCounter--;

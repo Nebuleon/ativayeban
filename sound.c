@@ -4,8 +4,9 @@
 
 #include "player.h"
 
-#define BOUNCE_SPEED_MAX_VOLUME 3.0f
-#define ROLL_SPEED_MAX_VOLUME 3.0f
+#define BOUNCE_SPEED_MAX_VOLUME 150.0f
+#define BOUNCE_SPEED_MIN_VOLUME 10.0f
+#define ROLL_SPEED_MAX_VOLUME 20.0f
 static int rollChannel = -1;
 
 
@@ -20,7 +21,9 @@ void SoundPlay(Mix_Chunk *sound, const float volume)
 
 void SoundPlayBounce(const float speed)
 {
-	SoundPlay(SoundPlayerBounce, (float)fabs(speed) / BOUNCE_SPEED_MAX_VOLUME);
+	const float imp = (float)fabs(speed);
+	if (imp < BOUNCE_SPEED_MIN_VOLUME) return;
+	SoundPlay(SoundPlayerBounce, imp / BOUNCE_SPEED_MAX_VOLUME);
 }
 
 void SoundPlayRoll(const float speed)

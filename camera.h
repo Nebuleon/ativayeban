@@ -25,37 +25,18 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
-#include <stdbool.h>
+#include <stdint.h>
 
-#include <chipmunk/chipmunk.h>
-#include <SDL.h>
+#include "player.h"
 
-// Gaps are a pair of rectangles with a gap in between.
-// The player scores after falling through a gap.
-
-struct Gap
+typedef struct
 {
-	cpBody *BodyLeft;
-	cpBody *BodyRight;
-	// Where the gap layer is.
+	float DY;
 	float Y;
-	// Where the gap starts and ends
-	float GapLeft;
-	float GapRight;
-	// Surfaces to use for the left/right parts
-	SDL_Surface *GapLeftSurface;
-	SDL_Surface *GapRightSurface;
+	float ScrollRate;
+	uint32_t ScrollCounter;
+} Camera;
+extern Camera camera;
 
-	bool Passed;
-};
-
-extern SDL_Surface *GapSurfaces[6];
-
-void GapInit(struct Gap* gap, float y, float gapX);
-void GapRemove(struct Gap* gap);
-void GapDraw(const struct Gap* gap, const float y);
-
-extern float GapBottom(const struct Gap* gap);
-
-bool GapSurfacesLoad(void);
-void GapSurfacesFree(void);
+void CameraInit(Camera *c);
+void CameraUpdate(Camera *c, const Player *p, const uint32_t ms);

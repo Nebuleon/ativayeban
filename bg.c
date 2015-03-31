@@ -21,8 +21,9 @@
 #include <SDL_image.h>
 
 #include "main.h"
+#include "utils.h"
 
-#define SCROLL_FACTOR 0.01f
+#define SCROLL_FACTOR 0.1f
 #define SCALE_1 1.0f
 #define SCALE_2 2.0f
 #define SCALE_3 3.0f
@@ -31,22 +32,17 @@ Backgrounds BG;
 
 void BackgroundsInit(Backgrounds *bg)
 {
-	bg->scroll = 0;
-}
-
-void AdvanceBackground(Backgrounds *bg, uint32_t Milliseconds)
-{
-	bg->scroll += Milliseconds * SCROLL_FACTOR;
+	UNUSED(bg);
 }
 
 static void DrawBackgroundScroll(
 	SDL_Surface *bg, const float scroll, const float factor);
-void DrawBackground(Backgrounds *bg)
+void DrawBackground(Backgrounds *bg, const float y)
 {
 	SDL_BlitSurface(bg->Layer0, NULL, Screen, NULL);
-	DrawBackgroundScroll(bg->Layer1, bg->scroll, SCALE_1);
-	DrawBackgroundScroll(bg->Layer2, bg->scroll, SCALE_2);
-	DrawBackgroundScroll(bg->Layer3, bg->scroll, SCALE_3);
+	DrawBackgroundScroll(bg->Layer1, y * SCROLL_FACTOR, SCALE_1);
+	DrawBackgroundScroll(bg->Layer2, y * SCROLL_FACTOR, SCALE_2);
+	DrawBackgroundScroll(bg->Layer3, y * SCROLL_FACTOR, SCALE_3);
 }
 static void DrawBackgroundScroll(
 	SDL_Surface *bg, const float scroll, const float factor)

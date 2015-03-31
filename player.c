@@ -8,6 +8,7 @@
 #include "main.h"
 #include "player.h"
 #include "sound.h"
+#include "utils.h"
 
 #define PLAYER_SPRITESHEET_WIDTH 35
 #define PLAYER_SPRITESHEET_HEIGHT 35
@@ -23,68 +24,44 @@ SDL_Surface* PlayerSpritesheet = NULL;
 Mix_Chunk* SoundPlayerBounce = NULL;
 Mix_Chunk* SoundPlayerRoll = NULL;
 
-void PlayerUpdate(struct Player *player)
+typedef struct
 {
-	// Update the ball scroll.
-	player->Y += FIELD_SCROLL / 1000;
-
+	cpVect BounceForce;
+	int Num;
+} OnArbiterData;
+static void OnArbiter(cpBody *body, cpArbiter *arb, void *data);
+void PlayerUpdate(Player *player)
+{
 	// Update the speed at which the player is going.
-	player->SpeedX += ((float) player->AccelX / 32767.0f) * ACCELERATION / 1000;
+	const float accel = ACCELERATION + player->WasOnSurface ? ROLL_ACCEL_BONUS : 0;
+	cpBodySetForce(player->Body, cpv(player->AccelX / 32767.0f * accel, 0));
 
-	// Update the player's position and speed.
-	bool bounce = false;
-
-	// Left and right edges (X). If the horizontal speed would run the
-	// ball into an edge, use up some of the energy in the impact and
-	// rebound the ball.
-	if (player->SpeedX < 0 && player->X - PLAYER_SIZE / 2 + player->SpeedX / 1000 < 0)
+	// Detect bounces
+	OnArbiterData o = { cpvzero, 0 };
+	cpBodyEachArbiter(player->Body, OnArbiter, &o);
+	if (o.Num > 0)
 	{
-		player->X = PLAYER_SIZE / 2
-			+ ((player->X - PLAYER_SIZE / 2) - (player->SpeedX / 1000)) * FIELD_REBOUND;
-		player->SpeedX = -player->SpeedX * FIELD_REBOUND;
-		bounce = true;
-	}
-	else if (player->SpeedX > 0 && player->X + PLAYER_SIZE / 2 + player->SpeedX / 1000 > FIELD_WIDTH)
-	{
-		player->X = FIELD_WIDTH - PLAYER_SIZE / 2
-			+ (FIELD_WIDTH - (player->X + PLAYER_SIZE / 2) - (player->SpeedX / 1000)) * FIELD_REBOUND;
-		player->SpeedX = -player->SpeedX * FIELD_REBOUND;
-		bounce = true;
+		if (!cpveql(o.BounceForce, cpvzero))
+		{
+			SoundPlayBounce((float)cpvlength(o.BounceForce));
+		}
+		if (player->WasOnSurface)
+		{
+			float angularV = (float)cpBodyGetAngularVelocity(player->Body);
+			//printf("angularV %f\n", angularV);
+			SoundPlayRoll(angularV);
+		}
+		player->WasOnSurface = true;
 	}
 	else
 	{
-		player->X += player->SpeedX / 1000;
-	}
-
-	if (bounce)
-	{
-		SoundPlayBounce(player->SpeedX);
-	}
-
-	if (player->OnSurface)
-	{
-		// If on surface, apply friction to the player's speed (X).
-		player->SpeedX *= 1.0f - FRICTION;
-		SoundPlayRoll(player->SpeedX);
-	}
-	else
-	{
-		// If not, apply gravity (Y).
-		player->SpeedY += GRAVITY / 1000;
-		player->Y += player->SpeedY / 1000;
 		SoundStopRoll();
+		player->WasOnSurface = false;
 	}
 
-	// Update roll animation based on speed
-	player->Roll += player->SpeedX * PLAYER_ROLL_SCALE;
-	if (player->Roll < 0)
-	{
-		player->Roll += PLAYER_SPRITESHEET_COUNT;
-	}
-	else if (player->Roll >= PLAYER_SPRITESHEET_COUNT)
-	{
-		player->Roll -= PLAYER_SPRITESHEET_COUNT;
-	}
+	player->Roll = (int)(-cpBodyGetAngle(player->Body) / (2 * M_PI) * PLAYER_SPRITESHEET_COUNT);
+	player->Roll = player->Roll % PLAYER_SPRITESHEET_COUNT;
+	if (player->Roll < 0) player->Roll += PLAYER_SPRITESHEET_COUNT;
 
 	// Randomly blink after not blinking for a while
 	player->BlinkCounter--;
@@ -94,9 +71,20 @@ void PlayerUpdate(struct Player *player)
 		player->BlinkCounter = PLAYER_BLINK_FRAMES;
 		player->NextBlinkCounter = PLAYER_BLINK_INTERVAL_FRAMES;
 	}
+
+	cpVect pos = cpBodyGetPosition(player->Body);
+	player->X = (float)pos.x;
+	player->Y = (float)pos.y;
+}
+static void OnArbiter(cpBody *body, cpArbiter *arb, void *data)
+{
+	UNUSED(body);
+	OnArbiterData *o = data;
+	o->BounceForce = cpvadd(o->BounceForce, cpArbiterTotalImpulse(arb));
+	o->Num++;
 }
 
-void PlayerDraw(const struct Player *player)
+void PlayerDraw(const Player *player, const float y)
 {
 	// Draw the character.
 	int rollFrame = (int)floor(player->Roll);
@@ -112,22 +100,31 @@ void PlayerDraw(const struct Player *player)
 	};
 	SDL_Rect dest = {
 		(Sint16)(SCREEN_X(player->X) - PLAYER_SPRITESHEET_WIDTH / 2),
-		(Sint16)(SCREEN_Y(player->Y) - PLAYER_SPRITESHEET_HEIGHT / 2),
+		(Sint16)(SCREEN_Y(player->Y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
 		0,
 		0
 	};
 	SDL_BlitSurface(PlayerSpritesheet, &src, Screen, &dest);
 }
 
-void PlayerReset(struct Player *player)
+void PlayerInit(Player *player)
 {
+	player->Body = cpSpaceAddBody(
+		Space,
+		cpBodyNew(10.0f, cpMomentForCircle(10.0f, 0.0f, PLAYER_RADIUS, cpvzero)));
+	cpBodySetPosition(
+		player->Body, cpv(FIELD_WIDTH / 2, FIELD_HEIGHT * 0.75f - PLAYER_RADIUS));
+	cpShape *shape = cpSpaceAddShape(
+		Space, cpCircleShapeNew(player->Body, PLAYER_RADIUS, cpvzero));
+	cpShapeSetElasticity(shape, PLAYER_ELASTICITY);
+	cpShapeSetFriction(shape, 0.9f);
 	player->X = FIELD_WIDTH / 2;
-	player->Y = FIELD_HEIGHT - PLAYER_SIZE / 2;
+	player->Y = FIELD_HEIGHT - PLAYER_RADIUS;
 	player->SpeedX = 0.0f;
 	player->SpeedY = GRAVITY / 200 - FIELD_SCROLL / 200;
 	player->AccelX = 0;
-	player->Roll = 0.0f;
-	player->OnSurface = false;
+	player->WasOnSurface = false;
+	player->Roll = 0;
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
 }

@@ -18,7 +18,7 @@ add_subdirectory(chipmunk/src)
 
 # Default definitions
 if(MSVC)
-    add_definitions(-Wall -W4 -WX -wd"4996" -wd"4204")
+    add_definitions(-Wall -W4 -wd"4996" -wd"4204")
 else()
     add_definitions(-Wall -Wextra -Wunused -Wshadow -Wunreachable-code -std=c99)
     add_definitions(-fno-math-errno -fno-exceptions)
@@ -32,7 +32,7 @@ else()
 		endif()
 	endif()
 	if(NOT BEOS AND NOT HAIKU)
-		add_definitions(-Winline -Werror)
+		add_definitions(-Winline)
 		set(EXTRA_LIBRARIES "m")
 	endif()
 endif()
@@ -77,6 +77,7 @@ ELSE()
 ENDIF()
 
 include_directories(.)
+include_directories(chipmunk/include)
 
 file(GLOB SOURCES *.c)
 if(GCW0)
@@ -95,5 +96,6 @@ endif()
 
 target_link_libraries(falling_time
 	${CMAKE_LD_FLAGS}
+	chipmunk_static
 	${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLTTF_LIBRARY}
 	${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})

@@ -24,13 +24,15 @@
 #include <inttypes.h>
 #include <math.h>
 
-#include "SDL.h"
+#include <SDL.h>
 
+#include "camera.h"
 #include "main.h"
 #include "init.h"
 #include "platform.h"
 #include "player.h"
 #include "sound.h"
+#include "utils.h"
 #include "game.h"
 #include "gap.h"
 #include "score.h"
@@ -42,7 +44,7 @@ static uint32_t               Score;
 static bool                   Boost;
 static bool                   Pause;
 
-static struct Player          Player;
+static Player                 player;
 
 // What the player avoids.
 static struct Gap*            Gaps     = NULL;
@@ -50,11 +52,16 @@ static uint32_t               GapCount = 0;
 
 static float                  GenDistance;
 
+static cpBody*                edgeBodies = NULL;
+static float                  edgeBodiesBottom = -FIELD_HEIGHT * 4;
+
 Mix_Chunk* SoundStart = NULL;
 Mix_Chunk* SoundLose = NULL;
 Mix_Chunk* SoundScore = NULL;
 
 TTF_Font *font = NULL;
+
+cpSpace *Space = NULL;
 
 
 void GameGatherInput(bool* Continue)
@@ -63,7 +70,7 @@ void GameGatherInput(bool* Continue)
 
 	while (SDL_PollEvent(&ev))
 	{
-		Player.AccelX = GetMovement(&ev);
+		player.AccelX = GetMovement(&ev);
 		if (IsPauseEvent(&ev))
 			Pause = !Pause;
 		else if (IsExitGameEvent(&ev))
@@ -74,142 +81,101 @@ void GameGatherInput(bool* Continue)
 	}
 }
 
-static void AnimationControl(Uint32 Milliseconds)
-{
-	(void)Milliseconds;
-}
+static void AddEdgeShapes(const float y);
 
+static void ScoreGaps();
+static void RemoveEdgeShape(cpBody *body, cpShape *shape, void *data);
 void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
 	(void)Continue;
 	(void)Error;
-	if (!Pause)
+	if (Pause) return;
+
+	cpSpaceStep(Space, Milliseconds * 0.001);
+
+	ScoreGaps();
+
+	// Generate a gap now if needed.
+	if (GapCount == 0 || GapBottom(&Gaps[GapCount - 1]) - (camera.Y - FIELD_HEIGHT / 2) >= GenDistance)
 	{
-		bool PointAwarded = false;
-		uint32_t Millisecond;
-		for (Millisecond = 0; Millisecond < Milliseconds; Millisecond++)
+		float Top;
+		if (GapCount == 0)
+			Top = 0;
+		else
 		{
-			// Scroll all gaps toward the top...
-			int32_t i;
-			for (i = GapCount - 1; i >= 0; i--)
-			{
-				bool PastTop = GapUpdate(&Gaps[i], FIELD_SCROLL / 1000);
-				// If the player is past a gap, award the player with a
-				// point. But there is a pair of them per row!
-				if (!Gaps[i].Passed
-				 && Gaps[i].Y > Player.Y + PLAYER_SIZE / 2)
-				{
-					Gaps[i].Passed = true;
-					if (!PointAwarded)
-					{
-						Score++;
-						SoundPlay(SoundScore, 1.0);
-						PointAwarded = true;
-					}
-				}
-				// If a gap is past the top side, remove it.
-				if (PastTop)
-				{
-					memmove(&Gaps[i], &Gaps[i + 1], (GapCount - i) * sizeof(struct Gap));
-					GapCount--;
-				}
-			}
-			// Generate a gap now if needed.
-			if (GapCount == 0 || GapBottom(&Gaps[GapCount - 1]) >= GenDistance)
-			{
-				float Top;
-				if (GapCount == 0)
-					Top = FIELD_SCROLL / 1000;
-				else
-				{
-					Top = GapBottom(&Gaps[GapCount - 1]) - GenDistance;
-					GenDistance += GAP_GEN_SPEED;
-				}
-				Gaps = realloc(Gaps, (GapCount + 1) * sizeof(struct Gap));
-				GapCount++;
-				// Where's the place for the player to go through?
-				float GapLeft = (FIELD_WIDTH / 16.0f) + ((float) rand() / (float) RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
-				GapInit(&Gaps[GapCount - 1], Top, GapLeft);
-			}
-
-			// Is the ball on a gap?
-			Player.OnSurface = false;
-			for (i = GapCount - 1; i >= 0; i--)
-			{
-				// Stop considering gaps if they are higher than the ball
-				// (Y).
-				if (Player.Y - PLAYER_SIZE / 2 < Gaps[i].Y + LOWER_EPSILON)
-					break;
-				// If the ball is in range (X)...
-				if (GapIsOn(&Gaps[i], Player.X, PLAYER_SIZE / 2))
-				{
-					// Is the distance in range, and is the ball going up slowly
-					// enough (Y)?
-					if (Player.Y - PLAYER_SIZE / 2 <  Gaps[i].Y + UPPER_EPSILON
-						&& Player.SpeedY >= 0.0f
-						&& Player.SpeedY              <  UPPER_EPSILON)
-					{
-						Player.OnSurface = true;
-						Player.SpeedY = 0.0f;
-						// Also make sure the ball appears to be on the gap (Y).
-						Player.Y = Gaps[i].Y + PLAYER_SIZE / 2;
-						break;
-					}
-					// If the ball would cross the gap during this
-					// millisecond, make it rebound instead (Y).
-					else if (Player.Y - PLAYER_SIZE / 2 >= Gaps[i].Y
-						&& Player.Y - PLAYER_SIZE / 2 + Player.SpeedY / 1000 <  Gaps[i].Y)
-					{
-						Player.Y = Player.Y
-							+ ((Player.Y - PLAYER_SIZE / 2) - Gaps[i].Y - (Player.SpeedY / 1000)) * GAP_REBOUND;
-						Player.SpeedY = -Player.SpeedY * GAP_REBOUND;
-						SoundPlayBounce(Player.SpeedY);
-						break;
-					}
-				}
-			}
-			
-			PlayerUpdate(&Player);
-
-			// Bottom edge (Y).
-			// If the ball arrives below the bottom edge, act as if it had
-			// arrived on the bottom edge.
-			if (Player.Y - PLAYER_SIZE / 2 < 0)
-			{
-				Player.Y = PLAYER_SIZE / 2;
-				Player.SpeedY = -Player.SpeedY * FIELD_REBOUND;
-				SoundPlayBounce(Player.SpeedY);
-			}
-
-			// If the ball has collided with the top of the field,
-			// and it is not going down, the player's game is over.
-			if (Player.Y + PLAYER_SIZE / 2 >= FIELD_HEIGHT
-			 && Player.SpeedY              >= 0.0f)
-			{
-				ToScore(Score);
-				break;
-			}
+			Top = GapBottom(&Gaps[GapCount - 1]) - GenDistance;
+			GenDistance += GAP_GEN_SPEED;
+			GenDistance = max(GAP_GEN_MIN, GenDistance);
 		}
-
-		AdvanceBackground(&BG, Milliseconds);
+		Gaps = realloc(Gaps, (GapCount + 1) * sizeof(struct Gap));
+		GapCount++;
+		// Where's the place for the player to go through?
+		float GapLeft = (FIELD_WIDTH / 16.0f) + ((float) rand() / (float) RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
+		GapInit(&Gaps[GapCount - 1], Top, GapLeft);
 	}
 
-	AnimationControl(Milliseconds);
+	PlayerUpdate(&player);
+	CameraUpdate(&camera, &player, Milliseconds);
+	if (player.Y < edgeBodiesBottom)
+	{
+		cpBodyEachShape(edgeBodies, RemoveEdgeShape, NULL);
+		AddEdgeShapes(player.Y);
+	}
+
+	// If the ball has collided with the top of the field,
+	// the player's game is over.
+	if (player.Y + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
+	{
+		ToScore(Score);
+	}
+}
+static void ScoreGaps()
+{
+	// Scroll all gaps toward the top...
+	for (int i = GapCount - 1; i >= 0; i--)
+	{
+		// If the player is past a gap, award the player with a
+		// point.
+		if (!Gaps[i].Passed &&
+			Gaps[i].Y > player.Y + PLAYER_RADIUS)
+		{
+			Gaps[i].Passed = true;
+			Score++;
+			SoundPlay(SoundScore, 1.0);
+		}
+		// Arbitrary limit to eliminate off screen gaps
+		// If a gap is past the top side, remove it.
+		if (GapBottom(&Gaps[i]) > player.Y + FIELD_HEIGHT * 2)
+		{
+			GapRemove(&Gaps[i]);
+			memmove(&Gaps[i], &Gaps[i + 1], (GapCount - i) * sizeof(struct Gap));
+			GapCount--;
+		}
+	}
+}
+static void RemoveEdgeShape(cpBody *body, cpShape *shape, void *data)
+{
+	UNUSED(body);
+	UNUSED(data);
+	//printf("Remove edge shape\n");
+	cpSpaceRemoveShape(Space, shape);
+	cpShapeFree(shape);
 }
 
 void GameOutputFrame(void)
 {
+	const float screenYOff = max(0.0f, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
 	// Draw the background.
-	DrawBackground(&BG);
+	DrawBackground(&BG, screenYOff);
 
 	// Draw the gaps.
 	uint32_t i;
 	for (i = 0; i < GapCount; i++)
 	{
-		GapDraw(&Gaps[i]);
+		GapDraw(&Gaps[i], screenYOff);
 	}
 
-	PlayerDraw(&Player);
+	PlayerDraw(&player, screenYOff);
 
 	// Draw the player's current score.
 	char ScoreString[17];
@@ -232,7 +198,19 @@ void ToGame(void)
 	Score = 0;
 	Boost = false;
 	Pause = false;
-	PlayerReset(&Player);
+	cpSpaceFree(Space);
+
+	// Init physics space
+	Space = cpSpaceNew();
+	cpSpaceSetIterations(Space, 30);
+	cpSpaceSetGravity(Space, cpv(0, GRAVITY));
+	cpSpaceSetCollisionSlop(Space, 0.5);
+	cpSpaceSetSleepTimeThreshold(Space, 1.0f);
+	// Segments around screen
+	edgeBodies = cpSpaceGetStaticBody(Space);
+	AddEdgeShapes(0);
+
+	PlayerInit(&player);
 	if (Gaps != NULL)
 	{
 		free(Gaps);
@@ -241,9 +219,31 @@ void ToGame(void)
 	GapCount = 0;
 	GenDistance = GAP_GEN_START;
 	BackgroundsInit(&BG);
+	CameraInit(&camera);
 	SoundPlay(SoundStart, 1.0);
 
 	GatherInput = GameGatherInput;
 	DoLogic     = GameDoLogic;
 	OutputFrame = GameOutputFrame;
+}
+
+static void AddEdgeShapes(const float y)
+{
+	//printf("Add edge shapes from %f\n", y);
+	cpShape *shape;
+	cpShapeFilter edgeFilter = { CP_NO_GROUP, CP_ALL_CATEGORIES, CP_ALL_CATEGORIES };
+	const float top = y + FIELD_HEIGHT * 2;
+	// Left edge
+	edgeBodiesBottom = y - FIELD_HEIGHT * 4;
+	shape = cpSpaceAddShape(Space, cpSegmentShapeNew(
+		edgeBodies, cpv(0, edgeBodiesBottom), cpv(0, top), 0.0f));
+	cpShapeSetElasticity(shape, 1.0f);
+	cpShapeSetFriction(shape, 1.0f);
+	cpShapeSetFilter(shape, edgeFilter);
+	// Right edge
+	shape = cpSpaceAddShape(Space, cpSegmentShapeNew(
+		edgeBodies, cpv(FIELD_WIDTH, edgeBodiesBottom), cpv(FIELD_WIDTH, top), 0.0f));
+	cpShapeSetElasticity(shape, 1.0f);
+	cpShapeSetFriction(shape, 1.0f);
+	cpShapeSetFilter(shape, edgeFilter);
 }

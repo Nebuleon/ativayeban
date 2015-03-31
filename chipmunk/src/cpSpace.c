@@ -592,24 +592,30 @@ cpSpaceEachBody(cpSpace *space, cpSpaceBodyIteratorFunc func, void *data)
 {
 	cpSpaceLock(space); {
 		cpArray *bodies = space->dynamicBodies;
-		for(int i=0; i<bodies->num; i++){
-			func((cpBody *)bodies->arr[i], data);
+		if (bodies) {
+			for (int i = 0; i < bodies->num; i++){
+				func((cpBody *)bodies->arr[i], data);
+			}
 		}
 		
 		cpArray *otherBodies = space->staticBodies;
-		for(int i=0; i<otherBodies->num; i++){
-			func((cpBody *)otherBodies->arr[i], data);
+		if (otherBodies) {
+			for (int i = 0; i < otherBodies->num; i++){
+				func((cpBody *)otherBodies->arr[i], data);
+			}
 		}
 		
 		cpArray *components = space->sleepingComponents;
-		for(int i=0; i<components->num; i++){
-			cpBody *root = (cpBody *)components->arr[i];
-			
-			cpBody *body = root;
-			while(body){
-				cpBody *next = body->sleeping.next;
-				func(body, data);
-				body = next;
+		if (components) {
+			for (int i = 0; i < components->num; i++){
+				cpBody *root = (cpBody *)components->arr[i];
+
+				cpBody *body = root;
+				while (body){
+					cpBody *next = body->sleeping.next;
+					func(body, data);
+					body = next;
+				}
 			}
 		}
 	} cpSpaceUnlock(space, cpTrue);

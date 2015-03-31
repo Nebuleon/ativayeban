@@ -71,7 +71,7 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 static void DrawTitleImg(const int i);
 void TitleScreenOutputFrame(void)
 {
-	DrawBackground(&BG);
+	DrawBackground(&BG, 0);
 
 	if (SDL_MUSTLOCK(Screen))
 		SDL_LockSurface(Screen);

@@ -2,11 +2,13 @@
 
 #include <stdbool.h>
 
+#include <chipmunk/chipmunk.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
 
-struct Player
+typedef struct
 {
+	cpBody *Body;
 	// Where the player is. (Center, meters.)
 	float X, Y;
 	// Where the player is going. (Meters per second.)
@@ -15,23 +17,23 @@ struct Player
 	// The last value returned by GetMovement.
 	int16_t AccelX;
 
-	// Used to animate the player rolling
-	float Roll;
+	// Used to detect rolling for rolling sound
+	bool WasOnSurface;
 
-	// Whether player is on a surface
-	bool OnSurface;
+	// Used to animate the player rolling
+	int Roll;
 
 	// Blink until counter runs out
 	int BlinkCounter;
 	// Blink when counter reaches zero
 	int NextBlinkCounter;
-};
+} Player;
 
 extern SDL_Surface* PlayerSpritesheet;
 extern Mix_Chunk* SoundPlayerBounce;
 extern Mix_Chunk* SoundPlayerRoll;
 extern int SoundPlayerRollChannel;
 
-extern void PlayerUpdate(struct Player *player);
-extern void PlayerDraw(const struct Player *player);
-extern void PlayerReset(struct Player *player);
+void PlayerUpdate(Player *player);
+void PlayerDraw(const Player *player, const float y);
+void PlayerInit(Player *player);
