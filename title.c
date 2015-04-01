@@ -26,6 +26,7 @@
 #include "main.h"
 #include "init.h"
 #include "platform.h"
+#include "sound.h"
 #include "text.h"
 #include "game.h"
 #include "bg.h"
@@ -105,6 +106,8 @@ static void DrawTitleImg(const int i)
 
 void ToTitleScreen(void)
 {
+	MusicSetLoud(false);
+	Mix_PlayMusic(music, -1);
 	sprintf(
 		WelcomeMessage,
 		"Press %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",

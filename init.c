@@ -31,6 +31,7 @@
 #include "platform.h"
 #include "player.h"
 #include "score.h"
+#include "sound.h"
 #include "title.h"
 
 SDL_Surface *icon = NULL;
@@ -140,6 +141,15 @@ void Initialize(bool* Continue, bool* Error)
 	LOAD_SOUND(SoundLose, "lose.ogg");
 	LOAD_SOUND(SoundScore, "score.ogg");
 
+	music = Mix_LoadMUS("data/sounds/music.ogg");
+	if (music == NULL)
+	{
+		*Continue = false;  *Error = true;
+		printf("Mix_LoadMUS failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+
 	font = TTF_OpenFont("data/LondrinaSolid-Regular.otf", 20);
 	if (font == NULL)
 	{
@@ -172,6 +182,7 @@ void Finalize()
 	Mix_FreeChunk(SoundStart);
 	Mix_FreeChunk(SoundLose);
 	Mix_FreeChunk(SoundScore);
+	Mix_FreeMusic(music);
 	TTF_CloseFont(font);
 	SDL_Quit();
 }

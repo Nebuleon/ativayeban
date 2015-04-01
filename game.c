@@ -221,6 +221,7 @@ void ToGame(void)
 	BackgroundsInit(&BG);
 	CameraInit(&camera);
 	SoundPlay(SoundStart, 1.0);
+	MusicSetLoud(true);
 
 	GatherInput = GameGatherInput;
 	DoLogic     = GameDoLogic;

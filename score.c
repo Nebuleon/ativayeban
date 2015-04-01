@@ -109,6 +109,7 @@ void ToScore(uint32_t Score)
 	ResetMovement();
 	WaitingForRelease = false;
 	SoundPlay(SoundLose, 1.0);
+	MusicSetLoud(false);
 	sprintf(
 		ScoreMessage,
 		"Your score was %" PRIu32 "\n\nPress %s to play again\nor %s to exit",

@@ -9,6 +9,11 @@
 #define ROLL_SPEED_MAX_VOLUME 20.0f
 static int rollChannel = -1;
 
+#define MUSIC_VOLUME_LOW 24
+#define MUSIC_VOLUME_HIGH 80
+
+Mix_Music *music;
+
 
 void SoundPlay(Mix_Chunk *sound, const float volume)
 {
@@ -46,4 +51,10 @@ void SoundStopRoll(void)
 		Mix_HaltChannel(rollChannel);
 		rollChannel = -1;
 	}
+}
+
+
+void MusicSetLoud(const bool fullVolume)
+{
+	Mix_VolumeMusic(fullVolume ? MUSIC_VOLUME_HIGH : MUSIC_VOLUME_LOW);
 }
