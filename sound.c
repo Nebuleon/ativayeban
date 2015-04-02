@@ -11,7 +11,7 @@
 static int rollChannel = -1;
 
 #define MUSIC_VOLUME_LOW 24
-#define MUSIC_VOLUME_HIGH 80
+#define MUSIC_VOLUME_HIGH 64
 
 Mix_Music *music;
 
