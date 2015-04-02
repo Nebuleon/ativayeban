@@ -74,8 +74,6 @@ void TitleScreenOutputFrame(void)
 {
 	DrawBackground(&BG, 0);
 
-	if (SDL_MUSTLOCK(Screen))
-		SDL_LockSurface(Screen);
 	titleImageCounter--;
 	if (titleImageCounter == 0)
 	{
@@ -88,8 +86,6 @@ void TitleScreenOutputFrame(void)
 	}
 	DrawTitleImg(titleImageIndex);
 	TextRenderCentered(Screen, font, WelcomeMessage, SCREEN_HEIGHT / 2 - 30);
-	if (SDL_MUSTLOCK(Screen))
-		SDL_UnlockSurface(Screen);
 
 	SDL_Flip(Screen);
 }
@@ -108,6 +104,7 @@ void ToTitleScreen(void)
 {
 	MusicSetLoud(false);
 	Mix_PlayMusic(music, -1);
+	BackgroundsInit(&BG);
 	sprintf(
 		WelcomeMessage,
 		"Press %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",

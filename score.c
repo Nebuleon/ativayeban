@@ -77,8 +77,6 @@ static void DrawGameoverImg(const int i);
 void ScoreOutputFrame(void)
 {
 	DrawBackground(&BG, 0);
-	if (SDL_MUSTLOCK(Screen))
-		SDL_LockSurface(Screen);
 	gameOverImageCounter--;
 	if (gameOverImageCounter == 0)
 	{
@@ -87,8 +85,6 @@ void ScoreOutputFrame(void)
 	}
 	DrawGameoverImg(gameOverImageIndex);
 	TextRenderCentered(Screen, font, ScoreMessage, SCREEN_HEIGHT / 2 - 10);
-	if (SDL_MUSTLOCK(Screen))
-		SDL_UnlockSurface(Screen);
 
 	SDL_Flip(Screen);
 }
@@ -107,6 +103,7 @@ void ToScore(uint32_t Score)
 {
 	SoundStopRoll();
 	ResetMovement();
+	BackgroundsInit(&BG);
 	WaitingForRelease = false;
 	SoundPlay(SoundLose, 1.0);
 	MusicSetLoud(false);

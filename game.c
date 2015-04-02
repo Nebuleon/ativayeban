@@ -183,11 +183,7 @@ void GameOutputFrame(void)
 	SDL_Color white = { 255, 255, 255, 255 };
 	SDL_Surface *t = TTF_RenderText_Blended(font, ScoreString, white);
 	SDL_Rect dest = { (Sint16)(SCREEN_WIDTH - t->w), 0, 0, 0 };
-	if (SDL_MUSTLOCK(Screen))
-		SDL_LockSurface(Screen);
 	SDL_BlitSurface(t, NULL, Screen, &dest);
-	if (SDL_MUSTLOCK(Screen))
-		SDL_UnlockSurface(Screen);
 
 	SDL_Flip(Screen);
 	SDL_FreeSurface(t);
@@ -218,7 +214,6 @@ void ToGame(void)
 	}
 	GapCount = 0;
 	GenDistance = GAP_GEN_START;
-	BackgroundsInit(&BG);
 	CameraInit(&camera);
 	SoundPlay(SoundStart, 1.0);
 	MusicSetLoud(true);

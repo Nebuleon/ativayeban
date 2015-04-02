@@ -25,10 +25,22 @@
 
 typedef struct
 {
-	SDL_Surface *Layer0;
-	SDL_Surface *Layer1;
-	SDL_Surface *Layer2;
-	SDL_Surface *Layer3;
+	int X;
+	int Y;
+	int Index;
+} ParticlePos;
+#define MAX_PARTICLES 64
+typedef struct
+{
+	SDL_Surface *S;
+	ParticlePos Positions[MAX_PARTICLES];
+} Particles;
+
+typedef struct
+{
+	Particles Icicles;
+	Particles Flares;
+	Particles Stars;
 } Backgrounds;
 extern Backgrounds BG;
 

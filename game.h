@@ -49,8 +49,8 @@
 
 // The speed at which the screen scrolls.
 // Given in meters per second (m/s).
-#define FIELD_SCROLL     1.50f
-#define FIELD_SCROLL_MAX 1.85f
+#define FIELD_SCROLL     1.60f
+#define FIELD_SCROLL_MAX 1.86f
 
 // The speed at which the scroll speed increases, every second
 #define FIELD_SCROLL_SPEED 0.01f
@@ -78,7 +78,7 @@
 // Given in meters.
 #define PLAYER_RADIUS    0.185f
 
-#define PLAYER_ELASTICITY 0.2f
+#define PLAYER_ELASTICITY 0.25f
 
 // The width of the playing field.
 // Given in meters.

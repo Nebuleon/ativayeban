@@ -20,8 +20,28 @@
 
 #include <SDL_image.h>
 
+#include "init.h"
 #include "main.h"
 #include "utils.h"
+
+#define ICICLE_WIDTH 58
+#define ICICLE_HEIGHT 77
+#define ICICLE_Y_GAP_MIN 60
+#define ICICLE_Y_GAP_MAX 120
+#define ICICYLE_NUM 6
+#define FLARE_WIDTH 12
+#define FLARE_HEIGHT 12
+#define FLARE_Y_GAP_MIN 20
+#define FLARE_Y_GAP_MAX 40
+#define FLARE_NUM 4
+#define STAR_WIDTH 4
+#define STAR_HEIGHT 4
+#define STAR_Y_GAP_MIN 0
+#define STAR_Y_GAP_MAX 8
+#define STAR_NUM 4
+#define PARTICLE_RAND_X(_w) (-(_w) + (rand() % ((_w) + SCREEN_WIDTH)))
+#define PARTICLE_RAND_Y(_y, _gmin, _gmax) ((_y) + (_gmin) + (rand() % ((_gmax) - (_gmin))))
+#define PARTICLE_RAND_INDEX(_num) (rand() % (_num))
 
 #define SCROLL_FACTOR 0.1f
 #define SCALE_1 1.0f
@@ -30,34 +50,101 @@
 
 Backgrounds BG;
 
-void BackgroundsInit(Backgrounds *bg)
+static void ParticlesInit(
+	Particles *p,
+	const int w, const int gmin, const int gmax, const int num)
 {
-	UNUSED(bg);
+	int y = PARTICLE_RAND_Y(0, gmin, gmax);
+	for (int i = 0; i < MAX_PARTICLES; i++)
+	{
+		// Generate some random particles
+		p->Positions[i].X = PARTICLE_RAND_X(w);
+		p->Positions[i].Y = PARTICLE_RAND_Y(y, gmin, gmax);
+		p->Positions[i].Index = PARTICLE_RAND_INDEX(num);
+		y = p->Positions[i].Y;
+	}
 }
 
-static void DrawBackgroundScroll(
-	SDL_Surface *bg, const float scroll, const float factor);
+void BackgroundsInit(Backgrounds *bg)
+{
+	ParticlesInit(
+		&bg->Icicles,
+		ICICLE_WIDTH, ICICLE_Y_GAP_MIN, ICICLE_Y_GAP_MAX, ICICYLE_NUM);
+	ParticlesInit(
+		&bg->Flares,
+		FLARE_WIDTH, FLARE_Y_GAP_MIN, FLARE_Y_GAP_MAX, FLARE_NUM);
+	ParticlesInit(
+		&bg->Stars,
+		STAR_WIDTH, STAR_Y_GAP_MIN, STAR_Y_GAP_MAX, STAR_NUM);
+}
+
+static void DrawParticleScroll(
+	Particles *p, const int s,
+	const int w, const int h, const int gmin, const int gmax, const int num);
 void DrawBackground(Backgrounds *bg, const float y)
 {
-	SDL_BlitSurface(bg->Layer0, NULL, Screen, NULL);
-	DrawBackgroundScroll(bg->Layer1, y * SCROLL_FACTOR, SCALE_1);
-	DrawBackgroundScroll(bg->Layer2, y * SCROLL_FACTOR, SCALE_2);
-	DrawBackgroundScroll(bg->Layer3, y * SCROLL_FACTOR, SCALE_3);
+	SDL_FillRect(Screen, NULL, SDL_MapRGB(Screen->format, 8, 3, 32));
+	DrawParticleScroll(
+		&bg->Icicles, y * SCROLL_FACTOR * SCALE_1,
+		ICICLE_WIDTH, ICICLE_HEIGHT,
+		ICICLE_Y_GAP_MIN, ICICLE_Y_GAP_MAX, ICICYLE_NUM);
+	DrawParticleScroll(
+		&bg->Flares, y * SCROLL_FACTOR * SCALE_2,
+		FLARE_WIDTH, FLARE_HEIGHT,
+		FLARE_Y_GAP_MIN, FLARE_Y_GAP_MAX, FLARE_NUM);
+	DrawParticleScroll(
+		&bg->Stars, y * SCROLL_FACTOR * SCALE_3,
+		STAR_WIDTH, STAR_HEIGHT,
+		STAR_Y_GAP_MIN, STAR_Y_GAP_MAX, STAR_NUM);
 }
-static void DrawBackgroundScroll(
-	SDL_Surface *bg, const float scroll, const float factor)
+static void DrawParticleScroll(
+	Particles *p, const int s,
+	const int w, const int h, const int gmin, const int gmax, const int num)
 {
-	SDL_Rect src = { 0, 0, 0, 0 };
-	src.w = (Uint16)Screen->w;
-	src.h = (Uint16)Screen->h;
-	const int s = (int)(scroll * factor) % bg->h;
-	src.y = (Sint16)s;
-	SDL_BlitSurface(bg, &src, Screen, NULL);
-	if (bg->h - s < Screen->h)
+	// Remove, draw or add icicles
+	int lastY = -1;
+	for (int i = 0; i < MAX_PARTICLES; i++)
 	{
-		SDL_Rect dst = { 0, 0, 0, 0 };
-		dst.y = (Sint16)(bg->h - s);
-		SDL_BlitSurface(bg, NULL, Screen, &dst);
+		if (p->Positions[i].Index == -1)
+		{
+			// No icicles past this point; generate a new one in its place
+			p->Positions[i].X = PARTICLE_RAND_X(w);
+			p->Positions[i].Y = PARTICLE_RAND_Y(lastY, gmin, gmax);
+			if (p->Positions[i].Y < s + SCREEN_HEIGHT)
+			{
+				// Always spawn past the bottom
+				p->Positions[i].Y = s + SCREEN_HEIGHT;
+			}
+			p->Positions[i].Index = PARTICLE_RAND_INDEX(num);
+		}
+		else if (p->Positions[i].Y < s - h)
+		{
+			// Icicle past screen top, shuffle items forward
+			memmove(
+				&p->Positions[i],
+				&p->Positions[i + 1],
+				sizeof p->Positions[i] * (MAX_PARTICLES - i - 1));
+			// Make sure to initialise a new one at the end
+			if (i < MAX_PARTICLES - 1)
+			{
+				p->Positions[MAX_PARTICLES - 1].Index = -1;
+			}
+			i--;
+			continue;
+		}
+
+		// Draw if in range
+		if (p->Positions[i].Y < s + SCREEN_HEIGHT)
+		{
+			SDL_Rect src = { p->Positions[i].Index * w, 0, w, h };
+			SDL_Rect dst = {
+				p->Positions[i].X, p->Positions[i].Y - s,
+				0, 0
+			};
+			SDL_BlitSurface(p->S, &src, Screen, &dst);
+		}
+
+		lastY = p->Positions[i].Y;
 	}
 }
 
@@ -69,16 +156,14 @@ bool BackgroundsLoad(Backgrounds* bg)
 	{\
 		return false;\
 	}
-	LOAD_SURFACE(bg->Layer0, "bg0.png");
-	LOAD_SURFACE(bg->Layer1, "bg1.png");
-	LOAD_SURFACE(bg->Layer2, "bg2.png");
-	LOAD_SURFACE(bg->Layer3, "bg3.png");
+	LOAD_SURFACE(bg->Icicles.S, "icebergs.png");
+	LOAD_SURFACE(bg->Flares.S, "flare.png");
+	LOAD_SURFACE(bg->Stars.S, "stars.png");
 	return true;
 }
 void BackgroundsFree(Backgrounds* bg)
 {
-	SDL_FreeSurface(bg->Layer0);
-	SDL_FreeSurface(bg->Layer1);
-	SDL_FreeSurface(bg->Layer2);
-	SDL_FreeSurface(bg->Layer3);
+	SDL_FreeSurface(bg->Icicles.S);
+	SDL_FreeSurface(bg->Flares.S);
+	SDL_FreeSurface(bg->Stars.S);
 }
