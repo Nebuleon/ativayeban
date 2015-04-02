@@ -1,8 +1,8 @@
 *.o
 falling_time
-falling_time-od
-falling_time-od.opk
+falling_time.opk
 .opk_data/
+libchipmunk.a
 
 # CMake
 CMakeFiles/

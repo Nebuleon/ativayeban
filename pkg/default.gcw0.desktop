@@ -1,8 +1,9 @@
 [Desktop Entry]
 
-Name=Ativayeban
+Name=Falling Time
 Comment=Fall through a labyrinth. Avoid getting crushed!
-Exec=ativayeban-od
+Icon=icon
+Exec=falling_time
 Terminal=false
 Type=Application
 StartupNotify=true

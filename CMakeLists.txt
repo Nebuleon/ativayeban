@@ -23,7 +23,6 @@ else()
     add_definitions(-Wall -Wextra -Wunused -Wshadow -Wunreachable-code -std=c99)
     add_definitions(-fno-math-errno -fno-exceptions)
     if(CLANG)
-		add_definitions(-std=c99)
     else()
         # Probably GCC...
         add_definitions(-freg-struct-return -std=gnu99)

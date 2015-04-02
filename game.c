@@ -105,7 +105,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 		{
 			Top = GapBottom(&Gaps[GapCount - 1]) - GenDistance;
 			GenDistance += GAP_GEN_SPEED;
-			GenDistance = max(GAP_GEN_MIN, GenDistance);
+			GenDistance = MAX(GAP_GEN_MIN, GenDistance);
 		}
 		Gaps = realloc(Gaps, (GapCount + 1) * sizeof(struct Gap));
 		GapCount++;
@@ -164,7 +164,7 @@ static void RemoveEdgeShape(cpBody *body, cpShape *shape, void *data)
 
 void GameOutputFrame(void)
 {
-	const float screenYOff = max(0.0f, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
+	const float screenYOff = MAX(0.0f, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
 	// Draw the background.
 	DrawBackground(&BG, screenYOff);
 

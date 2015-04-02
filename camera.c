@@ -26,6 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "camera.h"
 
 #include "game.h"
+#include "utils.h"
 
 Camera camera;
 
@@ -48,12 +49,12 @@ void CameraUpdate(Camera *c, const Player *p, const uint32_t ms)
 	{
 		c->Y = 0.8f * p->Y + 0.2f * c->DY;
 	}
-	c->DY = min(c->DY, p->Y + FIELD_HEIGHT / 2);
+	c->DY = MIN(c->DY, p->Y + FIELD_HEIGHT / 2);
 	c->ScrollCounter += ms;
 	if (c->ScrollCounter >= 1000)
 	{
 		c->ScrollRate += FIELD_SCROLL_SPEED;
-		c->ScrollRate = min(FIELD_SCROLL_MAX, c->ScrollRate);
+		c->ScrollRate = MIN(FIELD_SCROLL_MAX, c->ScrollRate);
 		c->ScrollCounter -= 1000;
 	}
 	//printf("%f\n", c->ScrollRate);
