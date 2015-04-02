@@ -33,8 +33,19 @@ static void OnArbiter(cpBody *body, cpArbiter *arb, void *data);
 void PlayerUpdate(Player *player)
 {
 	// Update the speed at which the player is going.
-	const float accel = ACCELERATION + player->WasOnSurface ? ROLL_ACCEL_BONUS : 0;
+	// Provide positive bonus for:
+	// - when the player is very slow
+	// - when the player is rolling
+	// And negative bonus for:
+	// - when the player is above max speed
+	float accel = ACCELERATION;
+	const cpVect vel = cpBodyGetVelocity(player->Body);
+	const float relVelX = fabs(vel.x) * SIGN(vel.x * player->AccelX);
+	if (relVelX > MAX_SPEED) accel = ACCELERATION_MAX_SPEED;
+	if (relVelX < MIN_SPEED) accel += MIN_SPEED_ACCEL_BONUS;
+	if (player->WasOnSurface) accel += ROLL_ACCEL_BONUS;
 	cpBodySetForce(player->Body, cpv(player->AccelX / 32767.0f * accel, 0));
+	//printf("%f\n", vel.x);
 
 	// Detect bounces
 	OnArbiterData o = { cpvzero, 0 };

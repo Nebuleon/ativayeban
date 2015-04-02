@@ -28,4 +28,5 @@
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define CLAMP(v, _min, _max) MAX((_min), MIN((_max), (v)))
+#define SIGN(_x) ((_x) < 0 ? -1 : 1)
 #define UNUSED(expr) (void)(expr)

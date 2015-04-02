@@ -34,9 +34,14 @@
 // one direction, respectively.
 // Given in (meters per second) per second (m/s^2).
 #define ACCELERATION     50.00f
-
+// Acceleration when at max speed
+#define ACCELERATION_MAX_SPEED 10.0f
+#define MAX_SPEED 6.0f
+#define MIN_SPEED 2.0f
+// Extra acceleration when below min speed
+#define MIN_SPEED_ACCEL_BONUS 100.0f
 // Extra acceleration when rolling
-#define ROLL_ACCEL_BONUS 100.0f
+#define ROLL_ACCEL_BONUS 50.0f
 
 // The gravitational force exerted by the bottom of the screen.
 // Given in (meters per second) per second (m/s^2).
