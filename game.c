@@ -29,6 +29,7 @@
 #include "camera.h"
 #include "main.h"
 #include "init.h"
+#include "input.h"
 #include "platform.h"
 #include "player.h"
 #include "sound.h"
@@ -45,6 +46,7 @@ static bool                   Boost;
 static bool                   Pause;
 
 static Player                 player;
+static Player                 player2;
 
 // What the player avoids.
 static struct Gap*            Gaps     = NULL;
@@ -70,7 +72,7 @@ void GameGatherInput(bool* Continue)
 
 	while (SDL_PollEvent(&ev))
 	{
-		player.AccelX = GetMovement(&ev);
+		InputOnEvent(&ev);
 		if (IsPauseEvent(&ev))
 			Pause = !Pause;
 		else if (IsExitGameEvent(&ev))
@@ -79,6 +81,8 @@ void GameGatherInput(bool* Continue)
 			return;
 		}
 	}
+	player.AccelX = GetMovement(0);
+	player2.AccelX = GetMovement(1);
 }
 
 static void AddEdgeShapes(const float y);
@@ -115,16 +119,17 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	}
 
 	PlayerUpdate(&player);
-	CameraUpdate(&camera, &player, Milliseconds);
-	if (player.Y < edgeBodiesBottom)
+	PlayerUpdate(&player2);
+	CameraUpdate(&camera, (player.Y + player2.Y) / 2, Milliseconds);
+	if (min(player.Y, player2.Y) < edgeBodiesBottom)
 	{
 		cpBodyEachShape(edgeBodies, RemoveEdgeShape, NULL);
-		AddEdgeShapes(player.Y);
+		AddEdgeShapes(min(player.Y, player2.Y));
 	}
 
 	// If the ball has collided with the top of the field,
 	// the player's game is over.
-	if (player.Y + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
+	if (max(player.Y, player2.Y) + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
 	{
 		ToScore(Score);
 	}
@@ -145,7 +150,7 @@ static void ScoreGaps()
 		}
 		// Arbitrary limit to eliminate off screen gaps
 		// If a gap is past the top side, remove it.
-		if (GapBottom(&Gaps[i]) > player.Y + FIELD_HEIGHT * 2)
+		if (GapBottom(&Gaps[i]) > max(player.Y, player2.Y) + FIELD_HEIGHT * 2)
 		{
 			GapRemove(&Gaps[i]);
 			memmove(&Gaps[i], &Gaps[i + 1], (GapCount - i) * sizeof(struct Gap));
@@ -176,6 +181,7 @@ void GameOutputFrame(void)
 	}
 
 	PlayerDraw(&player, screenYOff);
+	PlayerDraw(&player2, screenYOff);
 
 	// Draw the player's current score.
 	char ScoreString[17];
@@ -206,7 +212,8 @@ void ToGame(void)
 	edgeBodies = cpSpaceGetStaticBody(Space);
 	AddEdgeShapes(0);
 
-	PlayerInit(&player);
+	PlayerInit(&player, 0);
+	PlayerInit(&player2, 1);
 	if (Gaps != NULL)
 	{
 		free(Gaps);

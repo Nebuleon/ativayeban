@@ -100,7 +100,8 @@ void Initialize(bool* Continue, bool* Error)
 	LOAD_IMG(icon, "icon.png");
 	SDL_WM_SetIcon(icon, NULL);
 
-	LOAD_IMG(PlayerSpritesheet, "penguin_ball.png");
+	LOAD_IMG(PlayerSpritesheets[0], "penguin_ball.png");
+	LOAD_IMG(PlayerSpritesheets[1], "penguin_black.png");
 	LOAD_IMG(GameOverImages[0], "gameover_01.png");
 	LOAD_IMG(GameOverImages[1], "gameover_02.png");
 
@@ -170,7 +171,10 @@ void Initialize(bool* Continue, bool* Error)
 void Finalize()
 {
 	cpSpaceFree(Space);
-	SDL_FreeSurface(PlayerSpritesheet);
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		SDL_FreeSurface(PlayerSpritesheets[i]);
+	}
 	SDL_FreeSurface(GameOverImages[0]);
 	SDL_FreeSurface(GameOverImages[1]);
 	SDL_FreeSurface(icon);

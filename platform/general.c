@@ -25,8 +25,6 @@
 #include "platform.h"
 
 static Uint32 LastTicks = 0;
-static bool   LeftPressed;
-static bool   RightPressed;
 
 void InitializePlatform(void)
 {
@@ -73,21 +71,6 @@ const char* GetExitGamePrompt(void)
 	return "Esc";
 }
 
-int16_t GetMovement(const SDL_Event* event)
-{
-	if (event->type == SDL_KEYUP
-	 || event->type == SDL_KEYDOWN)
-	{
-		if (event->key.keysym.sym == SDLK_LEFT)
-			LeftPressed = event->type == SDL_KEYDOWN;
-		else if (event->key.keysym.sym == SDLK_RIGHT)
-			RightPressed = event->type == SDL_KEYDOWN;
-	}
-	return (LeftPressed)
-		? ((RightPressed) ?     0 : -32768)
-		: ((RightPressed) ? 32767 :      0);
-}
-
 const char* GetMovementPrompt(void)
 {
 	return "Left/Right";
@@ -102,9 +85,4 @@ bool IsPauseEvent(const SDL_Event* event)
 const char* GetPausePrompt(void)
 {
 	return "P";
-}
-
-void ResetMovement(void)
-{
-	LeftPressed = RightPressed = false;
 }

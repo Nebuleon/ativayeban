@@ -27,13 +27,17 @@ typedef struct
 	int BlinkCounter;
 	// Blink when counter reaches zero
 	int NextBlinkCounter;
+
+	SDL_Surface *Sprites;
 } Player;
 
-extern SDL_Surface* PlayerSpritesheet;
+#define MAX_PLAYERS 2
+
+extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 extern Mix_Chunk* SoundPlayerBounce;
 extern Mix_Chunk* SoundPlayerRoll;
 extern int SoundPlayerRollChannel;
 
 void PlayerUpdate(Player *player);
 void PlayerDraw(const Player *player, const float y);
-void PlayerInit(Player *player);
+void PlayerInit(Player *player, const int i);

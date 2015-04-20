@@ -20,7 +20,7 @@
 #define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 500) + 500)
 #define PLAYER_BLINK_CHANCE 50
 
-SDL_Surface* PlayerSpritesheet = NULL;
+SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 Mix_Chunk* SoundPlayerBounce = NULL;
 Mix_Chunk* SoundPlayerRoll = NULL;
 
@@ -40,7 +40,7 @@ void PlayerUpdate(Player *player)
 	// - when the player is above max speed
 	float accel = ACCELERATION;
 	const cpVect vel = cpBodyGetVelocity(player->Body);
-	const float relVelX = fabs(vel.x) * SIGN(vel.x * player->AccelX);
+	const float relVelX = (float)fabs(vel.x) * SIGN(vel.x * player->AccelX);
 	if (relVelX > MAX_SPEED) accel = ACCELERATION_MAX_SPEED;
 	if (relVelX < MIN_SPEED) accel += MIN_SPEED_ACCEL_BONUS;
 	if (player->WasOnSurface) accel += ROLL_ACCEL_BONUS;
@@ -115,10 +115,10 @@ void PlayerDraw(const Player *player, const float y)
 		0,
 		0
 	};
-	SDL_BlitSurface(PlayerSpritesheet, &src, Screen, &dest);
+	SDL_BlitSurface(player->Sprites, &src, Screen, &dest);
 }
 
-void PlayerInit(Player *player)
+void PlayerInit(Player *player, const int i)
 {
 	player->Body = cpSpaceAddBody(
 		Space,
@@ -138,4 +138,5 @@ void PlayerInit(Player *player)
 	player->Roll = 0;
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
+	player->Sprites = PlayerSpritesheets[i];
 }

@@ -27,8 +27,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
 
-#include "player.h"
-
 typedef struct
 {
 	float DY;
@@ -39,4 +37,4 @@ typedef struct
 extern Camera camera;
 
 void CameraInit(Camera *c);
-void CameraUpdate(Camera *c, const Player *p, const uint32_t ms);
+void CameraUpdate(Camera *c, const float playerY, const uint32_t ms);

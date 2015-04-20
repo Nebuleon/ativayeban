@@ -38,18 +38,18 @@ void CameraInit(Camera *c)
 	c->ScrollCounter = 0;
 }
 
-void CameraUpdate(Camera *c, const Player *p, const uint32_t ms)
+void CameraUpdate(Camera *c, const float playerY, const uint32_t ms)
 {
 	c->DY -= ms * c->ScrollRate / 1000;
-	if (c->DY < p->Y)
+	if (c->DY < playerY)
 	{
 		c->Y = c->DY;
 	}
 	else
 	{
-		c->Y = 0.8f * p->Y + 0.2f * c->DY;
+		c->Y = 0.8f * playerY + 0.2f * c->DY;
 	}
-	c->DY = MIN(c->DY, p->Y + FIELD_HEIGHT / 2);
+	c->DY = MIN(c->DY, playerY + FIELD_HEIGHT / 2);
 	c->ScrollCounter += ms;
 	if (c->ScrollCounter >= 1000)
 	{
@@ -60,5 +60,5 @@ void CameraUpdate(Camera *c, const Player *p, const uint32_t ms)
 	//printf("%f\n", c->ScrollRate);
 	// Disable scrolling
 	//printf("%f %f\n", c->DY, c->Y);
-	//c->Y = p->Y;
+	//c->Y =playerY;
 }

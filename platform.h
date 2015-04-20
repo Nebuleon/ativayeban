@@ -36,10 +36,6 @@ extern Uint32 ToNextFrame(void);
 //   ExitGame: true if the event can be used to exit the entire application.
 //   Pause: true if the event can be used to pause a game in progress.
 
-// GetMovement returns, after updating the platform-specific input status, a
-//   value between -32768 and +32767 to indicate how far the ball needs to go.
-//   Negative values go to the left; positive values go to the right.
-
 // Get???Prompt returns the text that can be used to describe the actions that
 // can trigger a feature on the platform.
 
@@ -50,10 +46,7 @@ extern const char* GetEnterGamePrompt(void);
 extern bool IsExitGameEvent(const SDL_Event* event);
 extern const char* GetExitGamePrompt(void);
 
-extern int16_t GetMovement(const SDL_Event* event);
 extern const char* GetMovementPrompt(void);
 
 extern bool IsPauseEvent(const SDL_Event* event);
 extern const char* GetPausePrompt(void);
-
-extern void ResetMovement(void);
