@@ -8,6 +8,8 @@
 
 typedef struct
 {
+	int Index;
+
 	cpBody *Body;
 	// Where the player is. (Center, meters.)
 	float X, Y;
@@ -35,7 +37,6 @@ typedef struct
 
 extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 extern Mix_Chunk* SoundPlayerBounce;
-extern Mix_Chunk* SoundPlayerRoll;
 extern int SoundPlayerRollChannel;
 
 void PlayerUpdate(Player *player);

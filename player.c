@@ -22,7 +22,6 @@
 
 SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 Mix_Chunk* SoundPlayerBounce = NULL;
-Mix_Chunk* SoundPlayerRoll = NULL;
 
 typedef struct
 {
@@ -60,13 +59,13 @@ void PlayerUpdate(Player *player)
 		{
 			float angularV = (float)cpBodyGetAngularVelocity(player->Body);
 			//printf("angularV %f\n", angularV);
-			SoundPlayRoll(angularV);
+			SoundPlayRoll(player->Index, angularV);
 		}
 		player->WasOnSurface = true;
 	}
 	else
 	{
-		SoundStopRoll();
+		SoundStopRoll(player->Index);
 		player->WasOnSurface = false;
 	}
 
@@ -120,6 +119,7 @@ void PlayerDraw(const Player *player, const float y)
 
 void PlayerInit(Player *player, const int i)
 {
+	player->Index = i;
 	player->Body = cpSpaceAddBody(
 		Space,
 		cpBodyNew(10.0f, cpMomentForCircle(10.0f, 0.0f, PLAYER_RADIUS, cpvzero)));

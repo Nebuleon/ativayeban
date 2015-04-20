@@ -137,10 +137,10 @@ void Initialize(bool* Continue, bool* Error)
 		return;\
 	}
 	LOAD_SOUND(SoundPlayerBounce, "bounce.ogg");
-	LOAD_SOUND(SoundPlayerRoll, "roll.ogg");
 	LOAD_SOUND(SoundStart, "start.ogg");
 	LOAD_SOUND(SoundLose, "lose.ogg");
 	LOAD_SOUND(SoundScore, "score.ogg");
+	SoundLoad();
 
 	music = Mix_LoadMUS("data/sounds/music.ogg");
 	if (music == NULL)
@@ -182,11 +182,11 @@ void Finalize()
 	TitleImagesFree();
 	BackgroundsFree(&BG);
 	Mix_FreeChunk(SoundPlayerBounce);
-	Mix_FreeChunk(SoundPlayerRoll);
 	Mix_FreeChunk(SoundStart);
 	Mix_FreeChunk(SoundLose);
 	Mix_FreeChunk(SoundScore);
 	Mix_FreeMusic(music);
+	SoundFree();
 	TTF_CloseFont(font);
 	SDL_Quit();
 }

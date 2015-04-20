@@ -28,6 +28,7 @@
 #include "main.h"
 #include "init.h"
 #include "platform.h"
+#include "player.h"
 #include "sound.h"
 #include "text.h"
 #include "game.h"
@@ -101,7 +102,10 @@ static void DrawGameoverImg(const int i)
 
 void ToScore(uint32_t Score)
 {
-	SoundStopRoll();
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		SoundStopRoll(i);
+	}
 	ResetMovement();
 	BackgroundsInit(&BG);
 	WaitingForRelease = false;
