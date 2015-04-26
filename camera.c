@@ -60,5 +60,5 @@ void CameraUpdate(Camera *c, const float playerY, const uint32_t ms)
 	//printf("%f\n", c->ScrollRate);
 	// Disable scrolling
 	//printf("%f %f\n", c->DY, c->Y);
-	//c->Y =playerY;
+	c->Y =playerY;
 }

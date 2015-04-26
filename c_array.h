@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2015, Cong Xu
+    Copyright (c) 2013-2015, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,70 +25,32 @@
 */
 #pragma once
 
-#include <assert.h>
-#include <stdio.h>
+#include <stdbool.h>
+#include <stddef.h>
 
-#ifndef __func__
-#define __func__ __FUNCTION__
-#endif
+// dynamic array
+typedef struct
+{
+	void *data;
+	size_t elemSize;
+	size_t size;
+	size_t capacity;
+} CArray;
 
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define CLAMP(v, _min, _max) MAX((_min), MIN((_max), (v)))
-#define SIGN(_x) ((_x) < 0 ? -1 : 1)
-#define UNUSED(expr) (void)(expr)
+void CArrayInit(CArray *a, size_t elemSize);
+void CArrayReserve(CArray *a, size_t capacity);
+void CArrayCopy(CArray *dst, const CArray *src);
+void CArrayPushBack(CArray *a, const void *elem);	// insert address
+void CArrayInsert(CArray *a, int index, void *elem);
+void CArrayDelete(CArray *a, int index);
+void *CArrayGet(const CArray *a, int index);	// gets address
+void CArrayClear(CArray *a);
+void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *));
+void CArrayTerminate(CArray *a);
 
-#ifdef _MSC_VER
-#define CHALT() __debugbreak()
-#else
-#define CHALT()
-#endif
-
-#define CASSERT(_x, _errmsg)\
-{\
-	volatile bool isOk = _x;\
-	if (!isOk)\
+// Convenience macro for looping through a CArray
+#define CA_FOREACH(_type, _var, _a)\
+	for (int i = 0; i < (int)(_a).size; i++)\
 	{\
-		static char _buf[1024];\
-		sprintf(\
-			_buf,\
-			"In %s %d:%s: " _errmsg " (" #_x ")",\
-			__FILE__, __LINE__, __func__);\
-		CHALT();\
-		assert(_x);\
-	}\
-}
-
-#define _CCHECKALLOC(_func, _var, _size)\
-{\
-	if (_var == NULL && _size > 0)\
-	{\
-		exit(1);\
-	}\
-}
-
-#define CMALLOC(_var, _size)\
-{\
-	_var = malloc(_size);\
-	_CCHECKALLOC("CMALLOC", _var, (_size))\
-}
-#define CCALLOC(_var, _size)\
-{\
-	_var = calloc(1, _size);\
-	_CCHECKALLOC("CCALLOC", _var, (_size))\
-}
-#define CREALLOC(_var, _size)\
-{\
-	_var = realloc(_var, _size);\
-	_CCHECKALLOC("CREALLOC", _var, (_size))\
-}
-#define CSTRDUP(_var, _str)\
-{\
-	CMALLOC(_var, strlen(_str) + 1);\
-	strcpy(_var, _str);\
-}
-
-#define CFREE(_var)\
-{\
-	free(_var);\
-}
+		_type *_var = CArrayGet(&(_a), i);
+#define CA_FOREACH_END() }

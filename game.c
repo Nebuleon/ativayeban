@@ -42,15 +42,7 @@
 #include "bg.h"
 
 static uint32_t               Score;
-
-static bool                   Boost;
 static bool                   Pause;
-
-// What the player avoids.
-static struct Gap*            Gaps     = NULL;
-static uint32_t               GapCount = 0;
-
-static float                  GenDistance;
 
 Mix_Chunk* SoundStart = NULL;
 Mix_Chunk* SoundLose = NULL;
@@ -94,63 +86,18 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 
 	cpSpaceStep(space.Space, Milliseconds * 0.001);
 
-	ScoreGaps();
-
-	// Generate a gap now if needed.
-	if (GapCount == 0 || GapBottom(&Gaps[GapCount - 1]) - (camera.Y - FIELD_HEIGHT / 2) >= GenDistance)
-	{
-		float Top;
-		if (GapCount == 0)
-			Top = 0;
-		else
-		{
-			Top = GapBottom(&Gaps[GapCount - 1]) - GenDistance;
-			GenDistance += GAP_GEN_SPEED;
-			GenDistance = MAX(GAP_GEN_MIN, GenDistance);
-		}
-		Gaps = realloc(Gaps, (GapCount + 1) * sizeof(struct Gap));
-		GapCount++;
-		// Where's the place for the player to go through?
-		float GapLeft = (FIELD_WIDTH / 16.0f) + ((float) rand() / (float) RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
-		GapInit(&Gaps[GapCount - 1], Top, GapLeft);
-	}
-
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		PlayerUpdate(&players[i]);
 	}
 	CameraUpdate(&camera, PlayerMiddleY(), Milliseconds);
-	SpaceUpdate(&space, PlayerMinY());
+	SpaceUpdate(&space, PlayerMinY(), camera.Y, PlayerMaxY(), &Score);
 
 	// If the ball has collided with the top of the field,
 	// the player's game is over.
 	if (PlayerMaxY() + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
 	{
 		ToScore(Score);
-	}
-}
-static void ScoreGaps()
-{
-	// Scroll all gaps toward the top...
-	for (int i = GapCount - 1; i >= 0; i--)
-	{
-		// If the player is past a gap, award the player with a
-		// point.
-		if (!Gaps[i].Passed &&
-			Gaps[i].Y > PlayerMaxY() + PLAYER_RADIUS)
-		{
-			Gaps[i].Passed = true;
-			Score++;
-			SoundPlay(SoundScore, 1.0);
-		}
-		// Arbitrary limit to eliminate off screen gaps
-		// If a gap is past the top side, remove it.
-		if (GapBottom(&Gaps[i]) > PlayerMaxY() + FIELD_HEIGHT * 2)
-		{
-			GapRemove(&Gaps[i]);
-			memmove(&Gaps[i], &Gaps[i + 1], (GapCount - i) * sizeof(struct Gap));
-			GapCount--;
-		}
 	}
 }
 static float PlayerMiddleY(void)
@@ -187,12 +134,7 @@ void GameOutputFrame(void)
 	// Draw the background.
 	DrawBackground(&BG, screenYOff);
 
-	// Draw the gaps.
-	uint32_t i;
-	for (i = 0; i < GapCount; i++)
-	{
-		GapDraw(&Gaps[i], screenYOff);
-	}
+	SpaceDraw(&space, screenYOff);
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -214,7 +156,6 @@ void GameOutputFrame(void)
 void ToGame(void)
 {
 	Score = 0;
-	Boost = false;
 	Pause = false;
 
 	SpaceReset(&space);
@@ -227,13 +168,6 @@ void ToGame(void)
 			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1),
 			FIELD_HEIGHT * 0.75f));
 	}
-	if (Gaps != NULL)
-	{
-		free(Gaps);
-		Gaps = NULL;
-	}
-	GapCount = 0;
-	GenDistance = GAP_GEN_START;
 	CameraInit(&camera);
 	SoundPlay(SoundStart, 1.0);
 	MusicSetLoud(true);

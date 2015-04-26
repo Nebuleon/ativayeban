@@ -85,15 +85,15 @@ void DrawBackground(Backgrounds *bg, const float y)
 {
 	SDL_FillRect(Screen, NULL, SDL_MapRGB(Screen->format, 8, 3, 32));
 	DrawParticleScroll(
-		&bg->Icicles, y * SCROLL_FACTOR * SCALE_1,
+		&bg->Icicles, (int)(y * SCROLL_FACTOR * SCALE_1),
 		ICICLE_WIDTH, ICICLE_HEIGHT,
 		ICICLE_Y_GAP_MIN, ICICLE_Y_GAP_MAX, ICICYLE_NUM);
 	DrawParticleScroll(
-		&bg->Flares, y * SCROLL_FACTOR * SCALE_2,
+		&bg->Flares, (int)(y * SCROLL_FACTOR * SCALE_2),
 		FLARE_WIDTH, FLARE_HEIGHT,
 		FLARE_Y_GAP_MIN, FLARE_Y_GAP_MAX, FLARE_NUM);
 	DrawParticleScroll(
-		&bg->Stars, y * SCROLL_FACTOR * SCALE_3,
+		&bg->Stars, (int)(y * SCROLL_FACTOR * SCALE_3),
 		STAR_WIDTH, STAR_HEIGHT,
 		STAR_Y_GAP_MIN, STAR_Y_GAP_MAX, STAR_NUM);
 }
@@ -136,9 +136,12 @@ static void DrawParticleScroll(
 		// Draw if in range
 		if (p->Positions[i].Y < s + SCREEN_HEIGHT)
 		{
-			SDL_Rect src = { p->Positions[i].Index * w, 0, w, h };
+			SDL_Rect src =
+			{
+				(Sint16)(p->Positions[i].Index * w), 0, (Uint16)w, (Uint16)h
+			};
 			SDL_Rect dst = {
-				p->Positions[i].X, p->Positions[i].Y - s,
+				(Sint16)p->Positions[i].X, (Sint16)(p->Positions[i].Y - s),
 				0, 0
 			};
 			SDL_BlitSurface(p->S, &src, Screen, &dst);

@@ -26,6 +26,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "space.h"
 
 #include "game.h"
+#include "gap.h"
+#include "sound.h"
 #include "utils.h"
 
 Space space;
@@ -40,6 +42,8 @@ void SpaceInit(Space *s)
 	cpSpaceSetGravity(s->Space, cpv(0, GRAVITY));
 	cpSpaceSetCollisionSlop(s->Space, 0.5);
 	cpSpaceSetSleepTimeThreshold(s->Space, 1.0f);
+
+	CArrayInit(&s->Gaps, sizeof(struct Gap));
 
 	SpaceReset(s);
 }
@@ -56,9 +60,17 @@ void SpaceReset(Space *s)
 	s->edgeBodies = cpSpaceGetStaticBody(s->Space);
 	AddEdgeShapes(s, 0);
 	s->edgeBodiesBottom = -FIELD_HEIGHT * 4;
+
+	for (int i = 0; i < (int)s->Gaps.size; i++)
+	{
+		GapRemove(CArrayGet(&s->Gaps, i));
+	}
+	CArrayClear(&s->Gaps);
+	s->gapGenDistance = GAP_GEN_START;
 }
 void SpaceFree(Space *s)
 {
+	CArrayTerminate(&s->Gaps);
 	cpSpaceFree(s->Space);
 }
 
@@ -76,12 +88,67 @@ void SpaceAddBottomEdge(Space *s)
 }
 
 // As the camera scrolls down, need to create new edge bodies
-void SpaceUpdate(Space *s, const float y)
+void SpaceUpdate(
+	Space *s, const float y, const float cameraY, const float playerMaxY,
+	uint32_t *score)
 {
+	// Scroll all gaps toward the top...
+	for (int i = (int)s->Gaps.size - 1; i >= 0; i--)
+	{
+		struct Gap *g = CArrayGet(&s->Gaps, i);
+		// If the player is past a gap, award the player with a
+		// point.
+		if (!g->Passed && g->Y > playerMaxY + PLAYER_RADIUS)
+		{
+			g->Passed = true;
+			(*score)++;
+			SoundPlay(SoundScore, 1.0);
+		}
+		// Arbitrary limit to eliminate off screen gaps
+		// If a gap is past the top side, remove it.
+		if (GapBottom(g) > playerMaxY + FIELD_HEIGHT * 2)
+		{
+			GapRemove(g);
+			CArrayDelete(&s->Gaps, i);
+		}
+	}
+
+	// Generate a gap now if needed.
+	const struct Gap *lastGap = NULL;
+	if (s->Gaps.size != 0)
+	{
+		lastGap = CArrayGet(&s->Gaps, s->Gaps.size - 1);
+	}
+	if (s->Gaps.size == 0 ||
+		GapBottom(lastGap) - (cameraY - FIELD_HEIGHT / 2) >= s->gapGenDistance)
+	{
+		float top = 0;
+		if (s->Gaps.size != 0)
+		{
+			top = GapBottom(lastGap) - s->gapGenDistance;
+			s->gapGenDistance += GAP_GEN_SPEED;
+			s->gapGenDistance = MAX(GAP_GEN_MIN, s->gapGenDistance);
+		}
+		struct Gap g;
+		// Where's the place for the player to go through?
+		float GapLeft = (FIELD_WIDTH / 16.0f) + ((float)rand() / (float)RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
+		GapInit(&g, top, GapLeft);
+		CArrayPushBack(&s->Gaps, &g);
+	}
+
 	if (y < s->edgeBodiesBottom)
 	{
 		cpBodyEachShape(s->edgeBodies, RemoveEdgeShape, s->Space);
 		AddEdgeShapes(s, y);
+	}
+}
+
+void SpaceDraw(const Space *s, const float y)
+{
+	// Draw the gaps.
+	for (int i = 0; i < (int)s->Gaps.size; i++)
+	{
+		GapDraw(CArrayGet(&s->Gaps, i), y);
 	}
 }
 
