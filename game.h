@@ -19,7 +19,6 @@
  */
 #pragma once
 
-#include <chipmunk/chipmunk.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
@@ -97,5 +96,3 @@ extern Mix_Chunk* SoundScore;
 extern TTF_Font *font;
 
 extern void ToGame(void);
-
-extern cpSpace *Space;

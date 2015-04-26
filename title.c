@@ -23,10 +23,14 @@
 
 #include "SDL_image.h"
 
+#include "block.h"
 #include "main.h"
 #include "init.h"
+#include "input.h"
 #include "platform.h"
+#include "player.h"
 #include "sound.h"
+#include "space.h"
 #include "text.h"
 #include "game.h"
 #include "bg.h"
@@ -39,7 +43,11 @@ static int titleImageIndex = 0;
 #define TITLE_IMAGE_COUNTER 5
 static int titleImageCounter = TITLE_IMAGE_COUNTER;
 
+static Block blocks[MAX_PLAYERS];
+#define BLOCK_WIDTH (FIELD_WIDTH / MAX_PLAYERS * 0.25f)
 
+
+static void TitleScreenEnd(void);
 void TitleScreenGatherInput(bool* Continue)
 {
 	SDL_Event ev;
@@ -51,14 +59,28 @@ void TitleScreenGatherInput(bool* Continue)
 		else if (IsEnterGameReleasingEvent(&ev))
 		{
 			WaitingForRelease = false;
+			TitleScreenEnd();
 			ToGame();
 			return;
 		}
 		else if (IsExitGameEvent(&ev))
 		{
 			*Continue = false;
+			TitleScreenEnd();
 			return;
 		}
+		InputOnEvent(&ev);
+		for (int i = 0; i < MAX_PLAYERS; i++)
+		{
+			players[i].AccelX = GetMovement(i);
+		}
+	}
+}
+static void TitleScreenEnd(void)
+{
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		BlockRemove(&blocks[i]);
 	}
 }
 
@@ -66,13 +88,27 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
 	(void)Continue;
 	(void)Error;
-	(void)Milliseconds;
+	cpSpaceStep(space.Space, Milliseconds * 0.001);
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		PlayerUpdate(&players[i]);
+	}
 }
 
 static void DrawTitleImg(const int i);
 void TitleScreenOutputFrame(void)
 {
 	DrawBackground(&BG, 0);
+
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		PlayerDraw(&players[i], 0);
+	}
+
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		BlockDraw(&blocks[i], 0);
+	}
 
 	titleImageCounter--;
 	if (titleImageCounter == 0)
@@ -109,6 +145,27 @@ void ToTitleScreen(void)
 		WelcomeMessage,
 		"Press %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
 		GetEnterGamePrompt(), GetExitGamePrompt(), GetMovementPrompt(), GetPausePrompt(), GetExitGamePrompt());
+
+	// Add bottom edge so we don't fall through
+	SpaceAddBottomEdge(&space);
+
+	// Initialise players here
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		PlayerInit(&players[i], i, cpv(
+			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1),
+			FIELD_HEIGHT * 0.75f));
+	}
+
+	// Add platforms for players to jump off
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		BlockInit(
+			&blocks[i],
+			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1) - BLOCK_WIDTH / 2,
+			FIELD_HEIGHT * 0.5f,
+			BLOCK_WIDTH);
+	}
 
 	GatherInput = TitleScreenGatherInput;
 	DoLogic     = TitleScreenDoLogic;

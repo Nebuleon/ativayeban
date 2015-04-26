@@ -27,6 +27,7 @@
 
 #include "main.h"
 #include "init.h"
+#include "input.h"
 #include "platform.h"
 #include "player.h"
 #include "sound.h"

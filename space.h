@@ -25,36 +25,21 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
-#include <stdbool.h>
-
 #include <chipmunk/chipmunk.h>
-#include <SDL.h>
 
-#include "block.h"
-
-// Gaps are a pair of rectangles with a gap in between.
-// The player scores after falling through a gap.
-
-struct Gap
+// Represents physical space of the level
+typedef struct
 {
-	Block Left;
-	Block Right;
-	// Where the gap layer is.
-	float Y;
-	// Where the gap starts and ends
-	float GapLeft;
-	float GapRight;
+	cpSpace *Space;
+	cpBody *edgeBodies;
+	float edgeBodiesBottom;
+} Space;
 
-	bool Passed;
-};
+extern Space space;
 
-extern SDL_Surface *GapSurfaces[6];
+void SpaceInit(Space *s);
+void SpaceReset(Space *s);
+void SpaceFree(Space *s);
 
-void GapInit(struct Gap* gap, float y, float gapX);
-void GapRemove(struct Gap* gap);
-void GapDraw(const struct Gap* gap, const float y);
-
-extern float GapBottom(const struct Gap* gap);
-
-bool GapSurfacesLoad(void);
-void GapSurfacesFree(void);
+void SpaceAddBottomEdge(Space *s);
+void SpaceUpdate(Space *s, const float y);

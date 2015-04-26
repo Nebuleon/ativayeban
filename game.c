@@ -33,6 +33,7 @@
 #include "platform.h"
 #include "player.h"
 #include "sound.h"
+#include "space.h"
 #include "utils.h"
 #include "game.h"
 #include "gap.h"
@@ -45,25 +46,17 @@ static uint32_t               Score;
 static bool                   Boost;
 static bool                   Pause;
 
-static Player                 player;
-static Player                 player2;
-
 // What the player avoids.
 static struct Gap*            Gaps     = NULL;
 static uint32_t               GapCount = 0;
 
 static float                  GenDistance;
 
-static cpBody*                edgeBodies = NULL;
-static float                  edgeBodiesBottom = -FIELD_HEIGHT * 4;
-
 Mix_Chunk* SoundStart = NULL;
 Mix_Chunk* SoundLose = NULL;
 Mix_Chunk* SoundScore = NULL;
 
 TTF_Font *font = NULL;
-
-cpSpace *Space = NULL;
 
 
 void GameGatherInput(bool* Continue)
@@ -81,21 +74,25 @@ void GameGatherInput(bool* Continue)
 			return;
 		}
 	}
-	player.AccelX = GetMovement(0);
-	player2.AccelX = GetMovement(1);
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		players[i].AccelX = GetMovement(i);
+	}
 }
 
 static void AddEdgeShapes(const float y);
 
 static void ScoreGaps();
-static void RemoveEdgeShape(cpBody *body, cpShape *shape, void *data);
+static float PlayerMiddleY(void);
+static float PlayerMinY(void);
+static float PlayerMaxY(void);
 void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
 	(void)Continue;
 	(void)Error;
 	if (Pause) return;
 
-	cpSpaceStep(Space, Milliseconds * 0.001);
+	cpSpaceStep(space.Space, Milliseconds * 0.001);
 
 	ScoreGaps();
 
@@ -118,18 +115,16 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 		GapInit(&Gaps[GapCount - 1], Top, GapLeft);
 	}
 
-	PlayerUpdate(&player);
-	PlayerUpdate(&player2);
-	CameraUpdate(&camera, (player.Y + player2.Y) / 2, Milliseconds);
-	if (min(player.Y, player2.Y) < edgeBodiesBottom)
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		cpBodyEachShape(edgeBodies, RemoveEdgeShape, NULL);
-		AddEdgeShapes(min(player.Y, player2.Y));
+		PlayerUpdate(&players[i]);
 	}
+	CameraUpdate(&camera, PlayerMiddleY(), Milliseconds);
+	SpaceUpdate(&space, PlayerMinY());
 
 	// If the ball has collided with the top of the field,
 	// the player's game is over.
-	if (max(player.Y, player2.Y) + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
+	if (PlayerMaxY() + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
 	{
 		ToScore(Score);
 	}
@@ -142,7 +137,7 @@ static void ScoreGaps()
 		// If the player is past a gap, award the player with a
 		// point.
 		if (!Gaps[i].Passed &&
-			Gaps[i].Y > player.Y + PLAYER_RADIUS)
+			Gaps[i].Y > PlayerMaxY() + PLAYER_RADIUS)
 		{
 			Gaps[i].Passed = true;
 			Score++;
@@ -150,7 +145,7 @@ static void ScoreGaps()
 		}
 		// Arbitrary limit to eliminate off screen gaps
 		// If a gap is past the top side, remove it.
-		if (GapBottom(&Gaps[i]) > max(player.Y, player2.Y) + FIELD_HEIGHT * 2)
+		if (GapBottom(&Gaps[i]) > PlayerMaxY() + FIELD_HEIGHT * 2)
 		{
 			GapRemove(&Gaps[i]);
 			memmove(&Gaps[i], &Gaps[i + 1], (GapCount - i) * sizeof(struct Gap));
@@ -158,13 +153,32 @@ static void ScoreGaps()
 		}
 	}
 }
-static void RemoveEdgeShape(cpBody *body, cpShape *shape, void *data)
+static float PlayerMiddleY(void)
 {
-	UNUSED(body);
-	UNUSED(data);
-	//printf("Remove edge shape\n");
-	cpSpaceRemoveShape(Space, shape);
-	cpShapeFree(shape);
+	float sum = 0;
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		sum += players[i].Y;
+	}
+	return sum / MAX_PLAYERS;
+}
+static float PlayerMinY(void)
+{
+	float y = players[0].Y;
+	for (int i = 1; i < MAX_PLAYERS; i++)
+	{
+		y = min(y, players[i].Y);
+	}
+	return y;
+}
+static float PlayerMaxY(void)
+{
+	float y = players[0].Y;
+	for (int i = 1; i < MAX_PLAYERS; i++)
+	{
+		y = max(y, players[i].Y);
+	}
+	return y;
 }
 
 void GameOutputFrame(void)
@@ -180,8 +194,10 @@ void GameOutputFrame(void)
 		GapDraw(&Gaps[i], screenYOff);
 	}
 
-	PlayerDraw(&player, screenYOff);
-	PlayerDraw(&player2, screenYOff);
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		PlayerDraw(&players[i], screenYOff);
+	}
 
 	// Draw the player's current score.
 	char ScoreString[17];
@@ -200,20 +216,17 @@ void ToGame(void)
 	Score = 0;
 	Boost = false;
 	Pause = false;
-	cpSpaceFree(Space);
 
-	// Init physics space
-	Space = cpSpaceNew();
-	cpSpaceSetIterations(Space, 30);
-	cpSpaceSetGravity(Space, cpv(0, GRAVITY));
-	cpSpaceSetCollisionSlop(Space, 0.5);
-	cpSpaceSetSleepTimeThreshold(Space, 1.0f);
-	// Segments around screen
-	edgeBodies = cpSpaceGetStaticBody(Space);
-	AddEdgeShapes(0);
+	SpaceReset(&space);
 
-	PlayerInit(&player, 0);
-	PlayerInit(&player2, 1);
+	// Reset player positions
+	// TODO: continue from title screen
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		cpBodySetPosition(players[i].Body, cpv(
+			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1),
+			FIELD_HEIGHT * 0.75f));
+	}
 	if (Gaps != NULL)
 	{
 		free(Gaps);
@@ -228,25 +241,4 @@ void ToGame(void)
 	GatherInput = GameGatherInput;
 	DoLogic     = GameDoLogic;
 	OutputFrame = GameOutputFrame;
-}
-
-static void AddEdgeShapes(const float y)
-{
-	//printf("Add edge shapes from %f\n", y);
-	cpShape *shape;
-	cpShapeFilter edgeFilter = { CP_NO_GROUP, CP_ALL_CATEGORIES, CP_ALL_CATEGORIES };
-	const float top = y + FIELD_HEIGHT * 2;
-	// Left edge
-	edgeBodiesBottom = y - FIELD_HEIGHT * 4;
-	shape = cpSpaceAddShape(Space, cpSegmentShapeNew(
-		edgeBodies, cpv(0, edgeBodiesBottom), cpv(0, top), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
-	cpShapeSetFriction(shape, 1.0f);
-	cpShapeSetFilter(shape, edgeFilter);
-	// Right edge
-	shape = cpSpaceAddShape(Space, cpSegmentShapeNew(
-		edgeBodies, cpv(FIELD_WIDTH, edgeBodiesBottom), cpv(FIELD_WIDTH, top), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
-	cpShapeSetFriction(shape, 1.0f);
-	cpShapeSetFilter(shape, edgeFilter);
 }

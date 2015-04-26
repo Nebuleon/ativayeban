@@ -31,6 +31,7 @@
 #include "platform.h"
 #include "player.h"
 #include "score.h"
+#include "space.h"
 #include "sound.h"
 #include "title.h"
 
@@ -160,6 +161,8 @@ void Initialize(bool* Continue, bool* Error)
 		return;
 	}
 
+	SpaceInit(&space);
+
 	SDL_ShowCursor(0);
 
 	InitializePlatform();
@@ -170,7 +173,7 @@ void Initialize(bool* Continue, bool* Error)
 
 void Finalize()
 {
-	cpSpaceFree(Space);
+	SpaceFree(&space);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		SDL_FreeSurface(PlayerSpritesheets[i]);

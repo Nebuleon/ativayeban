@@ -7,6 +7,7 @@
 #include "init.h"
 #include "main.h"
 #include "player.h"
+#include "space.h"
 #include "sound.h"
 #include "utils.h"
 
@@ -16,12 +17,14 @@
 #define PLAYER_SPRITESHEET_COUNT 16
 #define PLAYER_ROLL_SCALE 0.015f
 #define PLAYER_BLINK_FRAME_OFFSET 16
-#define PLAYER_BLINK_FRAMES 200
-#define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 500) + 500)
+#define PLAYER_BLINK_FRAMES 20
+#define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 100) + 100)
 #define PLAYER_BLINK_CHANCE 50
 
 SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 Mix_Chunk* SoundPlayerBounce = NULL;
+
+Player players[MAX_PLAYERS];
 
 typedef struct
 {
@@ -97,7 +100,7 @@ static void OnArbiter(cpBody *body, cpArbiter *arb, void *data)
 void PlayerDraw(const Player *player, const float y)
 {
 	// Draw the character.
-	int rollFrame = (int)floor(player->Roll);
+	int rollFrame = player->Roll;
 	if (player->BlinkCounter > 0)
 	{
 		rollFrame += PLAYER_BLINK_FRAME_OFFSET;
@@ -117,22 +120,19 @@ void PlayerDraw(const Player *player, const float y)
 	SDL_BlitSurface(player->Sprites, &src, Screen, &dest);
 }
 
-void PlayerInit(Player *player, const int i)
+void PlayerInit(Player *player, const int i, const cpVect pos)
 {
 	player->Index = i;
 	player->Body = cpSpaceAddBody(
-		Space,
+		space.Space,
 		cpBodyNew(10.0f, cpMomentForCircle(10.0f, 0.0f, PLAYER_RADIUS, cpvzero)));
-	cpBodySetPosition(
-		player->Body, cpv(FIELD_WIDTH / 2, FIELD_HEIGHT * 0.75f - PLAYER_RADIUS));
+	cpBodySetPosition(player->Body, pos);
 	cpShape *shape = cpSpaceAddShape(
-		Space, cpCircleShapeNew(player->Body, PLAYER_RADIUS, cpvzero));
+		space.Space, cpCircleShapeNew(player->Body, PLAYER_RADIUS, cpvzero));
 	cpShapeSetElasticity(shape, PLAYER_ELASTICITY);
 	cpShapeSetFriction(shape, 0.9f);
 	player->X = FIELD_WIDTH / 2;
 	player->Y = FIELD_HEIGHT - PLAYER_RADIUS;
-	player->SpeedX = 0.0f;
-	player->SpeedY = GRAVITY / 200 - FIELD_SCROLL / 200;
 	player->AccelX = 0;
 	player->WasOnSurface = false;
 	player->Roll = 0;

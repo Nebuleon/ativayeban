@@ -13,8 +13,6 @@ typedef struct
 	cpBody *Body;
 	// Where the player is. (Center, meters.)
 	float X, Y;
-	// Where the player is going. (Meters per second.)
-	float SpeedX, SpeedY;
 
 	// The last value returned by GetMovement.
 	int16_t AccelX;
@@ -34,6 +32,7 @@ typedef struct
 } Player;
 
 #define MAX_PLAYERS 2
+extern Player players[MAX_PLAYERS];
 
 extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 extern Mix_Chunk* SoundPlayerBounce;
@@ -41,4 +40,4 @@ extern int SoundPlayerRollChannel;
 
 void PlayerUpdate(Player *player);
 void PlayerDraw(const Player *player, const float y);
-void PlayerInit(Player *player, const int i);
+void PlayerInit(Player *player, const int i, const cpVect pos);

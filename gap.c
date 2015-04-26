@@ -37,62 +37,28 @@ POSSIBILITY OF SUCH DAMAGE.
 
 SDL_Surface *GapSurfaces[6];
 
-static cpBody *MakeGapBody(const float left, const float right, const float y);
-static SDL_Surface *RandomGapSurface(void);
 void GapInit(struct Gap* gap, float y, float gapLeft)
 {
-	gap->BodyLeft = MakeGapBody(0, gapLeft, y);
-	gap->BodyRight = MakeGapBody(gapLeft + GAP_WIDTH, FIELD_WIDTH, y);
+	BlockInit(&gap->Left, 0, y, gapLeft);
+	BlockInit(
+		&gap->Right,
+		gapLeft + GAP_WIDTH, y, FIELD_WIDTH - (gapLeft + GAP_WIDTH));
 	gap->Passed = false;
 	gap->Y = y;
 	gap->GapLeft = gapLeft;
 	gap->GapRight = gapLeft + GAP_WIDTH;
-	gap->GapLeftSurface = RandomGapSurface();
-	gap->GapRightSurface = RandomGapSurface();
 }
 void GapRemove(struct Gap* gap)
 {
-	cpSpaceRemoveBody(Space, gap->BodyLeft);
-	cpSpaceRemoveBody(Space, gap->BodyRight);
-}
-static cpBody *MakeGapBody(const float left, const float right, const float y)
-{
-	cpBody *body = cpSpaceAddBody(Space, cpBodyNewStatic());
-	cpBodySetPosition(body, cpv((left + right) / 2, y - GAP_HEIGHT / 2));
-	cpShape *shape = cpSpaceAddShape(
-		Space, cpBoxShapeNew(body, right - left, GAP_HEIGHT, 0.0));
-	cpShapeSetElasticity(shape, 1.0f);
-	cpShapeSetFriction(shape, 1.0f);
-	return body;
-}
-static SDL_Surface *RandomGapSurface(void)
-{
-	return GapSurfaces[rand() % 6];
+	BlockRemove(&gap->Left);
+	BlockRemove(&gap->Right);
 }
 
-static void GapDrawPart(const int x, const int y, SDL_Surface *s);
 void GapDraw(const struct Gap* gap, const float y)
 {
 	// Draw the left and right parts of the gap
-
-	// Left part
-	const cpVect posL = cpBodyGetPosition(gap->BodyLeft);
-	GapDrawPart(
-		SCREEN_X((float)posL.x + gap->GapLeft / 2) - GAP_SPRITE_WIDTH,
-		SCREEN_Y((float)posL.y + GAP_HEIGHT / 2) - (int)y,
-		gap->GapLeftSurface);
-
-	// Right part
-	const cpVect posR = cpBodyGetPosition(gap->BodyRight);
-	GapDrawPart(
-		SCREEN_X((float)posR.x - (FIELD_WIDTH - gap->GapRight) / 2),
-		SCREEN_Y((float)posR.y + GAP_HEIGHT / 2) - (int)y,
-		gap->GapRightSurface);
-}
-static void GapDrawPart(const int x, const int y, SDL_Surface *s)
-{
-	SDL_Rect dest = { (Sint16)x, (Sint16)y, 0, 0 };
-	SDL_BlitSurface(s, NULL, Screen, &dest);
+	BlockDraw(&gap->Left, y);
+	BlockDraw(&gap->Right, y);
 }
 
 float GapBottom(const struct Gap* gap)
