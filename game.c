@@ -68,6 +68,7 @@ void GameGatherInput(bool* Continue)
 	}
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		if (!players[i].Enabled) continue;
 		players[i].AccelX = GetMovement(i);
 	}
 }
@@ -88,6 +89,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		if (!players[i].Enabled) continue;
 		PlayerUpdate(&players[i]);
 	}
 	CameraUpdate(&camera, PlayerMiddleY(), Milliseconds);
@@ -103,27 +105,38 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 static float PlayerMiddleY(void)
 {
 	float sum = 0;
+	int num = 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		if (!players[i].Enabled) continue;
 		sum += players[i].Y;
+		num++;
 	}
-	return sum / MAX_PLAYERS;
+	return sum / num;
 }
 static float PlayerMinY(void)
 {
-	float y = players[0].Y;
-	for (int i = 1; i < MAX_PLAYERS; i++)
+	float y = NAN;
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		y = min(y, players[i].Y);
+		if (!players[i].Enabled) continue;
+		if (isnan(y) || players[i].Y < y)
+		{
+			y = players[i].Y;
+		}
 	}
 	return y;
 }
 static float PlayerMaxY(void)
 {
-	float y = players[0].Y;
-	for (int i = 1; i < MAX_PLAYERS; i++)
+	float y = NAN;
+	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		y = max(y, players[i].Y);
+		if (!players[i].Enabled) continue;
+		if (isnan(y) || players[i].Y > y)
+		{
+			y = players[i].Y;
+		}
 	}
 	return y;
 }
@@ -138,6 +151,7 @@ void GameOutputFrame(void)
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		if (!players[i].Enabled) continue;
 		PlayerDraw(&players[i], screenYOff);
 	}
 
@@ -160,13 +174,15 @@ void ToGame(void)
 
 	SpaceReset(&space);
 
-	// Reset player positions
+	// Reset player positions and velocity
 	// TODO: continue from title screen
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		cpBodySetPosition(players[i].Body, cpv(
+		const cpBody *body = players[i].Body;
+		cpBodySetPosition(body, cpv(
 			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1),
 			FIELD_HEIGHT * 0.75f));
+		cpBodySetVelocity(body, cpvzero);
 	}
 	CameraInit(&camera);
 	SoundPlay(SoundStart, 1.0);
