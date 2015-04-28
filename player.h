@@ -10,6 +10,9 @@ typedef struct
 {
 	int Index;
 
+	// Whether the player is in the game or not
+	bool Enabled;
+
 	cpBody *Body;
 	// Where the player is. (Center, meters.)
 	float X, Y;

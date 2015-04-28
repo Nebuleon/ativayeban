@@ -45,6 +45,7 @@ static int titleImageCounter = TITLE_IMAGE_COUNTER;
 
 static Block blocks[MAX_PLAYERS];
 #define BLOCK_WIDTH (FIELD_WIDTH / MAX_PLAYERS * 0.25f)
+#define BLOCK_Y (FIELD_HEIGHT * 0.5f)
 
 
 static void TitleScreenEnd(void);
@@ -92,6 +93,13 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		PlayerUpdate(&players[i]);
+
+		// Check which players have fallen below their start pads
+		cpVect pos = cpBodyGetPosition(players[i].Body);
+		if (pos.y < BLOCK_Y)
+		{
+			players[i].Enabled = true;
+		}
 	}
 }
 
@@ -163,7 +171,7 @@ void ToTitleScreen(void)
 		BlockInit(
 			&blocks[i],
 			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1) - BLOCK_WIDTH / 2,
-			FIELD_HEIGHT * 0.5f,
+			BLOCK_Y,
 			BLOCK_WIDTH);
 	}
 

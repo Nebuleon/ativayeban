@@ -82,7 +82,7 @@ void SpaceAddBottomEdge(Space *s)
 	};
 	cpShape *shape = cpSpaceAddShape(s->Space, cpSegmentShapeNew(
 		s->edgeBodies, cpv(0, 0), cpv(FIELD_WIDTH, 0), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
+	cpShapeSetElasticity(shape, FIELD_ELASTICITY);
 	cpShapeSetFriction(shape, 1.0f);
 	cpShapeSetFilter(shape, edgeFilter);
 }
@@ -171,14 +171,14 @@ static void AddEdgeShapes(Space *s, const float y)
 	s->edgeBodiesBottom = y - FIELD_HEIGHT * 4;
 	shape = cpSpaceAddShape(s->Space, cpSegmentShapeNew(
 		s->edgeBodies, cpv(0, s->edgeBodiesBottom), cpv(0, top), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
+	cpShapeSetElasticity(shape, FIELD_ELASTICITY);
 	cpShapeSetFriction(shape, 1.0f);
 	cpShapeSetFilter(shape, edgeFilter);
 	// Right edge
 	shape = cpSpaceAddShape(s->Space, cpSegmentShapeNew(
 		s->edgeBodies, cpv(FIELD_WIDTH, s->edgeBodiesBottom),
 		cpv(FIELD_WIDTH, top), 0.0f));
-	cpShapeSetElasticity(shape, 1.0f);
+	cpShapeSetElasticity(shape, FIELD_ELASTICITY);
 	cpShapeSetFriction(shape, 1.0f);
 	cpShapeSetFilter(shape, edgeFilter);
 }

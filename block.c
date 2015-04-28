@@ -52,7 +52,7 @@ static cpBody *MakeBody(const float x, const float y, const float w)
 	cpBodySetPosition(body, cpv(x + w / 2, y - GAP_HEIGHT / 2));
 	cpShape *shape = cpSpaceAddShape(
 		space.Space, cpBoxShapeNew(body, w, GAP_HEIGHT, 0.0));
-	cpShapeSetElasticity(shape, 1.0f);
+	cpShapeSetElasticity(shape, BLOCK_ELASTICITY);
 	cpShapeSetFriction(shape, 1.0f);
 	return body;
 }

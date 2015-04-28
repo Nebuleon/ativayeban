@@ -54,6 +54,8 @@
 // The speed at which the scroll speed increases, every second
 #define FIELD_SCROLL_SPEED 0.01f
 
+#define FIELD_ELASTICITY 0.25f
+
 // The distance between the edges of two successive gaps to begin with.
 // Given in meters.
 #define GAP_GEN_START   1.50f
@@ -73,11 +75,13 @@
 // Given in meters.
 #define GAP_HEIGHT       0.25f
 
+#define BLOCK_ELASTICITY 0.25f
+
 // The radius of the player's character.
 // Given in meters.
 #define PLAYER_RADIUS    0.185f
 
-#define PLAYER_ELASTICITY 0.25f
+#define PLAYER_ELASTICITY 1.0f
 
 // The width of the playing field.
 // Given in meters.

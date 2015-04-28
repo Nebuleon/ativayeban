@@ -123,6 +123,7 @@ void PlayerDraw(const Player *player, const float y)
 void PlayerInit(Player *player, const int i, const cpVect pos)
 {
 	player->Index = i;
+	player->Enabled = false;
 	player->Body = cpSpaceAddBody(
 		space.Space,
 		cpBodyNew(10.0f, cpMomentForCircle(10.0f, 0.0f, PLAYER_RADIUS, cpvzero)));
