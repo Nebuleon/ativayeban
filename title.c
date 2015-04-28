@@ -47,6 +47,10 @@ static Block blocks[MAX_PLAYERS];
 #define BLOCK_WIDTH (FIELD_WIDTH / MAX_PLAYERS * 0.25f)
 #define BLOCK_Y (FIELD_HEIGHT * 0.5f)
 
+// Countdown to start the game automatically; starts when a player is enabled
+static int countdownMs = -1;
+#define COUNTDOWN_START_MS 3999
+
 
 static void TitleScreenEnd(void);
 void TitleScreenGatherInput(bool* Continue)
@@ -55,16 +59,7 @@ void TitleScreenGatherInput(bool* Continue)
 
 	while (SDL_PollEvent(&ev))
 	{
-		if (IsEnterGamePressingEvent(&ev))
-			WaitingForRelease = true;
-		else if (IsEnterGameReleasingEvent(&ev))
-		{
-			WaitingForRelease = false;
-			TitleScreenEnd();
-			ToGame();
-			return;
-		}
-		else if (IsExitGameEvent(&ev))
+		if (IsExitGameEvent(&ev))
 		{
 			*Continue = false;
 			TitleScreenEnd();
@@ -98,8 +93,32 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 		cpVect pos = cpBodyGetPosition(players[i].Body);
 		if (pos.y < BLOCK_Y)
 		{
+			if (!players[i].Enabled)
+			{
+				// New player entered
+				countdownMs = COUNTDOWN_START_MS;
+				SoundPlay(SoundStart, 1.0);
+			}
 			players[i].Enabled = true;
 		}
+	}
+
+	if (countdownMs >= 0)
+	{
+		const int countdownMsNext = countdownMs - Milliseconds;
+		// Play a beep every second
+		if ((countdownMs / 1000) > (countdownMsNext / 1000))
+		{
+			SoundPlay(SoundBeep, 1.0);
+		}
+		// Start game if counted down to zero
+		if (countdownMsNext <= 0)
+		{
+			TitleScreenEnd();
+			ToGame();
+			return;
+		}
+		countdownMs = countdownMsNext;
 	}
 }
 
@@ -151,7 +170,7 @@ void ToTitleScreen(void)
 	BackgroundsInit(&BG);
 	sprintf(
 		WelcomeMessage,
-		"Press %s to play\nor %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
+		"\n\nPress %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
 		GetEnterGamePrompt(), GetExitGamePrompt(), GetMovementPrompt(), GetPausePrompt(), GetExitGamePrompt());
 
 	// Add bottom edge so we don't fall through

@@ -137,6 +137,7 @@ void Initialize(bool* Continue, bool* Error)
 		SDL_ClearError();\
 		return;\
 	}
+	LOAD_SOUND(SoundBeep, "beep.ogg");
 	LOAD_SOUND(SoundPlayerBounce, "bounce.ogg");
 	LOAD_SOUND(SoundStart, "start.ogg");
 	LOAD_SOUND(SoundLose, "lose.ogg");
@@ -185,6 +186,7 @@ void Finalize()
 	TitleImagesFree();
 	BackgroundsFree(&BG);
 	Mix_FreeChunk(SoundPlayerBounce);
+	Mix_FreeChunk(SoundBeep);
 	Mix_FreeChunk(SoundStart);
 	Mix_FreeChunk(SoundLose);
 	Mix_FreeChunk(SoundScore);

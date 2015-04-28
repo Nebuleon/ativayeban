@@ -141,3 +141,14 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 	player->NextBlinkCounter = 1;
 	player->Sprites = PlayerSpritesheets[i];
 }
+
+int PlayerEnabledCount(void)
+{
+	int num = 0;
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (!players[i].Enabled) continue;
+		num++;
+	}
+	return num;
+}

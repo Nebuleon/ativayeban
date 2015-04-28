@@ -44,6 +44,7 @@
 static uint32_t               Score;
 static bool                   Pause;
 
+Mix_Chunk* SoundBeep = NULL;
 Mix_Chunk* SoundStart = NULL;
 Mix_Chunk* SoundLose = NULL;
 Mix_Chunk* SoundScore = NULL;
@@ -105,14 +106,12 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 static float PlayerMiddleY(void)
 {
 	float sum = 0;
-	int num = 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (!players[i].Enabled) continue;
 		sum += players[i].Y;
-		num++;
 	}
-	return sum / num;
+	return sum / PlayerEnabledCount();
 }
 static float PlayerMinY(void)
 {
@@ -176,13 +175,15 @@ void ToGame(void)
 
 	// Reset player positions and velocity
 	// TODO: continue from title screen
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0, c = 0; i < MAX_PLAYERS; i++)
 	{
-		const cpBody *body = players[i].Body;
+		if (!players[i].Enabled) continue;
+		cpBody *body = players[i].Body;
 		cpBodySetPosition(body, cpv(
-			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1),
+			(c + 1) * FIELD_WIDTH / (PlayerEnabledCount() + 1),
 			FIELD_HEIGHT * 0.75f));
 		cpBodySetVelocity(body, cpvzero);
+		c++;
 	}
 	CameraInit(&camera);
 	SoundPlay(SoundStart, 1.0);

@@ -44,3 +44,5 @@ extern int SoundPlayerRollChannel;
 void PlayerUpdate(Player *player);
 void PlayerDraw(const Player *player, const float y);
 void PlayerInit(Player *player, const int i, const cpVect pos);
+
+int PlayerEnabledCount(void);

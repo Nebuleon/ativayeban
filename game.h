@@ -93,6 +93,7 @@
 #define SCREEN_X(_x) ((int)roundf((_x) * SCREEN_WIDTH / FIELD_WIDTH))
 #define SCREEN_Y(_y) ((int)roundf(SCREEN_HEIGHT - (_y) * SCREEN_HEIGHT / FIELD_HEIGHT))
 
+extern Mix_Chunk* SoundBeep;
 extern Mix_Chunk* SoundStart;
 extern Mix_Chunk* SoundLose;
 extern Mix_Chunk* SoundScore;
