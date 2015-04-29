@@ -14,8 +14,6 @@ typedef struct
 	bool Enabled;
 
 	cpBody *Body;
-	// Where the player is. (Center, meters.)
-	float X, Y;
 
 	// The last value returned by GetMovement.
 	int16_t AccelX;
@@ -44,5 +42,7 @@ extern int SoundPlayerRollChannel;
 void PlayerUpdate(Player *player);
 void PlayerDraw(const Player *player, const float y);
 void PlayerInit(Player *player, const int i, const cpVect pos);
+
+void PlayerDisable(Player *player);
 
 int PlayerEnabledCount(void);

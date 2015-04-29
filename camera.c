@@ -28,12 +28,18 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "game.h"
 #include "utils.h"
 
+// The rate at which the camera tracks the target position
+// Every frame it will pan from its current position to the target with
+// this ratio
+#define CAMERA_TRACK_RATIO 0.1f
+
 Camera camera;
 
 void CameraInit(Camera *c)
 {
-	c->DY = FIELD_HEIGHT / 2;
-	c->Y = 0;
+	// Initialise camera so that players are at the bottom
+	c->Y = FIELD_HEIGHT * (0.5f + 0.75f) - PLAYER_RADIUS;
+	c->DY = c->Y;
 	c->ScrollRate = FIELD_SCROLL;
 	c->ScrollCounter = 0;
 }
@@ -41,14 +47,18 @@ void CameraInit(Camera *c)
 void CameraUpdate(Camera *c, const float playerY, const uint32_t ms)
 {
 	c->DY -= ms * c->ScrollRate / 1000;
+	float targetY;
 	if (c->DY < playerY)
 	{
-		c->Y = c->DY;
+		targetY = c->DY;
 	}
 	else
 	{
-		c->Y = 0.8f * playerY + 0.2f * c->DY;
+		targetY = 0.8f * playerY + 0.2f * c->DY;
 	}
+
+	c->Y = c->Y * (1 - CAMERA_TRACK_RATIO) + targetY * CAMERA_TRACK_RATIO;
+
 	c->DY = MIN(c->DY, playerY + FIELD_HEIGHT / 2);
 	c->ScrollCounter += ms;
 	if (c->ScrollCounter >= 1000)

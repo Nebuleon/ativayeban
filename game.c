@@ -87,17 +87,31 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	if (Pause) return;
 
 	cpSpaceStep(space.Space, Milliseconds * 0.001);
+	CameraUpdate(&camera, PlayerMiddleY(), Milliseconds);
 
+	bool hasPlayers = false;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (!players[i].Enabled) continue;
-		PlayerUpdate(&players[i]);
+		Player *p = &players[i];
+		if (!p->Enabled) continue;
+		PlayerUpdate(p);
+		hasPlayers = true;
+
+		// Players that hit the top of the screen die
+		if (cpBodyGetPosition(p->Body).y + PLAYER_RADIUS >=
+			camera.Y + FIELD_HEIGHT / 2)
+		{
+			PlayerDisable(p);
+		}
 	}
-	CameraUpdate(&camera, PlayerMiddleY(), Milliseconds);
+	// If no players left alive, end the game
+	if (!hasPlayers)
+	{
+		ToScore(Score);
+	}
 	SpaceUpdate(&space, PlayerMinY(), camera.Y, PlayerMaxY(), &Score);
 
-	// If the ball has collided with the top of the field,
-	// the player's game is over.
+	// Players that hit the top of the screen die
 	if (PlayerMaxY() + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
 	{
 		ToScore(Score);
@@ -108,8 +122,9 @@ static float PlayerMiddleY(void)
 	float sum = 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (!players[i].Enabled) continue;
-		sum += players[i].Y;
+		const Player *p = &players[i];
+		if (!p->Enabled) continue;
+		sum += (float)cpBodyGetPosition(p->Body).y;
 	}
 	return sum / PlayerEnabledCount();
 }
@@ -118,10 +133,12 @@ static float PlayerMinY(void)
 	float y = NAN;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (!players[i].Enabled) continue;
-		if (isnan(y) || players[i].Y < y)
+		const Player *p = &players[i];
+		if (!p->Enabled) continue;
+		const float py = (float)cpBodyGetPosition(p->Body).y;
+		if (isnan(y) || py < y)
 		{
-			y = players[i].Y;
+			y = py;
 		}
 	}
 	return y;
@@ -131,10 +148,12 @@ static float PlayerMaxY(void)
 	float y = NAN;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (!players[i].Enabled) continue;
-		if (isnan(y) || players[i].Y > y)
+		const Player *p = &players[i];
+		if (!p->Enabled) continue;
+		const float py = (float)cpBodyGetPosition(p->Body).y;
+		if (isnan(y) || py > y)
 		{
-			y = players[i].Y;
+			y = py;
 		}
 	}
 	return y;
@@ -142,7 +161,8 @@ static float PlayerMaxY(void)
 
 void GameOutputFrame(void)
 {
-	const float screenYOff = MAX(0.0f, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
+	const float screenYOff =
+		MAX(-SCREEN_HEIGHT, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
 	// Draw the background.
 	DrawBackground(&BG, screenYOff);
 

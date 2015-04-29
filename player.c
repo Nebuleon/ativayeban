@@ -84,10 +84,6 @@ void PlayerUpdate(Player *player)
 		player->BlinkCounter = PLAYER_BLINK_FRAMES;
 		player->NextBlinkCounter = PLAYER_BLINK_INTERVAL_FRAMES;
 	}
-
-	cpVect pos = cpBodyGetPosition(player->Body);
-	player->X = (float)pos.x;
-	player->Y = (float)pos.y;
 }
 static void OnArbiter(cpBody *body, cpArbiter *arb, void *data)
 {
@@ -111,9 +107,11 @@ void PlayerDraw(const Player *player, const float y)
 		PLAYER_SPRITESHEET_WIDTH,
 		PLAYER_SPRITESHEET_HEIGHT
 	};
+
+	const cpVect pos = cpBodyGetPosition(player->Body);
 	SDL_Rect dest = {
-		(Sint16)(SCREEN_X(player->X) - PLAYER_SPRITESHEET_WIDTH / 2),
-		(Sint16)(SCREEN_Y(player->Y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
+		(Sint16)(SCREEN_X(pos.x) - PLAYER_SPRITESHEET_WIDTH / 2),
+		(Sint16)(SCREEN_Y(pos.y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
 		0,
 		0
 	};
@@ -132,14 +130,18 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 		space.Space, cpCircleShapeNew(player->Body, PLAYER_RADIUS, cpvzero));
 	cpShapeSetElasticity(shape, PLAYER_ELASTICITY);
 	cpShapeSetFriction(shape, 0.9f);
-	player->X = FIELD_WIDTH / 2;
-	player->Y = FIELD_HEIGHT - PLAYER_RADIUS;
 	player->AccelX = 0;
 	player->WasOnSurface = false;
 	player->Roll = 0;
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
 	player->Sprites = PlayerSpritesheets[i];
+}
+
+void PlayerDisable(Player *player)
+{
+	player->Enabled = false;
+	SoundStopRoll(player->Index);
 }
 
 int PlayerEnabledCount(void)
