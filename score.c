@@ -103,14 +103,9 @@ static void DrawGameoverImg(const int i)
 
 void ToScore(uint32_t Score)
 {
-	for (int i = 0; i < MAX_PLAYERS; i++)
-	{
-		SoundStopRoll(i);
-	}
 	ResetMovement();
 	BackgroundsInit(&BG);
 	WaitingForRelease = false;
-	SoundPlay(SoundLose, 1.0);
 	MusicSetLoud(false);
 	sprintf(
 		ScoreMessage,

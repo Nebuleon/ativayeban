@@ -71,11 +71,6 @@ const char* GetExitGamePrompt(void)
 	return "Esc";
 }
 
-const char* GetMovementPrompt(void)
-{
-	return "Left/Right";
-}
-
 bool IsPauseEvent(const SDL_Event* event)
 {
 	return event->type == SDL_KEYDOWN

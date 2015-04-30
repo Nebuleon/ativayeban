@@ -22,8 +22,17 @@
 
 #define P1_LEFT SDLK_LEFT
 #define P1_RIGHT SDLK_RIGHT
-#define P2_LEFT SDLK_a
-#define P2_RIGHT SDLK_d
+#ifdef __GCW0__
+#define P2_LEFT0 SDLK_LSHIFT
+#define P2_RIGHT0 SDLK_LCTRL
+#define P2_LEFT1 SDLK_SPACE
+#define P2_RIGHT1 SDLK_LALT
+#else
+#define P2_LEFT0 SDLK_a
+#define P2_RIGHT0 SDLK_d
+#define P2_LEFT1 SDLK_z
+#define P2_RIGHT1 SDLK_x
+#endif
 
 static bool pressed[SDLK_LAST];
 
@@ -37,9 +46,11 @@ void InputOnEvent(const SDL_Event* event)
 
 int16_t GetMovement(const int player)
 {
-	return pressed[player == 0 ? P1_LEFT : P2_LEFT]
-		? (pressed[player == 0 ? P1_RIGHT : P2_RIGHT] ? 0 : -32768)
-		: (pressed[player == 0 ? P1_RIGHT : P2_RIGHT] ? 32767 : 0);
+	const bool left = player == 0 ?
+		pressed[P1_LEFT] : (pressed[P2_LEFT0] || pressed[P2_LEFT1]);
+	const bool right = player == 0 ?
+		pressed[P1_RIGHT] : (pressed[P2_RIGHT0] || pressed[P2_RIGHT1]);
+	return left ? (right ? 0 : -32768) : (right ? 32767 : 0);
 }
 
 void ResetMovement(void)

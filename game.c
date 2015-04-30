@@ -162,7 +162,7 @@ static float PlayerMaxY(void)
 void GameOutputFrame(void)
 {
 	const float screenYOff =
-		MAX(-SCREEN_HEIGHT, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
+		(float)MAX(-SCREEN_HEIGHT, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
 	// Draw the background.
 	DrawBackground(&BG, screenYOff);
 

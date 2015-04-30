@@ -140,6 +140,10 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 
 void PlayerDisable(Player *player)
 {
+	if (player->Enabled)
+	{
+		SoundPlay(SoundLose, 1.0);
+	}
 	player->Enabled = false;
 	SoundStopRoll(player->Index);
 }

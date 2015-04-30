@@ -46,7 +46,5 @@ extern const char* GetEnterGamePrompt(void);
 extern bool IsExitGameEvent(const SDL_Event* event);
 extern const char* GetExitGamePrompt(void);
 
-extern const char* GetMovementPrompt(void);
-
 extern bool IsPauseEvent(const SDL_Event* event);
 extern const char* GetPausePrompt(void);

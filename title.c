@@ -42,6 +42,7 @@ SDL_Surface *TitleImages[12];
 static int titleImageIndex = 0;
 #define TITLE_IMAGE_COUNTER 5
 static int titleImageCounter = TITLE_IMAGE_COUNTER;
+SDL_Surface *ControlSurfaces[MAX_PLAYERS];
 
 static Block blocks[MAX_PLAYERS];
 #define BLOCK_WIDTH (FIELD_WIDTH / MAX_PLAYERS * 0.25f)
@@ -129,6 +130,22 @@ void TitleScreenOutputFrame(void)
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		SDL_Rect dest =
+		{
+			(Sint16)(
+				SCREEN_X((i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1)) -
+				ControlSurfaces[i]->w / 2),
+			(Sint16)(
+				(SCREEN_HEIGHT - ControlSurfaces[i]->h) / 2 -
+				SCREEN_X(PLAYER_RADIUS)),
+			0,
+			0
+		};
+		SDL_BlitSurface(ControlSurfaces[i], NULL, Screen, &dest);
+	}
+
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
 		PlayerDraw(&players[i], 0);
 	}
 
@@ -148,7 +165,7 @@ void TitleScreenOutputFrame(void)
 		}
 	}
 	DrawTitleImg(titleImageIndex);
-	TextRenderCentered(Screen, font, WelcomeMessage, SCREEN_HEIGHT / 2 - 30);
+	TextRenderCentered(Screen, font, WelcomeMessage, SCREEN_HEIGHT * 0.75f);
 
 	SDL_Flip(Screen);
 }
@@ -170,8 +187,8 @@ void ToTitleScreen(void)
 	BackgroundsInit(&BG);
 	sprintf(
 		WelcomeMessage,
-		"\n\nPress %s to exit\n\nIn-game:\n%s to move around\n%s to pause\n%s to exit",
-		GetEnterGamePrompt(), GetExitGamePrompt(), GetMovementPrompt(), GetPausePrompt(), GetExitGamePrompt());
+		"%s to pause\n%s to exit",
+		GetPausePrompt(), GetExitGamePrompt());
 
 	// Add bottom edge so we don't fall through
 	SpaceAddBottomEdge(&space);
@@ -211,6 +228,20 @@ bool TitleImagesLoad(void)
 			return false;
 		}
 	}
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		char buf[256];
+#ifdef __GCW0__
+		sprintf(buf, "data/graphics/gcw%d.png", i);
+#else
+		sprintf(buf, "data/graphics/keyboard%d.png", i);
+#endif
+		ControlSurfaces[i] = IMG_Load(buf);
+		if (ControlSurfaces[i] == NULL)
+		{
+			return false;
+		}
+	}
 	return true;
 }
 void TitleImagesFree(void)
@@ -218,5 +249,9 @@ void TitleImagesFree(void)
 	for (int i = 0; i < 12; i++)
 	{
 		SDL_FreeSurface(TitleImages[i]);
+	}
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		SDL_FreeSurface(ControlSurfaces[i]);
 	}
 }

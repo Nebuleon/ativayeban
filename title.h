@@ -23,8 +23,6 @@
 
 #include <SDL.h>
 
-extern SDL_Surface *TitleImages[12];
-
 extern void ToTitleScreen(void);
 
 bool TitleImagesLoad(void);

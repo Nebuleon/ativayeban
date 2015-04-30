@@ -37,38 +37,30 @@ Uint32 ToNextFrame(void)
 bool IsEnterGamePressingEvent(const SDL_Event* event)
 {
 	return event->type == SDL_KEYDOWN
-	    && (event->key.keysym.sym == SDLK_LCTRL  /* A */
-	     || event->key.keysym.sym == SDLK_RETURN /* Start */);
+	    && (event->key.keysym.sym == SDLK_RETURN /* Start */);
 }
 
 bool IsEnterGameReleasingEvent(const SDL_Event* event)
 {
 	return event->type == SDL_KEYUP
-	    && (event->key.keysym.sym == SDLK_LCTRL  /* A */
-	     || event->key.keysym.sym == SDLK_RETURN /* Start */);
+	    && (event->key.keysym.sym == SDLK_RETURN /* Start */);
 }
 
 const char* GetEnterGamePrompt(void)
 {
-	return "A/Start";
+	return "Start";
 }
 
 bool IsExitGameEvent(const SDL_Event* event)
 {
 	return event->type == SDL_QUIT
 	    || (event->type == SDL_KEYDOWN
-	     && (event->key.keysym.sym == SDLK_LALT   /* B */
-	      || event->key.keysym.sym == SDLK_ESCAPE /* Select */));
+	     && (event->key.keysym.sym == SDLK_ESCAPE /* Select */));
 }
 
 const char* GetExitGamePrompt(void)
 {
-	return "B/Select";
-}
-
-const char* GetMovementPrompt(void)
-{
-	return "D-pad Left/Right";
+	return "Select";
 }
 
 bool IsPauseEvent(const SDL_Event* event)

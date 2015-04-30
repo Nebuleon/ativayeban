@@ -80,6 +80,7 @@ include_directories(chipmunk/include)
 
 file(GLOB SOURCES *.c)
 if(GCW0)
+    add_definitions(-D__GCW0__)
     set(SOURCES ${SOURCES} platform/opendingux.c)
 else()
     set(SOURCES ${SOURCES} platform/general.c)
