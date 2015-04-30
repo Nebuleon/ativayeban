@@ -69,7 +69,7 @@ void GameGatherInput(bool* Continue)
 	}
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (!players[i].Enabled) continue;
+		if (!players[i].Alive) continue;
 		players[i].AccelX = GetMovement(i);
 	}
 }
@@ -94,14 +94,37 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	{
 		Player *p = &players[i];
 		if (!p->Enabled) continue;
-		PlayerUpdate(p);
+		PlayerUpdate(p, Milliseconds);
+		// Check if the player needs to be respawned
+		if (p->RespawnCounter == 0 && !p->Alive && space.Gaps.size > 0)
+		{
+			// Spawn the player inside the last gap
+			const struct Gap *lastGap =
+				CArrayGet(&space.Gaps, (int)space.Gaps.size - 1);
+			PlayerRespawn(
+				p,
+				(lastGap->Left.X + lastGap->Left.W + lastGap->Right.X) / 2,
+				lastGap->Y - GAP_HEIGHT);
+		}
+		if (!p->Alive)
+		{
+			// Check if any players are past ones that await reenabling
+			if (p->RespawnCounter == -1 && PlayerMinY() < p->y)
+			{
+				PlayerRevive(p);
+			}
+			else
+			{
+				continue;
+			}
+		}
 		hasPlayers = true;
 
 		// Players that hit the top of the screen die
 		if (cpBodyGetPosition(p->Body).y + PLAYER_RADIUS >=
 			camera.Y + FIELD_HEIGHT / 2)
 		{
-			PlayerDisable(p);
+			PlayerKill(p);
 		}
 	}
 	// If no players left alive, end the game
@@ -123,10 +146,10 @@ static float PlayerMiddleY(void)
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		const Player *p = &players[i];
-		if (!p->Enabled) continue;
+		if (!p->Alive) continue;
 		sum += (float)cpBodyGetPosition(p->Body).y;
 	}
-	return sum / PlayerEnabledCount();
+	return sum / PlayerAliveCount();
 }
 static float PlayerMinY(void)
 {
@@ -149,7 +172,7 @@ static float PlayerMaxY(void)
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		const Player *p = &players[i];
-		if (!p->Enabled) continue;
+		if (!p->Alive) continue;
 		const float py = (float)cpBodyGetPosition(p->Body).y;
 		if (isnan(y) || py > y)
 		{
@@ -170,7 +193,6 @@ void GameOutputFrame(void)
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (!players[i].Enabled) continue;
 		PlayerDraw(&players[i], screenYOff);
 	}
 
@@ -200,7 +222,7 @@ void ToGame(void)
 		if (!players[i].Enabled) continue;
 		cpBody *body = players[i].Body;
 		cpBodySetPosition(body, cpv(
-			(c + 1) * FIELD_WIDTH / (PlayerEnabledCount() + 1),
+			(c + 1) * FIELD_WIDTH / (PlayerAliveCount() + 1),
 			FIELD_HEIGHT * 0.75f));
 		cpBodySetVelocity(body, cpvzero);
 		c++;

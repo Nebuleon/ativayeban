@@ -41,9 +41,6 @@ struct Gap
 	Block Right;
 	// Where the gap layer is.
 	float Y;
-	// Where the gap starts and ends
-	float GapLeft;
-	float GapRight;
 
 	bool Passed;
 };

@@ -45,8 +45,6 @@ void GapInit(struct Gap* gap, float y, float gapLeft)
 		gapLeft + GAP_WIDTH, y, FIELD_WIDTH - (gapLeft + GAP_WIDTH));
 	gap->Passed = false;
 	gap->Y = y;
-	gap->GapLeft = gapLeft;
-	gap->GapRight = gapLeft + GAP_WIDTH;
 }
 void GapRemove(struct Gap* gap)
 {

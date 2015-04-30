@@ -20,6 +20,7 @@
 #define PLAYER_BLINK_FRAMES 20
 #define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 100) + 100)
 #define PLAYER_BLINK_CHANCE 50
+#define PLAYER_RESPAWN_COUNTER 3000
 
 SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 Mix_Chunk* SoundPlayerBounce = NULL;
@@ -32,8 +33,21 @@ typedef struct
 	int Num;
 } OnArbiterData;
 static void OnArbiter(cpBody *body, cpArbiter *arb, void *data);
-void PlayerUpdate(Player *player)
+void PlayerUpdate(Player *player, const Uint32 ms)
 {
+	if (!player->Enabled) return;
+
+	if (player->RespawnCounter > 0)
+	{
+		player->RespawnCounter -= ms;
+		if (player->RespawnCounter < 0)
+		{
+			player->RespawnCounter = 0;
+		}
+	}
+
+	if (!player->Alive) return;
+
 	// Update the speed at which the player is going.
 	// Provide positive bonus for:
 	// - when the player is very slow
@@ -84,6 +98,10 @@ void PlayerUpdate(Player *player)
 		player->BlinkCounter = PLAYER_BLINK_FRAMES;
 		player->NextBlinkCounter = PLAYER_BLINK_INTERVAL_FRAMES;
 	}
+
+	const cpVect pos = cpBodyGetPosition(player->Body);
+	player->x = (float)pos.x;
+	player->y = (float)pos.y;
 }
 static void OnArbiter(cpBody *body, cpArbiter *arb, void *data)
 {
@@ -95,6 +113,8 @@ static void OnArbiter(cpBody *body, cpArbiter *arb, void *data)
 
 void PlayerDraw(const Player *player, const float y)
 {
+	if (!player->Enabled) return;
+
 	// Draw the character.
 	int rollFrame = player->Roll;
 	if (player->BlinkCounter > 0)
@@ -108,10 +128,9 @@ void PlayerDraw(const Player *player, const float y)
 		PLAYER_SPRITESHEET_HEIGHT
 	};
 
-	const cpVect pos = cpBodyGetPosition(player->Body);
 	SDL_Rect dest = {
-		(Sint16)(SCREEN_X(pos.x) - PLAYER_SPRITESHEET_WIDTH / 2),
-		(Sint16)(SCREEN_Y(pos.y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
+		(Sint16)(SCREEN_X(player->x) - PLAYER_SPRITESHEET_WIDTH / 2),
+		(Sint16)(SCREEN_Y(player->y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
 		0,
 		0
 	};
@@ -121,7 +140,9 @@ void PlayerDraw(const Player *player, const float y)
 void PlayerInit(Player *player, const int i, const cpVect pos)
 {
 	player->Index = i;
-	player->Enabled = false;
+	player->Enabled = true;
+	player->Alive = true;
+	player->RespawnCounter = 0;
 	player->Body = cpSpaceAddBody(
 		space.Space,
 		cpBodyNew(10.0f, cpMomentForCircle(10.0f, 0.0f, PLAYER_RADIUS, cpvzero)));
@@ -138,22 +159,41 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 	player->Sprites = PlayerSpritesheets[i];
 }
 
-void PlayerDisable(Player *player)
+void PlayerKill(Player *player)
 {
-	if (player->Enabled)
+	if (player->Alive)
 	{
 		SoundPlay(SoundLose, 1.0);
 	}
-	player->Enabled = false;
+	player->Alive = false;
+	player->RespawnCounter = PLAYER_RESPAWN_COUNTER;
+	// This ensures drawing the player with eyes closed
+	player->BlinkCounter = 1;
 	SoundStopRoll(player->Index);
 }
 
-int PlayerEnabledCount(void)
+void PlayerRespawn(Player *player, const float x, const float y)
+{
+	player->x = x;
+	player->y = y;
+	player->RespawnCounter = -1;
+}
+
+void PlayerRevive(Player *player)
+{
+	player->Alive = true;
+	SoundPlay(SoundStart, 1.0);
+	// Reset body to cached position
+	cpBodySetPosition(player->Body, cpv(player->x, player->y));
+	cpBodySetVelocity(player->Body, cpvzero);
+}
+
+int PlayerAliveCount(void)
 {
 	int num = 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		if (!players[i].Enabled) continue;
+		if (!players[i].Alive) continue;
 		num++;
 	}
 	return num;

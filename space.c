@@ -120,7 +120,7 @@ void SpaceUpdate(
 		lastGap = CArrayGet(&s->Gaps, s->Gaps.size - 1);
 	}
 	if (s->Gaps.size == 0 ||
-		GapBottom(lastGap) - (cameraY - FIELD_HEIGHT / 2) >= s->gapGenDistance)
+		GapBottom(lastGap) - (cameraY - FIELD_HEIGHT) >= s->gapGenDistance)
 	{
 		float top = 0;
 		if (s->Gaps.size != 0)

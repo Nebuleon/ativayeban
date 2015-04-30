@@ -12,8 +12,13 @@ typedef struct
 
 	// Whether the player is in the game or not
 	bool Enabled;
+	bool Alive;
+	// Once dead, wait this long before respawning
+	int RespawnCounter;
 
 	cpBody *Body;
+	// Cached positions for drawing only
+	float x, y;
 
 	// The last value returned by GetMovement.
 	int16_t AccelX;
@@ -39,10 +44,12 @@ extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 extern Mix_Chunk* SoundPlayerBounce;
 extern int SoundPlayerRollChannel;
 
-void PlayerUpdate(Player *player);
+void PlayerUpdate(Player *player, const Uint32 ms);
 void PlayerDraw(const Player *player, const float y);
 void PlayerInit(Player *player, const int i, const cpVect pos);
 
-void PlayerDisable(Player *player);
+void PlayerKill(Player *player);
+void PlayerRespawn(Player *player, const float x, const float y);
+void PlayerRevive(Player *player);
 
-int PlayerEnabledCount(void);
+int PlayerAliveCount(void);

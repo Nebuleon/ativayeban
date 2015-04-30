@@ -52,6 +52,8 @@ static Block blocks[MAX_PLAYERS];
 static int countdownMs = -1;
 #define COUNTDOWN_START_MS 3999
 
+bool playersEnabled[MAX_PLAYERS];
+
 
 static void TitleScreenEnd(void);
 void TitleScreenGatherInput(bool* Continue)
@@ -78,6 +80,9 @@ static void TitleScreenEnd(void)
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		BlockRemove(&blocks[i]);
+		// Kill players that have not been enabled
+		players[i].Enabled = playersEnabled[i];
+		players[i].Alive = playersEnabled[i];
 	}
 }
 
@@ -88,19 +93,19 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	cpSpaceStep(space.Space, Milliseconds * 0.001);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		PlayerUpdate(&players[i]);
+		PlayerUpdate(&players[i], Milliseconds);
 
 		// Check which players have fallen below their start pads
 		cpVect pos = cpBodyGetPosition(players[i].Body);
 		if (pos.y < BLOCK_Y)
 		{
-			if (!players[i].Enabled)
+			if (!playersEnabled[i])
 			{
 				// New player entered
 				countdownMs = COUNTDOWN_START_MS;
 				SoundPlay(SoundStart, 1.0);
 			}
-			players[i].Enabled = true;
+			playersEnabled[i] = true;
 		}
 	}
 
@@ -165,7 +170,8 @@ void TitleScreenOutputFrame(void)
 		}
 	}
 	DrawTitleImg(titleImageIndex);
-	TextRenderCentered(Screen, font, WelcomeMessage, SCREEN_HEIGHT * 0.75f);
+	TextRenderCentered(
+		Screen, font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f));
 
 	SDL_Flip(Screen);
 }
@@ -199,6 +205,7 @@ void ToTitleScreen(void)
 		PlayerInit(&players[i], i, cpv(
 			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1),
 			FIELD_HEIGHT * 0.75f));
+		playersEnabled[i] = false;
 	}
 
 	// Add platforms for players to jump off
