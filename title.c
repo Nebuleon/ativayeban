@@ -19,10 +19,13 @@
  */
 #include "title.h"
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include <stdlib.h>
 
 #include "SDL_image.h"
 
+#include "animation.h"
 #include "block.h"
 #include "main.h"
 #include "init.h"
@@ -36,12 +39,11 @@
 #include "bg.h"
 #include "sys_specifics.h"
 
+static bool Start = false;
 static bool  WaitingForRelease = false;
 static char WelcomeMessage[256];
-SDL_Surface *TitleImages[12];
-static int titleImageIndex = 0;
-#define TITLE_IMAGE_COUNTER 5
-static int titleImageCounter = TITLE_IMAGE_COUNTER;
+static Animation TitleAnim;
+static Animation GameOverAnim;
 SDL_Surface *ControlSurfaces[MAX_PLAYERS];
 
 static Block blocks[MAX_PLAYERS];
@@ -126,9 +128,12 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 		}
 		countdownMs = countdownMsNext;
 	}
+
+	Animation *a = Start ? &TitleAnim : &GameOverAnim;
+	AnimationUpdate(a, Milliseconds);
 }
 
-static void DrawTitleImg(const int i);
+static void DrawTitleImg(void);
 void TitleScreenOutputFrame(void)
 {
 	DrawBackground(&BG, 0);
@@ -159,42 +164,40 @@ void TitleScreenOutputFrame(void)
 		BlockDraw(&blocks[i], 0);
 	}
 
-	titleImageCounter--;
-	if (titleImageCounter == 0)
-	{
-		titleImageCounter = TITLE_IMAGE_COUNTER;
-		titleImageIndex++;
-		if (titleImageIndex == 12)
-		{
-			titleImageIndex = 0;
-		}
-	}
-	DrawTitleImg(titleImageIndex);
+	DrawTitleImg();
 	TextRenderCentered(
 		Screen, font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f));
 
 	SDL_Flip(Screen);
 }
-static void DrawTitleImg(const int i)
+static void DrawTitleImg(void)
 {
-	SDL_Rect dest = {
-		(Sint16)((SCREEN_WIDTH - TitleImages[i]->w) / 2),
-		(Sint16)((SCREEN_HEIGHT - TitleImages[i]->h) / 2 - SCREEN_HEIGHT / 4),
-		0,
-		0
-	};
-	SDL_BlitSurface(TitleImages[i], NULL, Screen, &dest);
+	const Animation *a = Start ? &TitleAnim : &GameOverAnim;
+	AnimationDrawUpperCenter(a, Screen);
 }
 
-void ToTitleScreen(void)
+void ToTitleScreen(const bool start, const int score)
 {
+	countdownMs = -1;
+	ResetMovement();
 	MusicSetLoud(false);
 	Mix_PlayMusic(music, -1);
 	BackgroundsInit(&BG);
-	sprintf(
-		WelcomeMessage,
-		"%s to pause\n%s to exit",
-		GetPausePrompt(), GetExitGamePrompt());
+	Start = start;
+	if (Start)
+	{
+		sprintf(
+			WelcomeMessage,
+			"%s to pause\n%s to exit",
+			GetPausePrompt(), GetExitGamePrompt());
+	}
+	else
+	{
+		sprintf(
+			WelcomeMessage,
+			"Your score was %" PRIu32 "\n%s to exit",
+			score, GetExitGamePrompt());
+	}
 
 	// Add bottom edge so we don't fall through
 	SpaceAddBottomEdge(&space);
@@ -225,15 +228,13 @@ void ToTitleScreen(void)
 
 bool TitleImagesLoad(void)
 {
-	for (int i = 0; i < 12; i++)
+	if (!AnimationLoad(&TitleAnim, "data/graphics/anim%02d.png", 12, 12))
 	{
-		char buf[256];
-		sprintf(buf, "data/graphics/anim%02d.png", i + 1);
-		TitleImages[i] = IMG_Load(buf);
-		if (TitleImages[i] == NULL)
-		{
-			return false;
-		}
+		return false;
+	}
+	if (!AnimationLoad(&GameOverAnim, "data/graphics/gameover_%02d.png", 2, 3))
+	{
+		return false;
 	}
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -253,10 +254,8 @@ bool TitleImagesLoad(void)
 }
 void TitleImagesFree(void)
 {
-	for (int i = 0; i < 12; i++)
-	{
-		SDL_FreeSurface(TitleImages[i]);
-	}
+	AnimationFree(&TitleAnim);
+	AnimationFree(&GameOverAnim);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		SDL_FreeSurface(ControlSurfaces[i]);

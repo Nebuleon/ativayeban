@@ -30,7 +30,6 @@
 #include "init.h"
 #include "platform.h"
 #include "player.h"
-#include "score.h"
 #include "space.h"
 #include "sound.h"
 #include "title.h"
@@ -103,8 +102,6 @@ void Initialize(bool* Continue, bool* Error)
 
 	LOAD_IMG(PlayerSpritesheets[0], "penguin_ball.png");
 	LOAD_IMG(PlayerSpritesheets[1], "penguin_black.png");
-	LOAD_IMG(GameOverImages[0], "gameover_01.png");
-	LOAD_IMG(GameOverImages[1], "gameover_02.png");
 
 	if (!GapSurfacesLoad())
 	{
@@ -169,7 +166,7 @@ void Initialize(bool* Continue, bool* Error)
 	InitializePlatform();
 
 	// Title screen. (-> title.c)
-	ToTitleScreen();
+	ToTitleScreen(true, 0);
 }
 
 void Finalize()
@@ -179,8 +176,6 @@ void Finalize()
 	{
 		SDL_FreeSurface(PlayerSpritesheets[i]);
 	}
-	SDL_FreeSurface(GameOverImages[0]);
-	SDL_FreeSurface(GameOverImages[1]);
 	SDL_FreeSurface(icon);
 	GapSurfacesFree();
 	TitleImagesFree();

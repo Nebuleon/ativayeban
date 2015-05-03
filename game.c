@@ -37,7 +37,6 @@
 #include "utils.h"
 #include "game.h"
 #include "gap.h"
-#include "score.h"
 #include "draw.h"
 #include "bg.h"
 
@@ -130,14 +129,14 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	// If no players left alive, end the game
 	if (!hasPlayers)
 	{
-		ToScore(Score);
+		ToTitleScreen(false, Score);
 	}
 	SpaceUpdate(&space, PlayerMinY(), camera.Y, PlayerMaxY(), &Score);
 
 	// Players that hit the top of the screen die
 	if (PlayerMaxY() + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
 	{
-		ToScore(Score);
+		ToTitleScreen(false, Score);
 	}
 }
 static float PlayerMiddleY(void)
