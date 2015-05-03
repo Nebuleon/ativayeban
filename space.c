@@ -101,7 +101,10 @@ void SpaceUpdate(
 		if (!g->Passed && g->Y > playerMaxY + PLAYER_RADIUS)
 		{
 			g->Passed = true;
-			(*score)++;
+			if (score != NULL)
+			{
+				(*score)++;
+			}
 			SoundPlay(SoundScore, 1.0);
 		}
 		// Arbitrary limit to eliminate off screen gaps

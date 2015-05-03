@@ -166,6 +166,8 @@ void Initialize(bool* Continue, bool* Error)
 	InitializePlatform();
 
 	// Title screen. (-> title.c)
+	MusicSetLoud(false);
+	Mix_PlayMusic(music, -1);
 	ToTitleScreen(true, 0);
 }
 

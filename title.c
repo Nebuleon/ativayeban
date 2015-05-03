@@ -181,7 +181,6 @@ void ToTitleScreen(const bool start, const int score)
 	countdownMs = -1;
 	ResetMovement();
 	MusicSetLoud(false);
-	Mix_PlayMusic(music, -1);
 	BackgroundsInit(&BG);
 	Start = start;
 	if (Start)
@@ -199,6 +198,7 @@ void ToTitleScreen(const bool start, const int score)
 			score, GetExitGamePrompt());
 	}
 
+	SpaceReset(&space);
 	// Add bottom edge so we don't fall through
 	SpaceAddBottomEdge(&space);
 
