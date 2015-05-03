@@ -42,6 +42,8 @@
 static bool Start = false;
 static bool  WaitingForRelease = false;
 static char WelcomeMessage[256];
+static int winnerIndices[MAX_PLAYERS];
+static int winners = 0;
 static Animation TitleAnim;
 static Animation GameOverAnim;
 SDL_Surface *ControlSurfaces[MAX_PLAYERS];
@@ -165,6 +167,27 @@ void TitleScreenOutputFrame(void)
 	}
 
 	DrawTitleImg();
+	// Draw player icons if winners
+	if (!Start)
+	{
+		const int left =
+			(SCREEN_WIDTH - PLAYER_SPRITESHEET_WIDTH * winners) / 2;
+		for (int i = 0; i < winners; i++)
+		{
+			const int playerIndex = winnerIndices[i];
+			SDL_Rect src = {
+				0, 0, PLAYER_SPRITESHEET_WIDTH, PLAYER_SPRITESHEET_HEIGHT
+			};
+			SDL_Rect dest =
+			{
+				(Sint16)(left + i * PLAYER_SPRITESHEET_WIDTH),
+				(Sint16)(SCREEN_HEIGHT * 0.66f),
+				0, 0
+			};
+			SDL_BlitSurface(
+				PlayerSpritesheets[playerIndex], &src, Screen, &dest);
+		}
+	}
 	TextRenderCentered(
 		Screen, font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f));
 
@@ -198,24 +221,14 @@ void ToTitleScreen(const bool start)
 		{
 			if (players[i].Score > maxScore) maxScore = players[i].Score;
 		}
-		char winnerBuf[16];
-		strcpy(winnerBuf, "");
-		int winners = 0;
+		winners = 0;
 		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
+			if (!players[i].Enabled) continue;
 			if (players[i].Score == maxScore)
 			{
+				winnerIndices[winners] = i;
 				winners++;
-				if (strlen(winnerBuf) == 0)
-				{
-					sprintf(winnerBuf, "%d", i + 1);
-				}
-				else
-				{
-					char buf[8];
-					sprintf(buf, ", %d", i + 1);
-					strcat(winnerBuf, buf);
-				}
 			}
 		}
 		if (PlayerEnabledCount() == 1)
@@ -229,15 +242,15 @@ void ToTitleScreen(const bool start)
 		{
 			sprintf(
 				WelcomeMessage,
-				"Player %s wins with score %d!\n%s to exit",
-				winnerBuf, maxScore, GetExitGamePrompt());
+				"Wins with score %d!\n%s to exit",
+				maxScore, GetExitGamePrompt());
 		}
 		else
 		{
 			sprintf(
 				WelcomeMessage,
-				"Tie between players %s with score %d!\n%s to exit",
-				winnerBuf, maxScore, GetExitGamePrompt());
+				"Tied with score %d!\n%s to exit",
+				maxScore, GetExitGamePrompt());
 		}
 	}
 
