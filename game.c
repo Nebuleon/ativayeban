@@ -40,7 +40,6 @@
 #include "draw.h"
 #include "bg.h"
 
-static uint32_t               Score;
 static bool                   Pause;
 
 Mix_Chunk* SoundBeep = NULL;
@@ -97,13 +96,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 		// Check if the player needs to be respawned
 		if (p->RespawnCounter == 0 && !p->Alive && space.Gaps.size > 0)
 		{
-			// Spawn the player inside the last gap
-			const struct Gap *lastGap =
-				CArrayGet(&space.Gaps, (int)space.Gaps.size - 1);
-			PlayerRespawn(
-				p,
-				(lastGap->Left.X + lastGap->Left.W + lastGap->Right.X) / 2,
-				lastGap->Y - GAP_HEIGHT);
+			SpaceRespawnPlayer(&space, p);
 		}
 		if (!p->Alive)
 		{
@@ -129,14 +122,14 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	// If no players left alive, end the game
 	if (!hasPlayers)
 	{
-		ToTitleScreen(false, Score);
+		ToTitleScreen(false);
 	}
-	SpaceUpdate(&space, PlayerMinY(), camera.Y, PlayerMaxY(), &Score);
+	SpaceUpdate(&space, PlayerMinY(), camera.Y, PlayerMaxY(), &players[0]);
 
 	// Players that hit the top of the screen die
 	if (PlayerMaxY() + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
 	{
-		ToTitleScreen(false, Score);
+		ToTitleScreen(false);
 	}
 }
 static float PlayerMiddleY(void)
@@ -190,40 +183,49 @@ void GameOutputFrame(void)
 
 	SpaceDraw(&space, screenYOff);
 
+	int c = 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		PlayerDraw(&players[i], screenYOff);
+
+		if (!players[i].Enabled) continue;
+
+		// Draw each player's current score.
+		char buf[17];
+		sprintf(buf, "%d", players[i].Score);
+		const SDL_Color white = { 255, 255, 255, 255 };
+		SDL_Surface *t = TTF_RenderText_Blended(font, buf, white);
+		const int x = (c + 1) * SCREEN_WIDTH / (PlayerEnabledCount() + 1);
+		const int wHalf = (t->w + PLAYER_SPRITESHEET_WIDTH) / 2;
+		// Draw the player icon, followed by the score number
+		SDL_Rect src = {
+			0, 0, PLAYER_SPRITESHEET_WIDTH, PLAYER_SPRITESHEET_HEIGHT
+		};
+		SDL_Rect dest = { (Sint16)(x - wHalf), 0, 0, 0 };
+		SDL_BlitSurface(PlayerSpritesheets[i], &src, Screen, &dest);
+		// Draw score number
+		dest.x = (Sint16)(x - wHalf + PLAYER_SPRITESHEET_WIDTH);
+		dest.y = (Sint16)(PLAYER_SPRITESHEET_HEIGHT - t->h) / 2;
+		SDL_BlitSurface(t, NULL, Screen, &dest);
+		SDL_FreeSurface(t);
+
+		c++;
 	}
 
-	// Draw the player's current score.
-	char ScoreString[17];
-	sprintf(ScoreString, "Score%10" PRIu32, Score);
-	SDL_Color white = { 255, 255, 255, 255 };
-	SDL_Surface *t = TTF_RenderText_Blended(font, ScoreString, white);
-	SDL_Rect dest = { (Sint16)(SCREEN_WIDTH - t->w), 0, 0, 0 };
-	SDL_BlitSurface(t, NULL, Screen, &dest);
-
 	SDL_Flip(Screen);
-	SDL_FreeSurface(t);
 }
 
 void ToGame(void)
 {
-	Score = 0;
 	Pause = false;
 
 	SpaceReset(&space);
 
 	// Reset player positions and velocity
-	// TODO: continue from title screen
 	for (int i = 0, c = 0; i < MAX_PLAYERS; i++)
 	{
+		PlayerReset(&players[i], c);
 		if (!players[i].Enabled) continue;
-		cpBody *body = players[i].Body;
-		cpBodySetPosition(body, cpv(
-			(c + 1) * FIELD_WIDTH / (PlayerAliveCount() + 1),
-			FIELD_HEIGHT * 0.75f));
-		cpBodySetVelocity(body, cpvzero);
 		c++;
 	}
 	CameraInit(&camera);

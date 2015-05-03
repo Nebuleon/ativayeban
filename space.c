@@ -90,22 +90,31 @@ void SpaceAddBottomEdge(Space *s)
 // As the camera scrolls down, need to create new edge bodies
 void SpaceUpdate(
 	Space *s, const float y, const float cameraY, const float playerMaxY,
-	uint32_t *score)
+	Player *players)
 {
 	// Scroll all gaps toward the top...
 	for (int i = (int)s->Gaps.size - 1; i >= 0; i--)
 	{
 		struct Gap *g = CArrayGet(&s->Gaps, i);
-		// If the player is past a gap, award the player with a
-		// point.
-		if (!g->Passed && g->Y > playerMaxY + PLAYER_RADIUS)
+		if (players != NULL)
 		{
-			g->Passed = true;
-			if (score != NULL)
+			// If the player is past a gap, award the player with a
+			// point.
+			bool scored = false;
+			for (int j = 0; j < MAX_PLAYERS; j++)
 			{
-				(*score)++;
+				Player *p = players + j;
+				if (!g->Passed[j] && g->Y > p->y + PLAYER_RADIUS)
+				{
+					g->Passed[j] = true;
+					p->Score++;
+					scored = true;
+				}
 			}
-			SoundPlay(SoundScore, 1.0);
+			if (scored)
+			{
+				SoundPlay(SoundScore, 1.0);
+			}
 		}
 		// Arbitrary limit to eliminate off screen gaps
 		// If a gap is past the top side, remove it.
@@ -184,4 +193,22 @@ static void AddEdgeShapes(Space *s, const float y)
 	cpShapeSetElasticity(shape, FIELD_ELASTICITY);
 	cpShapeSetFriction(shape, 1.0f);
 	cpShapeSetFilter(shape, edgeFilter);
+}
+
+void SpaceRespawnPlayer(Space *s, Player *p)
+{
+	// Spawn the player inside the last gap
+	const struct Gap *lastGap =
+		CArrayGet(&s->Gaps, (int)s->Gaps.size - 1);
+	PlayerRespawn(
+		p,
+		(lastGap->Left.X + lastGap->Left.W + lastGap->Right.X) / 2,
+		lastGap->Y - GAP_HEIGHT);
+
+	// Mark all gaps as passed for this player
+	for (int i = 0; i < (int)s->Gaps.size; i++)
+	{
+		struct Gap *g = CArrayGet(&s->Gaps, i);
+		g->Passed[p->Index] = true;
+	}
 }

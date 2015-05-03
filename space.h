@@ -28,6 +28,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <chipmunk/chipmunk.h>
 
 #include "c_array.h"
+#include "player.h"
+
 
 // Represents physical space of the level
 typedef struct
@@ -49,5 +51,7 @@ void SpaceFree(Space *s);
 void SpaceAddBottomEdge(Space *s);
 void SpaceUpdate(
 	Space *s, const float y, const float cameraY, const float playerMaxY,
-	uint32_t *score);
+	Player *players);
 void SpaceDraw(const Space *s, const float y);
+
+void SpaceRespawnPlayer(Space *s, Player *p);

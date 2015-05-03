@@ -176,7 +176,7 @@ static void DrawTitleImg(void)
 	AnimationDrawUpperCenter(a, Screen);
 }
 
-void ToTitleScreen(const bool start, const int score)
+void ToTitleScreen(const bool start)
 {
 	countdownMs = -1;
 	ResetMovement();
@@ -192,10 +192,53 @@ void ToTitleScreen(const bool start, const int score)
 	}
 	else
 	{
-		sprintf(
-			WelcomeMessage,
-			"Your score was %" PRIu32 "\n%s to exit",
-			score, GetExitGamePrompt());
+		// Find out the result of the game
+		int maxScore = 0;
+		for (int i = 0; i < MAX_PLAYERS; i++)
+		{
+			if (players[i].Score > maxScore) maxScore = players[i].Score;
+		}
+		char winnerBuf[16];
+		strcpy(winnerBuf, "");
+		int winners = 0;
+		for (int i = 0; i < MAX_PLAYERS; i++)
+		{
+			if (players[i].Score == maxScore)
+			{
+				winners++;
+				if (strlen(winnerBuf) == 0)
+				{
+					sprintf(winnerBuf, "%d", i + 1);
+				}
+				else
+				{
+					char buf[8];
+					sprintf(buf, ", %d", i + 1);
+					strcat(winnerBuf, buf);
+				}
+			}
+		}
+		if (PlayerEnabledCount() == 1)
+		{
+			sprintf(
+				WelcomeMessage,
+				"Your score was %d!\n%s to exit",
+				maxScore, GetExitGamePrompt());
+		}
+		else if (winners == 1)
+		{
+			sprintf(
+				WelcomeMessage,
+				"Player %s wins with score %d!\n%s to exit",
+				winnerBuf, maxScore, GetExitGamePrompt());
+		}
+		else
+		{
+			sprintf(
+				WelcomeMessage,
+				"Tie between players %s with score %d!\n%s to exit",
+				winnerBuf, maxScore, GetExitGamePrompt());
+		}
 	}
 
 	SpaceReset(&space);

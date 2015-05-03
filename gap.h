@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <SDL.h>
 
 #include "block.h"
+#include "player.h"
 
 // Gaps are a pair of rectangles with a gap in between.
 // The player scores after falling through a gap.
@@ -42,7 +43,8 @@ struct Gap
 	// Where the gap layer is.
 	float Y;
 
-	bool Passed;
+	// Whether each player has passed this gap
+	bool Passed[MAX_PLAYERS];
 };
 
 extern SDL_Surface *GapSurfaces[6];

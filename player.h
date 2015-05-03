@@ -16,6 +16,8 @@ typedef struct
 	// Once dead, wait this long before respawning
 	int RespawnCounter;
 
+	int Score;
+
 	cpBody *Body;
 	// Cached positions for drawing only
 	float x, y;
@@ -40,6 +42,9 @@ typedef struct
 #define MAX_PLAYERS 2
 extern Player players[MAX_PLAYERS];
 
+#define PLAYER_SPRITESHEET_WIDTH 35
+#define PLAYER_SPRITESHEET_HEIGHT 35
+
 extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 extern Mix_Chunk* SoundPlayerBounce;
 extern int SoundPlayerRollChannel;
@@ -47,9 +52,11 @@ extern int SoundPlayerRollChannel;
 void PlayerUpdate(Player *player, const Uint32 ms);
 void PlayerDraw(const Player *player, const float y);
 void PlayerInit(Player *player, const int i, const cpVect pos);
+void PlayerReset(Player *player, const int i);
 
 void PlayerKill(Player *player);
 void PlayerRespawn(Player *player, const float x, const float y);
 void PlayerRevive(Player *player);
 
 int PlayerAliveCount(void);
+int PlayerEnabledCount(void);

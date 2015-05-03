@@ -43,7 +43,7 @@ void GapInit(struct Gap* gap, float y, float gapLeft)
 	BlockInit(
 		&gap->Right,
 		gapLeft + GAP_WIDTH, y, FIELD_WIDTH - (gapLeft + GAP_WIDTH));
-	gap->Passed = false;
+	memset(gap->Passed, 0, sizeof gap->Passed);
 	gap->Y = y;
 }
 void GapRemove(struct Gap* gap)

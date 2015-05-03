@@ -23,7 +23,7 @@
 
 #include <SDL.h>
 
-void ToTitleScreen(const bool start, const int score);
+void ToTitleScreen(const bool start);
 
 bool TitleImagesLoad(void);
 void TitleImagesFree(void);

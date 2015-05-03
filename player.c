@@ -11,8 +11,6 @@
 #include "sound.h"
 #include "utils.h"
 
-#define PLAYER_SPRITESHEET_WIDTH 35
-#define PLAYER_SPRITESHEET_HEIGHT 35
 #define PLAYER_SPRITESHEET_STRIDE 8
 #define PLAYER_SPRITESHEET_COUNT 16
 #define PLAYER_ROLL_SCALE 0.015f
@@ -143,6 +141,7 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 	player->Enabled = true;
 	player->Alive = true;
 	player->RespawnCounter = 0;
+	player->Score = 0;
 	player->Body = cpSpaceAddBody(
 		space.Space,
 		cpBodyNew(10.0f, cpMomentForCircle(10.0f, 0.0f, PLAYER_RADIUS, cpvzero)));
@@ -157,6 +156,17 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
 	player->Sprites = PlayerSpritesheets[i];
+}
+
+void PlayerReset(Player *player, const int i)
+{
+	player->Score = 0;
+	if (!player->Enabled) return;
+	cpBody *body = player->Body;
+	cpBodySetPosition(body, cpv(
+		(i + 1) * FIELD_WIDTH / (PlayerAliveCount() + 1),
+		FIELD_HEIGHT * 0.75f));
+	cpBodySetVelocity(body, cpvzero);
 }
 
 void PlayerKill(Player *player)
@@ -194,6 +204,17 @@ int PlayerAliveCount(void)
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		if (!players[i].Alive) continue;
+		num++;
+	}
+	return num;
+}
+
+int PlayerEnabledCount(void)
+{
+	int num = 0;
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if (!players[i].Enabled) continue;
 		num++;
 	}
 	return num;
