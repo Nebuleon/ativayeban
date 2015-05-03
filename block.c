@@ -40,8 +40,6 @@ static SDL_Surface *RandomSurface(void);
 void BlockInit(Block *block, const float x, const float y, const float w)
 {
 	block->Body = MakeBody(x, y, w);
-	block->X = x;
-	block->Y = y;
 	block->W = w;
 	block->H = GAP_HEIGHT;
 	block->Surface = RandomSurface();

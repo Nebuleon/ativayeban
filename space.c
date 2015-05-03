@@ -25,6 +25,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #include "space.h"
 
+#include "block.h"
 #include "game.h"
 #include "gap.h"
 #include "sound.h"
@@ -142,9 +143,7 @@ void SpaceUpdate(
 			s->gapGenDistance = MAX(GAP_GEN_MIN, s->gapGenDistance);
 		}
 		struct Gap g;
-		// Where's the place for the player to go through?
-		float GapLeft = (FIELD_WIDTH / 16.0f) + ((float)rand() / (float)RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
-		GapInit(&g, top, GapLeft);
+		GapInit(&g, top);
 		CArrayPushBack(&s->Gaps, &g);
 	}
 
@@ -200,10 +199,13 @@ void SpaceRespawnPlayer(Space *s, Player *p)
 	// Spawn the player inside the last gap
 	const struct Gap *lastGap =
 		CArrayGet(&s->Gaps, (int)s->Gaps.size - 1);
-	PlayerRespawn(
-		p,
-		(lastGap->Left.X + lastGap->Left.W + lastGap->Right.X) / 2,
-		lastGap->Y - GAP_HEIGHT);
+	// Select random pair of blocks between which to respawn
+	const int il = rand() % ((int)lastGap->blocks.size - 1);
+	const Block *bl = CArrayGet(&lastGap->blocks, il);
+	const float left = cpBodyGetPosition(bl->Body).x + bl->W / 2;
+	const Block *br = CArrayGet(&lastGap->blocks, il + 1);
+	const float right = cpBodyGetPosition(br->Body).x - br->W / 2;
+	PlayerRespawn(p, (left + right) / 2, lastGap->Y - GAP_HEIGHT);
 
 	// Mark all gaps as passed for this player
 	for (int i = 0; i < (int)s->Gaps.size; i++)

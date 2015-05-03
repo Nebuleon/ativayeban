@@ -30,7 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <chipmunk/chipmunk.h>
 #include <SDL.h>
 
-#include "block.h"
+#include "c_array.h"
 #include "player.h"
 
 // Gaps are a pair of rectangles with a gap in between.
@@ -38,8 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 struct Gap
 {
-	Block Left;
-	Block Right;
+	CArray blocks;	// of Block
 	// Where the gap layer is.
 	float Y;
 
@@ -49,7 +48,7 @@ struct Gap
 
 extern SDL_Surface *GapSurfaces[6];
 
-void GapInit(struct Gap* gap, float y, float gapX);
+void GapInit(struct Gap* gap, float y);
 void GapRemove(struct Gap* gap);
 void GapDraw(const struct Gap* gap, const float y);
 

@@ -34,6 +34,7 @@
 #include "player.h"
 #include "sound.h"
 #include "space.h"
+#include "title.h"
 #include "utils.h"
 #include "game.h"
 #include "gap.h"

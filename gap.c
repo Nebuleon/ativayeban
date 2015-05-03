@@ -29,6 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SDL_image.h"
 
+#include "block.h"
 #include "game.h"
 #include "main.h"
 
@@ -37,26 +38,66 @@ POSSIBILITY OF SUCH DAMAGE.
 
 SDL_Surface *GapSurfaces[6];
 
-void GapInit(struct Gap* gap, float y, float gapLeft)
+static int compareFloat(const void *a, const void *b);
+void GapInit(struct Gap* gap, float y)
 {
-	BlockInit(&gap->Left, 0, y, gapLeft);
-	BlockInit(
-		&gap->Right,
-		gapLeft + GAP_WIDTH, y, FIELD_WIDTH - (gapLeft + GAP_WIDTH));
+	// Randomly generate some gaps, and place blocks around them
+	float gapXs[MAX_GAPS];
+	for (int i = 0; i < MAX_GAPS; i++)
+	{
+		gapXs[i] =
+			GAP_WIDTH / 2 +
+			(float)rand() / (float)RAND_MAX * (FIELD_WIDTH - GAP_WIDTH);
+	}
+	qsort(gapXs, MAX_GAPS, sizeof gapXs[0], compareFloat);
+	// Merge gaps if they are too close
+	for (int i = 1; i < MAX_GAPS; i++)
+	{
+		if (gapXs[i] - gapXs[i - 1] < GAP_WIDTH + MIN_BLOCK_WIDTH)
+		{
+			gapXs[i] = (gapXs[i] + gapXs[i - 1]) / 2;
+			gapXs[i - 1] = 0;
+		}
+	}
+	// Generate blocks
+	CArrayInit(&gap->blocks, sizeof(Block));
+	Block b;
+	float left = 0;
+	for (int i = 0; i < MAX_GAPS; i++)
+	{
+		if (gapXs[i] == 0) continue;
+		BlockInit(&b, left, y, gapXs[i] - GAP_WIDTH / 2 - left);
+		CArrayPushBack(&gap->blocks, &b);
+		left = gapXs[i] + GAP_WIDTH / 2;
+	}
+	// Add last block
+	BlockInit(&b, left, y, FIELD_WIDTH - left);
+	CArrayPushBack(&gap->blocks, &b);
+
 	memset(gap->Passed, 0, sizeof gap->Passed);
 	gap->Y = y;
 }
+static int compareFloat(const void *a, const void *b)
+{
+	const float fa = *(const float *)a;
+	const float fb = *(const float *)b;
+	return (fa > fb) - (fa < fb);
+}
 void GapRemove(struct Gap* gap)
 {
-	BlockRemove(&gap->Left);
-	BlockRemove(&gap->Right);
+	for (int i = 0; i < (int)gap->blocks.size; i++)
+	{
+		BlockRemove(CArrayGet(&gap->blocks, i));
+	}
+	CArrayTerminate(&gap->blocks);
 }
 
 void GapDraw(const struct Gap* gap, const float y)
 {
-	// Draw the left and right parts of the gap
-	BlockDraw(&gap->Left, y);
-	BlockDraw(&gap->Right, y);
+	for (int i = 0; i < (int)gap->blocks.size; i++)
+	{
+		BlockDraw(CArrayGet(&gap->blocks, i), y);
+	}
 }
 
 float GapBottom(const struct Gap* gap)

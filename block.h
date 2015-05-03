@@ -32,7 +32,6 @@ POSSIBILITY OF SUCH DAMAGE.
 typedef struct
 {
 	cpBody *Body;
-	float X, Y;
 	float W, H;
 	SDL_Surface *Surface;
 } Block;

@@ -69,11 +69,15 @@
 
 // The width of the area to leave empty for the player to pass through.
 // Given in meters.
-#define GAP_WIDTH        1.25f
+#define GAP_WIDTH        0.75f
 
 // The height of gap surfaces.
 // Given in meters.
 #define GAP_HEIGHT       0.25f
+
+#define MAX_GAPS 3
+
+#define MIN_BLOCK_WIDTH 0.25f
 
 #define BLOCK_ELASTICITY 0.25f
 
