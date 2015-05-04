@@ -30,6 +30,7 @@
 #include "main.h"
 #include "init.h"
 #include "input.h"
+#include "particle.h"
 #include "platform.h"
 #include "player.h"
 #include "sound.h"
@@ -127,6 +128,8 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	}
 	SpaceUpdate(&space, PlayerMinY(), camera.Y, PlayerMaxY(), &players[0]);
 
+	ParticlesUpdate(Milliseconds);
+
 	// Players that hit the top of the screen die
 	if (PlayerMaxY() + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
 	{
@@ -183,6 +186,8 @@ void GameOutputFrame(void)
 	DrawBackground(&BG, screenYOff);
 
 	SpaceDraw(&space, screenYOff);
+
+	ParticlesDraw(Screen, screenYOff);
 
 	int c = 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)

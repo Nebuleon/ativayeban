@@ -28,6 +28,7 @@
 #include "game.h"
 #include "main.h"
 #include "init.h"
+#include "particle.h"
 #include "platform.h"
 #include "player.h"
 #include "space.h"
@@ -102,6 +103,13 @@ void Initialize(bool* Continue, bool* Error)
 
 	LOAD_IMG(PlayerSpritesheets[0], "penguin_ball.png");
 	LOAD_IMG(PlayerSpritesheets[1], "penguin_black.png");
+	if (!AnimationLoad(&Spark, "data/graphics/sparks.png", 4, 4, 20))
+	{
+		*Continue = false;  *Error = true;
+		printf("IMG_Load failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
 
 	if (!GapSurfacesLoad())
 	{
@@ -160,6 +168,7 @@ void Initialize(bool* Continue, bool* Error)
 	}
 
 	SpaceInit(&space);
+	ParticlesInit();
 
 	SDL_ShowCursor(0);
 
@@ -173,12 +182,14 @@ void Initialize(bool* Continue, bool* Error)
 
 void Finalize()
 {
+	ParticlesFree();
 	SpaceFree(&space);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		SDL_FreeSurface(PlayerSpritesheets[i]);
 	}
 	SDL_FreeSurface(icon);
+	AnimationFree(&Spark);
 	GapSurfacesFree();
 	TitleImagesFree();
 	BackgroundsFree(&BG);

@@ -6,6 +6,7 @@
 #include "game.h"
 #include "init.h"
 #include "main.h"
+#include "particle.h"
 #include "player.h"
 #include "space.h"
 #include "sound.h"
@@ -21,6 +22,7 @@
 #define PLAYER_RESPAWN_COUNTER 3000
 
 SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
+Animation Spark;
 Mix_Chunk* SoundPlayerBounce = NULL;
 
 Player players[MAX_PLAYERS];
@@ -167,6 +169,13 @@ void PlayerReset(Player *player, const int i)
 		(i + 1) * FIELD_WIDTH / (PlayerAliveCount() + 1),
 		FIELD_HEIGHT * 0.75f));
 	cpBodySetVelocity(body, cpvzero);
+}
+
+void PlayerScore(Player *player)
+{
+	player->Score++;
+	// Add sparks at player position
+	ParticlesAddExplosion(&Spark, player->x, player->y, 100, 3.5f);
 }
 
 void PlayerKill(Player *player)

@@ -51,7 +51,7 @@
 Backgrounds BG;
 
 static void ParticlesInit(
-	Particles *p,
+	BGParticles *p,
 	const int w, const int gmin, const int gmax, const int num)
 {
 	int y = PARTICLE_RAND_Y(0, gmin, gmax);
@@ -79,7 +79,7 @@ void BackgroundsInit(Backgrounds *bg)
 }
 
 static void DrawParticleScroll(
-	Particles *p, const int s,
+	BGParticles *p, const int s,
 	const int w, const int h, const int gmin, const int gmax, const int num);
 void DrawBackground(Backgrounds *bg, const float y)
 {
@@ -98,7 +98,7 @@ void DrawBackground(Backgrounds *bg, const float y)
 		STAR_Y_GAP_MIN, STAR_Y_GAP_MAX, STAR_NUM);
 }
 static void DrawParticleScroll(
-	Particles *p, const int s,
+	BGParticles *p, const int s,
 	const int w, const int h, const int gmin, const int gmax, const int num)
 {
 	// Remove, draw or add icicles

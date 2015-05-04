@@ -6,6 +6,9 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "animation.h"
+
+
 typedef struct
 {
 	int Index;
@@ -46,6 +49,7 @@ extern Player players[MAX_PLAYERS];
 #define PLAYER_SPRITESHEET_HEIGHT 35
 
 extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
+extern Animation Spark;
 extern Mix_Chunk* SoundPlayerBounce;
 extern int SoundPlayerRollChannel;
 
@@ -54,6 +58,7 @@ void PlayerDraw(const Player *player, const float y);
 void PlayerInit(Player *player, const int i, const cpVect pos);
 void PlayerReset(Player *player, const int i);
 
+void PlayerScore(Player *player);
 void PlayerKill(Player *player);
 void PlayerRespawn(Player *player, const float x, const float y);
 void PlayerRevive(Player *player);

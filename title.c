@@ -30,6 +30,7 @@
 #include "main.h"
 #include "init.h"
 #include "input.h"
+#include "particle.h"
 #include "platform.h"
 #include "player.h"
 #include "sound.h"
@@ -254,6 +255,7 @@ void ToTitleScreen(const bool start)
 		}
 	}
 
+	CArrayClear(&Particles);
 	SpaceReset(&space);
 	// Add bottom edge so we don't fall through
 	SpaceAddBottomEdge(&space);
@@ -284,11 +286,12 @@ void ToTitleScreen(const bool start)
 
 bool TitleImagesLoad(void)
 {
-	if (!AnimationLoad(&TitleAnim, "data/graphics/anim%02d.png", 12, 12))
+	if (!AnimationLoad(&TitleAnim, "data/graphics/anim.png", 169, 40, 12))
 	{
 		return false;
 	}
-	if (!AnimationLoad(&GameOverAnim, "data/graphics/gameover_%02d.png", 2, 3))
+	if (!AnimationLoad(
+		&GameOverAnim, "data/graphics/gameover.png", 131, 40, 3))
 	{
 		return false;
 	}

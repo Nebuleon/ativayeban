@@ -25,29 +25,17 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
-#include <SDL.h>
-
-#include "c_array.h"
+#include "animation.h"
 
 
-typedef struct
-{
-	SDL_Surface *image;
-	int w;
-	int h;
-	int frame;
-	int frameRate;
-	int frameCounter;
-} Animation;
+extern CArray Particles;	// of Particle
 
-// Load an animation from a single spritesheet file
-bool AnimationLoad(
-	Animation *a, const char *filename, const int w, const int h,
-	const int frameRate);
-void AnimationFree(Animation *a);
+void ParticlesInit(void);
+void ParticlesFree(void);
 
-// Return whether the animation looped
-bool AnimationUpdate(Animation *a, const Uint32 ms);
-void AnimationDraw(
-	const Animation *a, SDL_Surface *screen, const int x, const int y);
-void AnimationDrawUpperCenter(const Animation *a, SDL_Surface *screen);
+void ParticlesAddExplosion(
+	const Animation *anim, const float x, const float y, const int n,
+	const float speed);
+
+void ParticlesUpdate(const Uint32 ms);
+void ParticlesDraw(SDL_Surface *screen, const float y);

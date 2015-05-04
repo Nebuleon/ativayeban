@@ -34,13 +34,13 @@ typedef struct
 {
 	SDL_Surface *S;
 	ParticlePos Positions[MAX_PARTICLES];
-} Particles;
+} BGParticles;
 
 typedef struct
 {
-	Particles Icicles;
-	Particles Flares;
-	Particles Stars;
+	BGParticles Icicles;
+	BGParticles Flares;
+	BGParticles Stars;
 } Backgrounds;
 extern Backgrounds BG;
 

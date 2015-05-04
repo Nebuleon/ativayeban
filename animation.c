@@ -31,21 +31,13 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 bool AnimationLoad(
-	Animation *a, const char *fileFormat, const int frames,
+	Animation *a, const char *filename, const int w, const int h,
 	const int frameRate)
 {
-	CArrayInit(&a->images, sizeof(SDL_Surface *));
-	for (int i = 0; i < frames; i++)
-	{
-		char buf[256];
-		sprintf(buf, fileFormat, i + 1);
-		SDL_Surface *s = IMG_Load(buf);
-		if (s == NULL)
-		{
-			goto bail;
-		}
-		CArrayPushBack(&a->images, &s);
-	}
+	a->image = IMG_Load(filename);
+	if (a->image == NULL) goto bail;
+	a->w = w;
+	a->h = h;
 	a->frame = 0;
 	a->frameCounter = 0;
 	a->frameRate = frameRate;
@@ -58,15 +50,10 @@ bail:
 }
 void AnimationFree(Animation *a)
 {
-	for (int i = 0; i < (int)a->images.size; i++)
-	{
-		SDL_Surface **s = CArrayGet(&a->images, i);
-		SDL_FreeSurface(*s);
-	}
-	CArrayTerminate(&a->images);
+	SDL_FreeSurface(a->image);
 }
 
-void AnimationUpdate(Animation *a, const Uint32 ms)
+bool AnimationUpdate(Animation *a, const Uint32 ms)
 {
 	a->frameCounter += ms;
 	const int msPerFrame = 1000 / a->frameRate;
@@ -74,20 +61,30 @@ void AnimationUpdate(Animation *a, const Uint32 ms)
 	{
 		a->frameCounter -= msPerFrame;
 		a->frame++;
-		if (a->frame == (int)a->images.size)
+		if (a->frame == (a->image->w / a->w) * (a->image->h / a->h))
 		{
 			a->frame = 0;
+			return true;
 		}
 	}
+	return false;
+}
+void AnimationDraw(
+	const Animation *a, SDL_Surface *screen, const int x, const int y)
+{
+	const int stride = a->image->w / a->w;
+	SDL_Rect src = {
+		(Sint16)((a->frame % stride) * a->w),
+		(Sint16)((a->frame / stride) * a->h),
+		(Sint16)a->w, (Sint16)a->h
+	};
+	SDL_Rect dest = { (Sint16)x, (Sint16)y, 0, 0 };
+	SDL_BlitSurface(a->image, &src, screen, &dest);
 }
 void AnimationDrawUpperCenter(const Animation *a, SDL_Surface *screen)
 {
-	SDL_Surface **frame = CArrayGet(&a->images, a->frame);
-	SDL_Rect dest = {
-		(Sint16)((SCREEN_WIDTH - (*frame)->w) / 2),
-		(Sint16)((SCREEN_HEIGHT - (*frame)->h) / 2 - SCREEN_HEIGHT / 4),
-		0,
-		0
-	};
-	SDL_BlitSurface(*frame, NULL, screen, &dest);
+	AnimationDraw(
+		a, screen,
+		(SCREEN_WIDTH - a->w) / 2,
+		(SCREEN_HEIGHT - a->h) / 2 - SCREEN_HEIGHT / 4);
 }

@@ -108,7 +108,7 @@ void SpaceUpdate(
 				if (!g->Passed[j] && g->Y > p->y + PLAYER_RADIUS)
 				{
 					g->Passed[j] = true;
-					p->Score++;
+					PlayerScore(p);
 					scored = true;
 				}
 			}
@@ -202,9 +202,9 @@ void SpaceRespawnPlayer(Space *s, Player *p)
 	// Select random pair of blocks between which to respawn
 	const int il = rand() % ((int)lastGap->blocks.size - 1);
 	const Block *bl = CArrayGet(&lastGap->blocks, il);
-	const float left = cpBodyGetPosition(bl->Body).x + bl->W / 2;
+	const float left = (float)cpBodyGetPosition(bl->Body).x + bl->W / 2;
 	const Block *br = CArrayGet(&lastGap->blocks, il + 1);
-	const float right = cpBodyGetPosition(br->Body).x - br->W / 2;
+	const float right = (float)cpBodyGetPosition(br->Body).x - br->W / 2;
 	PlayerRespawn(p, (left + right) / 2, lastGap->Y - GAP_HEIGHT);
 
 	// Mark all gaps as passed for this player
