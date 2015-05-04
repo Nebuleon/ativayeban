@@ -23,6 +23,7 @@
 
 SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 Animation Spark;
+Animation SparkRed;
 Mix_Chunk* SoundPlayerBounce = NULL;
 
 Player players[MAX_PLAYERS];
@@ -79,6 +80,7 @@ void PlayerUpdate(Player *player, const Uint32 ms)
 			SoundPlayRoll(player->Index, angularV);
 		}
 		player->WasOnSurface = true;
+		player->ScoredInAir = false;
 	}
 	else
 	{
@@ -154,6 +156,7 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 	cpShapeSetFriction(shape, 0.9f);
 	player->AccelX = 0;
 	player->WasOnSurface = false;
+	player->ScoredInAir = false;
 	player->Roll = 0;
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
@@ -173,9 +176,13 @@ void PlayerReset(Player *player, const int i)
 
 void PlayerScore(Player *player)
 {
-	player->Score++;
+	// Score extra if consecutive in air
+	player->Score += player->ScoredInAir ? 2 : 1;
 	// Add sparks at player position
-	ParticlesAddExplosion(&Spark, player->x, player->y, 100, 3.5f);
+	ParticlesAddExplosion(
+		player->ScoredInAir ? &SparkRed : &Spark,
+		player->x, player->y, 100, 2.5f);
+	player->ScoredInAir = true;
 }
 
 void PlayerKill(Player *player)

@@ -110,6 +110,13 @@ void Initialize(bool* Continue, bool* Error)
 		SDL_ClearError();
 		return;
 	}
+	if (!AnimationLoad(&SparkRed, "data/graphics/sparks_red.png", 4, 4, 20))
+	{
+		*Continue = false;  *Error = true;
+		printf("IMG_Load failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
 
 	if (!GapSurfacesLoad())
 	{
@@ -190,6 +197,7 @@ void Finalize()
 	}
 	SDL_FreeSurface(icon);
 	AnimationFree(&Spark);
+	AnimationFree(&SparkRed);
 	GapSurfacesFree();
 	TitleImagesFree();
 	BackgroundsFree(&BG);

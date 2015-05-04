@@ -31,6 +31,9 @@ typedef struct
 	// Used to detect rolling for rolling sound
 	bool WasOnSurface;
 
+	// Used to detect consecutive fall scoring
+	bool ScoredInAir;
+
 	// Used to animate the player rolling
 	int Roll;
 
@@ -50,6 +53,7 @@ extern Player players[MAX_PLAYERS];
 
 extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 extern Animation Spark;
+extern Animation SparkRed;
 extern Mix_Chunk* SoundPlayerBounce;
 extern int SoundPlayerRollChannel;
 
