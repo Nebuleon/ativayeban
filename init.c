@@ -105,20 +105,18 @@ void Initialize(bool* Continue, bool* Error)
 	LOAD_IMG(PlayerSpritesheets[0], "penguin_ball.png");
 	LOAD_IMG(PlayerSpritesheets[1], "penguin_black.png");
 	LOAD_IMG(PickupImage, "eggplant.png");
-	if (!AnimationLoad(&Spark, "data/graphics/sparks.png", 4, 4, 20))
-	{
-		*Continue = false;  *Error = true;
-		printf("IMG_Load failed: %s\n", SDL_GetError());
-		SDL_ClearError();
-		return;
+
+#define LOAD_ANIM(_anim, _path, _w, _h, _fps)\
+	if (!AnimationLoad(&(_anim), "data/graphics/" _path, (_w), (_h), (_fps)))\
+	{\
+		*Continue = false;  *Error = true;\
+		printf("IMG_Load failed: %s\n", SDL_GetError());\
+		SDL_ClearError();\
+		return;\
 	}
-	if (!AnimationLoad(&SparkRed, "data/graphics/sparks_red.png", 4, 4, 20))
-	{
-		*Continue = false;  *Error = true;
-		printf("IMG_Load failed: %s\n", SDL_GetError());
-		SDL_ClearError();
-		return;
-	}
+	LOAD_ANIM(Spark, "sparks.png", 4, 4, 20);
+	LOAD_ANIM(SparkRed, "sparks_red.png", 4, 4, 20);
+	LOAD_ANIM(Tail, "tail.png", 21, 21, 15);
 
 	if (!GapSurfacesLoad())
 	{
@@ -203,6 +201,7 @@ void Finalize()
 	SDL_FreeSurface(icon);
 	AnimationFree(&Spark);
 	AnimationFree(&SparkRed);
+	AnimationFree(&Tail);
 	GapSurfacesFree();
 	TitleImagesFree();
 	BackgroundsFree(&BG);

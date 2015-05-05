@@ -20,10 +20,12 @@
 #define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 100) + 100)
 #define PLAYER_BLINK_CHANCE 50
 #define PLAYER_RESPAWN_COUNTER 3000
+#define PLAYER_TAIL_COUNTER 20
 
 SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 Animation Spark;
 Animation SparkRed;
+Animation Tail;
 Mix_Chunk* SoundPlayerBounce = NULL;
 
 Player players[MAX_PLAYERS];
@@ -101,6 +103,14 @@ void PlayerUpdate(Player *player, const Uint32 ms)
 		player->NextBlinkCounter = PLAYER_BLINK_INTERVAL_FRAMES;
 	}
 
+	// Leave a tail
+	player->TailCounter -= ms;
+	if (player->TailCounter <= 0)
+	{
+		player->TailCounter = PLAYER_TAIL_COUNTER;
+		ParticlesAdd(&Tail, player->x, player->y, 0, 0);
+	}
+
 	const cpVect pos = cpBodyGetPosition(player->Body);
 	player->x = (float)pos.x;
 	player->y = (float)pos.y;
@@ -160,6 +170,7 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 	player->Roll = 0;
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
+	player->TailCounter = PLAYER_TAIL_COUNTER;
 	player->Sprites = PlayerSpritesheets[i];
 }
 

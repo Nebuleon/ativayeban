@@ -78,13 +78,10 @@ void AnimationDraw(
 		(Sint16)((a->frame / stride) * a->h),
 		(Sint16)a->w, (Sint16)a->h
 	};
-	SDL_Rect dest = { (Sint16)x, (Sint16)y, 0, 0 };
+	SDL_Rect dest = { (Sint16)(x - a->w / 2), (Sint16)(y - a->h / 2), 0, 0 };
 	SDL_BlitSurface(a->image, &src, screen, &dest);
 }
 void AnimationDrawUpperCenter(const Animation *a, SDL_Surface *screen)
 {
-	AnimationDraw(
-		a, screen,
-		(SCREEN_WIDTH - a->w) / 2,
-		(SCREEN_HEIGHT - a->h) / 2 - SCREEN_HEIGHT / 4);
+	AnimationDraw(a, screen, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4);
 }

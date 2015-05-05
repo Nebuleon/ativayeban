@@ -55,21 +55,28 @@ void ParticlesFree(void)
 	CArrayTerminate(&Particles);
 }
 
+void ParticlesAdd(
+	const Animation *anim, const float x, const float y,
+	const float dx, const float dy)
+{
+	Particle p;
+	memset(&p, 0, sizeof p);
+	memcpy(&p.anim, anim, sizeof *anim);
+	p.x = x;
+	p.y = y;
+	p.dx = dx;
+	p.dy = dy;
+	CArrayPushBack(&Particles, &p);
+}
 void ParticlesAddExplosion(
 	const Animation *anim, const float x, const float y, const int n,
 	const float speed)
 {
-	Particle p;
 	for (int i = 0; i < n; i++)
 	{
-		memset(&p, 0, sizeof p);
-		memcpy(&p.anim, anim, sizeof *anim);
-		p.x = x;
-		p.y = y;
 		const float theta = (float)rand() / RAND_MAX * (float)M_PI * 2;
-		p.dx = (float)cos(theta) * speed;
-		p.dy = (float)sin(theta) * speed;
-		CArrayPushBack(&Particles, &p);
+		ParticlesAdd(
+			anim, x, y, (float)cos(theta) * speed, (float)sin(theta) * speed);
 	}
 }
 

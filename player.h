@@ -42,6 +42,9 @@ typedef struct
 	// Blink when counter reaches zero
 	int NextBlinkCounter;
 
+	// Leave tail particles
+	int TailCounter;
+
 	SDL_Surface *Sprites;
 } Player;
 
@@ -54,6 +57,7 @@ extern Player players[MAX_PLAYERS];
 extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
 extern Animation Spark;
 extern Animation SparkRed;
+extern Animation Tail;
 extern Mix_Chunk* SoundPlayerBounce;
 extern int SoundPlayerRollChannel;
 

@@ -33,6 +33,9 @@ extern CArray Particles;	// of Particle
 void ParticlesInit(void);
 void ParticlesFree(void);
 
+void ParticlesAdd(
+	const Animation *anim, const float x, const float y,
+	const float dx, const float dy);
 void ParticlesAddExplosion(
 	const Animation *anim, const float x, const float y, const int n,
 	const float speed);
