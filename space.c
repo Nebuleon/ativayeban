@@ -28,6 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "block.h"
 #include "game.h"
 #include "gap.h"
+#include "pickup.h"
 #include "sound.h"
 #include "utils.h"
 
@@ -68,6 +69,8 @@ void SpaceReset(Space *s)
 	}
 	CArrayClear(&s->Gaps);
 	s->gapGenDistance = GAP_GEN_START;
+
+	PickupsReset();
 }
 void SpaceFree(Space *s)
 {
@@ -101,20 +104,14 @@ void SpaceUpdate(
 		{
 			// If the player is past a gap, award the player with a
 			// point.
-			bool scored = false;
 			for (int j = 0; j < MAX_PLAYERS; j++)
 			{
 				Player *p = players + j;
 				if (!g->Passed[j] && g->Y > p->y + PLAYER_RADIUS)
 				{
 					g->Passed[j] = true;
-					PlayerScore(p);
-					scored = true;
+					PlayerScore(p, true);
 				}
-			}
-			if (scored)
-			{
-				SoundPlay(SoundScore, 1.0);
 			}
 		}
 		// Arbitrary limit to eliminate off screen gaps

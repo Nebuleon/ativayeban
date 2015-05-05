@@ -31,6 +31,7 @@
 #include "init.h"
 #include "input.h"
 #include "particle.h"
+#include "pickup.h"
 #include "platform.h"
 #include "player.h"
 #include "sound.h"
@@ -114,6 +115,12 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 		}
 		hasPlayers = true;
 
+		// Check player pickups
+		if (PickupsCollide(p->x, p->y, PLAYER_RADIUS))
+		{
+			PlayerScore(p, false);
+		}
+
 		// Players that hit the top of the screen die
 		if (cpBodyGetPosition(p->Body).y + PLAYER_RADIUS >=
 			camera.Y + FIELD_HEIGHT / 2)
@@ -186,7 +193,7 @@ void GameOutputFrame(void)
 	DrawBackground(&BG, screenYOff);
 
 	SpaceDraw(&space, screenYOff);
-
+	PickupsDraw(Screen, screenYOff);
 	ParticlesDraw(Screen, screenYOff);
 
 	int c = 0;

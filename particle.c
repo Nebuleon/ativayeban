@@ -73,7 +73,7 @@ void ParticlesAddExplosion(
 	}
 }
 
-bool ParticleUpdate(Particle *p, const Uint32 ms);
+static bool ParticleUpdate(Particle *p, const Uint32 ms);
 void ParticlesUpdate(const Uint32 ms)
 {
 	for (int i = 0; i < (int)Particles.size; i++)
@@ -102,5 +102,6 @@ void ParticlesDraw(SDL_Surface *screen, const float y)
 }
 static void ParticleDraw(const Particle *p, SDL_Surface *screen, const float y)
 {
-	AnimationDraw(&p->anim, screen, SCREEN_X(p->x), SCREEN_Y(p->y) - y);
+	AnimationDraw(
+		&p->anim, screen, (int)SCREEN_X(p->x), (int)(SCREEN_Y(p->y) - y));
 }

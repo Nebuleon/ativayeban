@@ -174,15 +174,19 @@ void PlayerReset(Player *player, const int i)
 	cpBodySetVelocity(body, cpvzero);
 }
 
-void PlayerScore(Player *player)
+void PlayerScore(Player *player, const bool air)
 {
 	// Score extra if consecutive in air
-	player->Score += player->ScoredInAir ? 2 : 1;
+	player->Score += (air && player->ScoredInAir) ? 2 : 1;
 	// Add sparks at player position
 	ParticlesAddExplosion(
-		player->ScoredInAir ? &SparkRed : &Spark,
+		(air && player->ScoredInAir) ? &SparkRed : &Spark,
 		player->x, player->y, 100, 2.5f);
-	player->ScoredInAir = true;
+	if (air)
+	{
+		player->ScoredInAir = true;
+	}
+	SoundPlay(SoundScore, 1.0);
 }
 
 void PlayerKill(Player *player)

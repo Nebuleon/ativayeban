@@ -62,7 +62,7 @@ void PlayerDraw(const Player *player, const float y);
 void PlayerInit(Player *player, const int i, const cpVect pos);
 void PlayerReset(Player *player, const int i);
 
-void PlayerScore(Player *player);
+void PlayerScore(Player *player, const bool air);
 void PlayerKill(Player *player);
 void PlayerRespawn(Player *player, const float x, const float y);
 void PlayerRevive(Player *player);

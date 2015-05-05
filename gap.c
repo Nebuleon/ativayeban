@@ -32,6 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "block.h"
 #include "game.h"
 #include "main.h"
+#include "pickup.h"
+
 
 #define GAP_SPRITE_WIDTH 318
 #define GAP_SPRITE_HEIGHT 15
@@ -73,6 +75,14 @@ void GapInit(struct Gap* gap, float y)
 	// Add last block
 	BlockInit(&b, left, y, FIELD_WIDTH - left);
 	CArrayPushBack(&gap->blocks, &b);
+
+	// Randomly add a pickup above a block
+	if (rand() > (RAND_MAX / 2))
+	{
+		const Block *b = CArrayGet(&gap->blocks, rand() % gap->blocks.size);
+		const cpVect pos = cpBodyGetPosition(b->Body);
+		PickupsAdd((float)pos.x, (float)pos.y + b->H / 2);
+	}
 
 	memset(gap->Passed, 0, sizeof gap->Passed);
 	gap->Y = y;

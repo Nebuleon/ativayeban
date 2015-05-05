@@ -29,6 +29,7 @@
 #include "main.h"
 #include "init.h"
 #include "particle.h"
+#include "pickup.h"
 #include "platform.h"
 #include "player.h"
 #include "space.h"
@@ -103,6 +104,7 @@ void Initialize(bool* Continue, bool* Error)
 
 	LOAD_IMG(PlayerSpritesheets[0], "penguin_ball.png");
 	LOAD_IMG(PlayerSpritesheets[1], "penguin_black.png");
+	LOAD_IMG(PickupImage, "eggplant.png");
 	if (!AnimationLoad(&Spark, "data/graphics/sparks.png", 4, 4, 20))
 	{
 		*Continue = false;  *Error = true;
@@ -176,6 +178,7 @@ void Initialize(bool* Continue, bool* Error)
 
 	SpaceInit(&space);
 	ParticlesInit();
+	PickupsInit();
 
 	SDL_ShowCursor(0);
 
@@ -189,12 +192,14 @@ void Initialize(bool* Continue, bool* Error)
 
 void Finalize()
 {
+	PickupsFree();
 	ParticlesFree();
 	SpaceFree(&space);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		SDL_FreeSurface(PlayerSpritesheets[i]);
 	}
+	SDL_FreeSurface(PickupImage);
 	SDL_FreeSurface(icon);
 	AnimationFree(&Spark);
 	AnimationFree(&SparkRed);

@@ -19,6 +19,8 @@
  */
 #pragma once
 
+#include <math.h>
+
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
