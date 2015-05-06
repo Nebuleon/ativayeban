@@ -25,7 +25,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #include "space.h"
 
-#include "block.h"
+#include "box.h"
 #include "game.h"
 #include "gap.h"
 #include "pickup.h"
@@ -94,19 +94,19 @@ void SpaceAddBottomEdge(Space *s)
 // As the camera scrolls down, need to create new edge bodies
 void SpaceUpdate(
 	Space *s, const float y, const float cameraY, const float playerMaxY,
-	Player *players)
+	Player *ps)
 {
 	// Scroll all gaps toward the top...
 	for (int i = (int)s->Gaps.size - 1; i >= 0; i--)
 	{
 		struct Gap *g = CArrayGet(&s->Gaps, i);
-		if (players != NULL)
+		if (ps != NULL)
 		{
 			// If the player is past a gap, award the player with a
 			// point.
 			for (int j = 0; j < MAX_PLAYERS; j++)
 			{
-				Player *p = players + j;
+				Player *p = ps + j;
 				if (!g->Passed[j] && g->Y > p->y + PLAYER_RADIUS)
 				{
 					g->Passed[j] = true;

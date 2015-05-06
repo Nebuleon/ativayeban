@@ -26,7 +26,7 @@
 #include "SDL_image.h"
 
 #include "animation.h"
-#include "block.h"
+#include "box.h"
 #include "main.h"
 #include "init.h"
 #include "input.h"
@@ -41,7 +41,6 @@
 #include "sys_specifics.h"
 
 static bool Start = false;
-static bool  WaitingForRelease = false;
 static char WelcomeMessage[256];
 static int winnerIndices[MAX_PLAYERS];
 static int winners = 0;

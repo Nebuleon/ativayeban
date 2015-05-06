@@ -9,7 +9,6 @@
 #define BOUNCE_SPEED_MIN_VOLUME 10.0f
 #define ROLL_SPEED_MAX_VOLUME 20.0f
 static int rollChannels[MAX_PLAYERS];
-static int rollChannel = -1;
 
 #define MUSIC_VOLUME_LOW 24
 #define MUSIC_VOLUME_HIGH 64

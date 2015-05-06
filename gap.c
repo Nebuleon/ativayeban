@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "SDL_image.h"
 
-#include "block.h"
+#include "box.h"
 #include "game.h"
 #include "main.h"
 #include "pickup.h"
@@ -79,9 +79,9 @@ void GapInit(struct Gap* gap, float y)
 	// Randomly add a pickup above a block
 	if (rand() > (RAND_MAX / 2))
 	{
-		const Block *b = CArrayGet(&gap->blocks, rand() % gap->blocks.size);
-		const cpVect pos = cpBodyGetPosition(b->Body);
-		PickupsAdd((float)pos.x, (float)pos.y + b->H / 2);
+		const Block *bl = CArrayGet(&gap->blocks, rand() % gap->blocks.size);
+		const cpVect pos = cpBodyGetPosition(bl->Body);
+		PickupsAdd((float)pos.x, (float)pos.y + bl->H / 2);
 	}
 
 	memset(gap->Passed, 0, sizeof gap->Passed);

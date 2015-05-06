@@ -23,7 +23,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include "block.h"
+#include "box.h"
 
 #include <SDL_image.h>
 
@@ -73,7 +73,6 @@ static void RemoveShape(cpBody *body, cpShape *shape, void *data)
 	cpShapeFree(shape);
 }
 
-static void GapDrawPart(const int x, const int y, SDL_Surface *s);
 void BlockDraw(const Block *block, const float y)
 {
 	const cpVect pos = cpBodyGetPosition(block->Body);

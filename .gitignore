@@ -18,3 +18,8 @@ install_manifest.txt
 *.sln
 *.dir/
 Win32/
+
+# OSX
+CMakeScripts/
+*.build/
+*.xcodeproj/

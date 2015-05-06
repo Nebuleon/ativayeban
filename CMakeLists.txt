@@ -1,5 +1,5 @@
 project(FallingTime)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.10)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -9,6 +9,9 @@ if(CMAKE_CROSSCOMPILING)
         add_definitions(-D__GCW0__)
         set(GCW0 1)
     endif()
+endif()
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    set(CLANG 1)
 endif()
 
 # Chipmunk 2D
@@ -87,7 +90,16 @@ else()
 endif()
 file(GLOB HEADERS *.h)
 
-add_executable(falling_time ${SOURCES} ${HEADERS})
+if(APPLE)
+    set(EXTRA_FILES
+        pkg/macosx/SDLMain.m
+        pkg/macosx/SDLMain.h)
+    set_source_files_properties(pkg/macosx/SDLMain.m
+        PROPERTIES LANGUAGE C)
+    set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
+endif()
+
+add_executable(falling_time ${SOURCES} ${HEADERS} ${EXTRA_FILES})
 
 # libSDLMain comes with libSDL if needed on certain platforms
 if(NOT SDLMAIN_LIBRARY)

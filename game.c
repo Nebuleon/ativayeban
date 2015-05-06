@@ -75,9 +75,6 @@ void GameGatherInput(bool* Continue)
 	}
 }
 
-static void AddEdgeShapes(const float y);
-
-static void ScoreGaps();
 static float PlayerMiddleY(void);
 static float PlayerMinY(void);
 static float PlayerMaxY(void);
