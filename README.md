@@ -1,4 +1,4 @@
-![FallingTime](https://github.com/cxong/FallingTime/blob/master/data/graphics/anim01.png)
+# Falling Time
 
 Like the fall down games, you are a ball and you must fall into the holes to avoid being crushed by the top of the screen!
 
@@ -10,4 +10,4 @@ Code is under the GPL version 2; for asset licenses see the `COPYRIGHT` file.
 
 To compile this for PC, use `cmake . && make` on a PC with SDL. You'll then get a windowed SDL game.
 
-To compile this for GCW-Zero, do the same but provide a `CMAKE_TOOLCHAIN_FILE` as specified in the developer docs.
+To compile this for GCW-Zero, run `pkg/make_opk.sh` after installing the toolchain as specified in the developer docs.
