@@ -25,6 +25,7 @@
 #include "platform.h"
 
 static Uint32 LastTicks = 0;
+static Uint32 TicksElapsed = 0;
 
 void InitializePlatform(void)
 {
@@ -33,11 +34,21 @@ void InitializePlatform(void)
 
 Uint32 ToNextFrame(void)
 {
-	SDL_Delay(8);
-	Uint32 Ticks = SDL_GetTicks();
-	Uint32 Duration = Ticks - LastTicks;
-	LastTicks = Ticks;
-	return Duration;
+	const Uint32 duration = 1000 / FPS;
+	for (;;)
+	{
+		Uint32 Ticks = SDL_GetTicks();
+		TicksElapsed += Ticks - LastTicks;
+		LastTicks = Ticks;
+		if (TicksElapsed <= duration)
+		{
+			SDL_Delay(1);
+			continue;
+		}
+		break;
+	}
+	TicksElapsed -= duration;
+	return duration;
 }
 
 bool IsEnterGamePressingEvent(const SDL_Event* event)
