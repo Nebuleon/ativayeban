@@ -48,7 +48,7 @@ struct Gap
 
 extern SDL_Surface *GapSurfaces[6];
 
-void GapInit(struct Gap* gap, float y);
+void GapInit(struct Gap* gap, const float w, const float y);
 void GapRemove(struct Gap* gap);
 void GapDraw(const struct Gap* gap, const float y);
 

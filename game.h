@@ -71,7 +71,10 @@
 
 // The width of the area to leave empty for the player to pass through.
 // Given in meters.
-#define GAP_WIDTH        0.75f
+// Gaps start out big and gradually shrink over time.
+#define GAP_WIDTH_MIN    0.75f
+#define GAP_WIDTH_MAX    1.5f
+#define GAP_WIDTH_SHRINK_SPEED -0.01f
 
 // The height of gap surfaces.
 // Given in meters.

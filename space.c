@@ -69,6 +69,7 @@ void SpaceReset(Space *s)
 	}
 	CArrayClear(&s->Gaps);
 	s->gapGenDistance = GAP_GEN_START;
+	s->gapWidth = GAP_WIDTH_MAX;
 
 	PickupsReset();
 }
@@ -130,18 +131,19 @@ void SpaceUpdate(
 		lastGap = CArrayGet(&s->Gaps, s->Gaps.size - 1);
 	}
 	if (s->Gaps.size == 0 ||
-		GapBottom(lastGap) - (cameraY - FIELD_HEIGHT) >= s->gapGenDistance)
+		GapBottom(lastGap) - (cameraY - FIELD_HEIGHT * 2) >= s->gapGenDistance)
 	{
 		float top = 0;
 		if (s->Gaps.size != 0)
 		{
 			top = GapBottom(lastGap) - s->gapGenDistance;
-			s->gapGenDistance += GAP_GEN_SPEED;
-			s->gapGenDistance = MAX(GAP_GEN_MIN, s->gapGenDistance);
+			s->gapGenDistance =
+				MAX(GAP_GEN_MIN, s->gapGenDistance + GAP_GEN_SPEED);
 		}
 		struct Gap g;
-		GapInit(&g, top);
+		GapInit(&g, s->gapWidth, top);
 		CArrayPushBack(&s->Gaps, &g);
+		s->gapWidth = MAX(GAP_WIDTH_MIN, s->gapWidth + GAP_WIDTH_SHRINK_SPEED);
 	}
 
 	if (y < s->edgeBodiesBottom)

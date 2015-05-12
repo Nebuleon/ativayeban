@@ -40,6 +40,7 @@ typedef struct
 
 	CArray Gaps;	// of Gap
 	float gapGenDistance;
+	float gapWidth;
 } Space;
 
 extern Space space;

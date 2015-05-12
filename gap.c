@@ -41,21 +41,19 @@ POSSIBILITY OF SUCH DAMAGE.
 SDL_Surface *GapSurfaces[6];
 
 static int compareFloat(const void *a, const void *b);
-void GapInit(struct Gap* gap, float y)
+void GapInit(struct Gap* gap, const float w, const float y)
 {
 	// Randomly generate some gaps, and place blocks around them
 	float gapXs[MAX_GAPS];
 	for (int i = 0; i < MAX_GAPS; i++)
 	{
-		gapXs[i] =
-			GAP_WIDTH / 2 +
-			(float)rand() / (float)RAND_MAX * (FIELD_WIDTH - GAP_WIDTH);
+		gapXs[i] = w / 2 + (float)rand() / (float)RAND_MAX * (FIELD_WIDTH - w);
 	}
 	qsort(gapXs, MAX_GAPS, sizeof gapXs[0], compareFloat);
 	// Merge gaps if they are too close
 	for (int i = 1; i < MAX_GAPS; i++)
 	{
-		if (gapXs[i] - gapXs[i - 1] < GAP_WIDTH + MIN_BLOCK_WIDTH)
+		if (gapXs[i] - gapXs[i - 1] < w + MIN_BLOCK_WIDTH)
 		{
 			gapXs[i] = (gapXs[i] + gapXs[i - 1]) / 2;
 			gapXs[i - 1] = 0;
@@ -68,9 +66,9 @@ void GapInit(struct Gap* gap, float y)
 	for (int i = 0; i < MAX_GAPS; i++)
 	{
 		if (gapXs[i] == 0) continue;
-		BlockInit(&b, left, y, gapXs[i] - GAP_WIDTH / 2 - left);
+		BlockInit(&b, left, y, gapXs[i] - w / 2 - left);
 		CArrayPushBack(&gap->blocks, &b);
-		left = gapXs[i] + GAP_WIDTH / 2;
+		left = gapXs[i] + w / 2;
 	}
 	// Add last block
 	BlockInit(&b, left, y, FIELD_WIDTH - left);
