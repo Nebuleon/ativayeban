@@ -47,6 +47,9 @@ static int winners = 0;
 static Animation TitleAnim;
 static Animation GameOverAnim;
 SDL_Surface *ControlSurfaces[MAX_PLAYERS];
+#ifdef __GCW0__
+SDL_Surface *ControlSurface0Alt = NULL;
+#endif
 
 static Block blocks[MAX_PLAYERS];
 #define BLOCK_WIDTH (FIELD_WIDTH / MAX_PLAYERS * 0.25f)
@@ -77,6 +80,15 @@ void TitleScreenGatherInput(bool* Continue)
 		{
 			players[i].AccelX = GetMovement(i);
 		}
+#ifdef __GCW0__
+		// Enable/disable G-Sensor based on up/down
+		if (ev.type == SDL_KEYUP &&
+			(ev.key.keysym.sym == SDLK_UP || ev.key.keysym.sym == SDLK_DOWN))
+		{
+			GSensor = !GSensor;
+			SoundPlay(SoundScore, 1.0);
+		}
+#endif
 	}
 }
 static void TitleScreenEnd(void)
@@ -135,6 +147,7 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	AnimationUpdate(a, Milliseconds);
 }
 
+static SDL_Surface *GetControlSurface(const int i);
 static void DrawTitleImg(void);
 void TitleScreenOutputFrame(void)
 {
@@ -142,18 +155,17 @@ void TitleScreenOutputFrame(void)
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
+		SDL_Surface *s = GetControlSurface(i);
 		SDL_Rect dest =
 		{
 			(Sint16)(
 				SCREEN_X((i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1)) -
-				ControlSurfaces[i]->w / 2),
-			(Sint16)(
-				(SCREEN_HEIGHT - ControlSurfaces[i]->h) / 2 -
-				SCREEN_X(PLAYER_RADIUS)),
+				s->w / 2),
+			(Sint16)((SCREEN_HEIGHT - s->h) / 2 - SCREEN_X(PLAYER_RADIUS)),
 			0,
 			0
 		};
-		SDL_BlitSurface(ControlSurfaces[i], NULL, Screen, &dest);
+		SDL_BlitSurface(s, NULL, Screen, &dest);
 	}
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
@@ -192,6 +204,17 @@ void TitleScreenOutputFrame(void)
 		Screen, font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f));
 
 	SDL_Flip(Screen);
+}
+static SDL_Surface *GetControlSurface(const int i)
+{
+	SDL_Surface *s = ControlSurfaces[i];
+#ifdef __GCW0__
+	if (GSensor && i == 0)
+	{
+		s = ControlSurface0Alt;
+	}
+#endif
+	return s;
 }
 static void DrawTitleImg(void)
 {
@@ -308,6 +331,13 @@ bool TitleImagesLoad(void)
 			return false;
 		}
 	}
+#ifdef __GCW0__
+	ControlSurface0Alt = IMG_Load("data/graphics/gcw0alt.png");
+	if (ControlSurface0Alt == NULL)
+	{
+		return false;
+	}
+#endif
 	return true;
 }
 void TitleImagesFree(void)
@@ -318,4 +348,7 @@ void TitleImagesFree(void)
 	{
 		SDL_FreeSurface(ControlSurfaces[i]);
 	}
+#ifdef __GCW0__
+	SDL_FreeSurface(ControlSurface0Alt);
+#endif
 }

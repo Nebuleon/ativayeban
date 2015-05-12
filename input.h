@@ -18,7 +18,17 @@
  */
 #pragma once
 
+#include <stdbool.h>
+
 #include <SDL.h>
+
+
+#ifdef __GCW0__
+extern bool GSensor;
+#endif
+
+void InputInit(void);
+void InputFree(void);
 
 void InputOnEvent(const SDL_Event* event);
 

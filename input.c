@@ -35,6 +35,37 @@
 #endif
 
 static bool pressed[SDLK_LAST];
+// TODO: support joysticks for PC
+#ifdef __GCW0__
+static SDL_Joystick *joysticks[2];
+bool GSensor = false;
+#define JOY_DEADZONE 500
+#endif
+
+
+void InputInit(void)
+{
+	memset(pressed, 0, sizeof pressed);
+#ifdef __GCW0__
+	memset(joysticks, 0, sizeof joysticks);
+	for (int i = 0; i < 2 && i < SDL_NumJoysticks(); i++)
+	{
+		joysticks[i] = SDL_JoystickOpen(i);
+	}
+#endif
+}
+void InputFree(void)
+{
+#ifdef __GCW0__
+	for (int i = 0; i < 2; i++)
+	{
+		if (joysticks[i] != NULL && SDL_JoystickOpened(i))
+		{
+			SDL_JoystickClose(joysticks[i]);
+		}
+	}
+#endif
+}
 
 void InputOnEvent(const SDL_Event* event)
 {
@@ -46,6 +77,18 @@ void InputOnEvent(const SDL_Event* event)
 
 int16_t GetMovement(const int player)
 {
+#ifdef __GCW0__
+	joystick_t *joy = GSensor ? joysticks[1] : joysticks[0];
+	if (joy)
+	{
+		// Read X-axis of chosen joystick
+		const int16_t x = (int16_t)SDL_JoystickGetAxis(joy, 0);
+		if (abs(x) > JOY_DEADZONE)
+		{
+			return x;
+		}
+	}
+#endif
 	const bool left = player == 0 ?
 		pressed[P1_LEFT] : (pressed[P2_LEFT0] || pressed[P2_LEFT1]);
 	const bool right = player == 0 ?

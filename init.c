@@ -28,6 +28,7 @@
 #include "game.h"
 #include "main.h"
 #include "init.h"
+#include "input.h"
 #include "particle.h"
 #include "pickup.h"
 #include "platform.h"
@@ -77,6 +78,8 @@ void Initialize(bool* Continue, bool* Error)
 	}
 	else
 		printf("Mix_OpenAudio succeeded\n");
+
+	InputInit();
 
 	if (TTF_Init() == -1)
 	{
@@ -213,5 +216,6 @@ void Finalize()
 	Mix_FreeMusic(music);
 	SoundFree();
 	TTF_CloseFont(font);
+	InputFree();
 	SDL_Quit();
 }
