@@ -37,3 +37,5 @@ void InputOnEvent(const SDL_Event* event);
 //   Negative values go to the left; positive values go to the right.
 int16_t GetMovement(const int player);
 void ResetMovement(void);
+
+void InputToggleGSensor(void);

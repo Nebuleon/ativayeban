@@ -20,6 +20,9 @@
 
 #include <stdbool.h>
 
+#include "utils.h"
+
+
 #define P1_LEFT SDLK_LEFT
 #define P1_RIGHT SDLK_RIGHT
 #ifdef __GCW0__
@@ -38,8 +41,10 @@ static bool pressed[SDLK_LAST];
 // TODO: support joysticks for PC
 #ifdef __GCW0__
 static SDL_Joystick *joysticks[2];
+static int16_t joystickZero = 0;
 bool GSensor = false;
 #define JOY_DEADZONE 500
+#define G_SENSITIVITY 5
 #endif
 
 
@@ -75,17 +80,18 @@ void InputOnEvent(const SDL_Event* event)
 	}
 }
 
+static int16_t GetJoyX(SDL_Joystick *joy, const int16_t zero);
 int16_t GetMovement(const int player)
 {
 #ifdef __GCW0__
-	joystick_t *joy = GSensor ? joysticks[1] : joysticks[0];
-	if (joy)
+	if (player == 0)
 	{
-		// Read X-axis of chosen joystick
-		const int16_t x = (int16_t)SDL_JoystickGetAxis(joy, 0);
-		if (abs(x) > JOY_DEADZONE)
+		const int16_t x = GetJoyX(joysticks[0], 0);
+		if (abs(x) > JOY_DEADZONE) return x;
+		if (GSensor)
 		{
-			return x;
+			const int gx = GetJoyX(joysticks[1], joystickZero) * G_SENSITIVITY;
+			return (int16_t)CLAMP(gx, -32768, 32767);
 		}
 	}
 #endif
@@ -95,8 +101,26 @@ int16_t GetMovement(const int player)
 		pressed[P1_RIGHT] : (pressed[P2_RIGHT0] || pressed[P2_RIGHT1]);
 	return left ? (right ? 0 : -32768) : (right ? 32767 : 0);
 }
+static int16_t GetJoyX(SDL_Joystick *joy, const int16_t zero)
+{
+	if (!joy) return 0;
+	// Read X-axis of chosen joystick
+	return (int16_t)SDL_JoystickGetAxis(joy, 0) + zero;
+}
 
 void ResetMovement(void)
 {
 	memset(pressed, 0, sizeof pressed);
+}
+
+void InputToggleGSensor(void)
+{
+#ifdef __GCW0__
+	GSensor = !GSensor;
+	if (GSensor && joysticks[1])
+	{
+		// Recalibrate
+		joystickZero = (int16_t)SDL_JoystickGetAxis(joysticks[1], 0);
+	}
+#endif
 }

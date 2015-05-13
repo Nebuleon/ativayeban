@@ -85,7 +85,7 @@ void TitleScreenGatherInput(bool* Continue)
 		if (ev.type == SDL_KEYUP &&
 			(ev.key.keysym.sym == SDLK_UP || ev.key.keysym.sym == SDLK_DOWN))
 		{
-			GSensor = !GSensor;
+			InputToggleGSensor();
 			SoundPlay(SoundScore, 1.0);
 		}
 #endif
