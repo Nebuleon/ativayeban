@@ -48,7 +48,8 @@ static Animation TitleAnim;
 static Animation GameOverAnim;
 SDL_Surface *ControlSurfaces[MAX_PLAYERS];
 #ifdef __GCW0__
-SDL_Surface *ControlSurface0Alt = NULL;
+SDL_Surface *ControlSurface0Analog = NULL;
+SDL_Surface *ControlSurface0G = NULL;
 #endif
 
 static Block blocks[MAX_PLAYERS];
@@ -82,10 +83,10 @@ void TitleScreenGatherInput(bool* Continue)
 		}
 #ifdef __GCW0__
 		// Enable/disable G-Sensor based on up/down
-		if (ev.type == SDL_KEYUP &&
+		if (ev.type == SDL_KEYUP)
 			(ev.key.keysym.sym == SDLK_UP || ev.key.keysym.sym == SDLK_DOWN))
 		{
-			InputToggleGSensor();
+			InputToggleGSensor(ev.key.keysym.sym == SDLK_UP ? -1 : 1);
 			SoundPlay(SoundScore, 1.0);
 		}
 #endif
@@ -209,9 +210,20 @@ static SDL_Surface *GetControlSurface(const int i)
 {
 	SDL_Surface *s = ControlSurfaces[i];
 #ifdef __GCW0__
-	if (GSensor && i == 0)
+	if (i == 0)
 	{
-		s = ControlSurface0Alt;
+		switch (JoystickIndex)
+		{
+		case 0:
+			s = ControlSurface0Analog;
+			break;
+		case 1:
+			s = ControlSurface0G;
+			break;
+		default:
+			// Do nothing
+			break;
+		}
 	}
 #endif
 	return s;
@@ -332,11 +344,10 @@ bool TitleImagesLoad(void)
 		}
 	}
 #ifdef __GCW0__
-	ControlSurface0Alt = IMG_Load("data/graphics/gcw0alt.png");
-	if (ControlSurface0Alt == NULL)
-	{
-		return false;
-	}
+	ControlSurface0Analog = IMG_Load("data/graphics/gcw0analog.png");
+	if (ControlSurface0Analog == NULL) return false;
+	ControlSurface0G = IMG_Load("data/graphics/gcw0g.png");
+	if (ControlSurface0G == NULL) return false;
 #endif
 	return true;
 }
@@ -349,6 +360,7 @@ void TitleImagesFree(void)
 		SDL_FreeSurface(ControlSurfaces[i]);
 	}
 #ifdef __GCW0__
-	SDL_FreeSurface(ControlSurface0Alt);
+	SDL_FreeSurface(ControlSurface0Analog);
+	SDL_FreeSurface(ControlSurface0G);
 #endif
 }

@@ -41,8 +41,8 @@ static bool pressed[SDLK_LAST];
 // TODO: support joysticks for PC
 #ifdef __GCW0__
 static SDL_Joystick *joysticks[2];
-static int16_t joystickZero = 0;
-bool GSensor = false;
+static int16_t gZero = 0;
+int JoystickIndex = -1;
 #define JOY_DEADZONE 500
 #define G_SENSITIVITY 5
 #endif
@@ -86,10 +86,15 @@ int16_t GetMovement(const int player)
 #ifdef __GCW0__
 	if (player == 0)
 	{
-		const int16_t x = GetJoyX(joysticks[0], 0);
-		if (abs(x) > JOY_DEADZONE) return x;
-		if (GSensor)
+		if (JoystickIndex == 0)
 		{
+			// Analog nub
+			const int16_t x = GetJoyX(joysticks[0], 0);
+			if (abs(x) > JOY_DEADZONE) return x;
+		}
+		else if (JoystickIndex == 1)
+		{
+			// G sensor
 			const int gx = GetJoyX(joysticks[1], joystickZero) * G_SENSITIVITY;
 			return (int16_t)CLAMP(gx, -32768, 32767);
 		}
@@ -113,14 +118,16 @@ void ResetMovement(void)
 	memset(pressed, 0, sizeof pressed);
 }
 
-void InputToggleGSensor(void)
+void InputSwitchJoystick(const int inc)
 {
 #ifdef __GCW0__
-	GSensor = !GSensor;
-	if (GSensor && joysticks[1])
+	JoystickIndex = CLAMP_OPPOSITE(JoystickIndex + inc, -1, 1);
+	if (JoystickIndex == 1 && joysticks[1])
 	{
-		// Recalibrate
-		joystickZero = (int16_t)SDL_JoystickGetAxis(joysticks[1], 0);
+		// Recalibrate G sensor
+		gZero = (int16_t)SDL_JoystickGetAxis(joysticks[1], 0);
 	}
+#else
+	UNUSED(inc);
 #endif
 }

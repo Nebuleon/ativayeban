@@ -39,6 +39,8 @@
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
 #define CLAMP(v, _min, _max) MAX((_min), MIN((_max), (v)))
+#define CLAMP_OPPOSITE(v, _min, _max)\
+	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))
 #define SIGN(_x) ((_x) < 0 ? -1 : 1)
 #define UNUSED(expr) (void)(expr)
 

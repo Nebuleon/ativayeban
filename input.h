@@ -24,7 +24,11 @@
 
 
 #ifdef __GCW0__
-extern bool GSensor;
+// Number determining which "joystick" to use
+// -1 means don't use joystick
+// 0 is the analog nub
+// 1 is G sensor
+extern int JoystickIndex;
 #endif
 
 void InputInit(void);
@@ -38,4 +42,4 @@ void InputOnEvent(const SDL_Event* event);
 int16_t GetMovement(const int player);
 void ResetMovement(void);
 
-void InputToggleGSensor(void);
+void InputSwitchJoystick(const int inc);
