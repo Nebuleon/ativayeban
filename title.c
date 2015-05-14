@@ -83,10 +83,10 @@ void TitleScreenGatherInput(bool* Continue)
 		}
 #ifdef __GCW0__
 		// Enable/disable G-Sensor based on up/down
-		if (ev.type == SDL_KEYUP)
+		if (ev.type == SDL_KEYUP &&
 			(ev.key.keysym.sym == SDLK_UP || ev.key.keysym.sym == SDLK_DOWN))
 		{
-			InputToggleGSensor(ev.key.keysym.sym == SDLK_UP ? -1 : 1);
+			InputSwitchJoystick(ev.key.keysym.sym == SDLK_UP ? -1 : 1);
 			SoundPlay(SoundScore, 1.0);
 		}
 #endif

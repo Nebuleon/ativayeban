@@ -40,11 +40,12 @@
 static bool pressed[SDLK_LAST];
 // TODO: support joysticks for PC
 #ifdef __GCW0__
-static SDL_Joystick *joysticks[2];
+static SDL_Joystick *analog = NULL;
+static SDL_Joystick *gSensor = NULL;
 static int16_t gZero = 0;
 int JoystickIndex = -1;
 #define JOY_DEADZONE 500
-#define G_SENSITIVITY 5
+#define G_SENSITIVITY 7
 #endif
 
 
@@ -52,23 +53,21 @@ void InputInit(void)
 {
 	memset(pressed, 0, sizeof pressed);
 #ifdef __GCW0__
-	memset(joysticks, 0, sizeof joysticks);
-	for (int i = 0; i < 2 && i < SDL_NumJoysticks(); i++)
+	// Look for the right joysticks by name
+	for (int i = 0; i < SDL_NumJoysticks(); i++)
 	{
-		joysticks[i] = SDL_JoystickOpen(i);
+		if (strcmp(SDL_JoystickName(i), "linkdev device (Analog 2-axis 8-button 2-hat)") == 0)
+			analog = SDL_JoystickOpen(i);
+		else if (strcmp(SDL_JoystickName(i), "mxc6225") == 0)
+			gSensor = SDL_JoystickOpen(i);
 	}
 #endif
 }
 void InputFree(void)
 {
 #ifdef __GCW0__
-	for (int i = 0; i < 2; i++)
-	{
-		if (joysticks[i] != NULL && SDL_JoystickOpened(i))
-		{
-			SDL_JoystickClose(joysticks[i]);
-		}
-	}
+	if (analog) SDL_JoystickClose(analog);
+	if (gSensor) SDL_JoystickClose(gSensor);
 #endif
 }
 
@@ -89,13 +88,13 @@ int16_t GetMovement(const int player)
 		if (JoystickIndex == 0)
 		{
 			// Analog nub
-			const int16_t x = GetJoyX(joysticks[0], 0);
+			const int16_t x = GetJoyX(analog, 0);
 			if (abs(x) > JOY_DEADZONE) return x;
 		}
 		else if (JoystickIndex == 1)
 		{
 			// G sensor
-			const int gx = GetJoyX(joysticks[1], joystickZero) * G_SENSITIVITY;
+			const int gx = GetJoyX(gSensor, gZero) * G_SENSITIVITY;
 			return (int16_t)CLAMP(gx, -32768, 32767);
 		}
 	}
@@ -122,10 +121,10 @@ void InputSwitchJoystick(const int inc)
 {
 #ifdef __GCW0__
 	JoystickIndex = CLAMP_OPPOSITE(JoystickIndex + inc, -1, 1);
-	if (JoystickIndex == 1 && joysticks[1])
+	if (JoystickIndex == 1 && gSensor)
 	{
 		// Recalibrate G sensor
-		gZero = (int16_t)SDL_JoystickGetAxis(joysticks[1], 0);
+		gZero = (int16_t)SDL_JoystickGetAxis(gSensor, 0);
 	}
 #else
 	UNUSED(inc);
