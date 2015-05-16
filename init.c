@@ -27,6 +27,7 @@
 #include "gap.h"
 #include "game.h"
 #include "main.h"
+#include "high_score.h"
 #include "init.h"
 #include "input.h"
 #include "particle.h"
@@ -80,6 +81,7 @@ void Initialize(bool* Continue, bool* Error)
 		printf("Mix_OpenAudio succeeded\n");
 
 	InputInit();
+	HighScoresInit();
 
 	if (TTF_Init() == -1)
 	{
@@ -168,14 +170,17 @@ void Initialize(bool* Continue, bool* Error)
 		return;
 	}
 
-	font = TTF_OpenFont("data/LondrinaSolid-Regular.otf", 20);
-	if (font == NULL)
-	{
-		*Continue = false;  *Error = true;
-		printf("TTF_OpenFont failed: %s\n", SDL_GetError());
-		SDL_ClearError();
-		return;
+#define LOAD_FONT(_f, _file, _size)\
+	_f = TTF_OpenFont("data/" _file, _size);\
+	if (_f == NULL)\
+	{\
+		*Continue = false;  *Error = true;\
+		printf("TTF_OpenFont failed: %s\n", SDL_GetError());\
+		SDL_ClearError();\
+		return;\
 	}
+	LOAD_FONT(font, "LondrinaSolid-Regular.otf", 20);
+	LOAD_FONT(hsFont, "LondrinaSolid-Regular.otf", 16);
 
 	SpaceInit(&space);
 	ParticlesInit();
@@ -216,6 +221,8 @@ void Finalize()
 	Mix_FreeMusic(music);
 	SoundFree();
 	TTF_CloseFont(font);
+	TTF_CloseFont(hsFont);
+	HighScoresFree();
 	InputFree();
 	SDL_Quit();
 }

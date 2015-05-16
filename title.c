@@ -28,6 +28,7 @@
 #include "animation.h"
 #include "box.h"
 #include "main.h"
+#include "high_score.h"
 #include "init.h"
 #include "input.h"
 #include "particle.h"
@@ -46,6 +47,7 @@ static int winnerIndices[MAX_PLAYERS];
 static int winners = 0;
 static Animation TitleAnim;
 static Animation GameOverAnim;
+static HighScoreDisplay HSD;
 SDL_Surface *ControlSurfaces[MAX_PLAYERS];
 #ifdef __GCW0__
 SDL_Surface *ControlSurface0Analog = NULL;
@@ -146,6 +148,8 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 
 	Animation *a = Start ? &TitleAnim : &GameOverAnim;
 	AnimationUpdate(a, Milliseconds);
+
+	HighScoreDisplayUpdate(&HSD, Milliseconds);
 }
 
 static SDL_Surface *GetControlSurface(const int i);
@@ -153,6 +157,8 @@ static void DrawTitleImg(void);
 void TitleScreenOutputFrame(void)
 {
 	DrawBackground(&BG, 0);
+
+	HighScoreDisplayDraw(&HSD);
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
@@ -201,8 +207,9 @@ void TitleScreenOutputFrame(void)
 				PlayerSpritesheets[playerIndex], &src, Screen, &dest);
 		}
 	}
+	SDL_Color c = { 177, 177, 177, 255 };
 	TextRenderCentered(
-		Screen, font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f));
+		Screen, font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f), c);
 
 	SDL_Flip(Screen);
 }
@@ -287,7 +294,10 @@ void ToTitleScreen(const bool start)
 				"Tied with score %d!\n%s to exit",
 				maxScore, GetExitGamePrompt());
 		}
+		HighScoresAdd(maxScore);
 	}
+
+	HighScoreDisplayInit(&HSD);
 
 	CArrayClear(&Particles);
 	SpaceReset(&space);

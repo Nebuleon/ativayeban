@@ -23,50 +23,41 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include "text.h"
+#pragma once
 
-#include <stdbool.h>
+#include <time.h>
 
-#include "init.h"
-#include "main.h"
+#include <SDL_ttf.h>
+
+#include "c_array.h"
 
 
-void TextRenderCentered(
-	SDL_Surface *s, TTF_Font *font, const char *text, const int startY,
-	const SDL_Color c)
+typedef struct
 {
-	int y = startY;
-	for (;;)
-	{
-		// Render the text line-by-line
-		const char *nl = strchr(text, '\n');
-		char buf[256];
-		if (nl != NULL)
-		{
-			const size_t len = nl - text;
-			strncpy(buf, text, len);
-			buf[len] = '\0';
-		}
-		else
-		{
-			strcpy(buf, text);
-		}
+	int Score;
+	time_t Time;
+} HighScore;
 
-		if (strlen(buf) > 0)
-		{
-			SDL_Surface *t = TTF_RenderText_Blended(font, buf, c);
-			const int x = (SCREEN_WIDTH - t->w) / 2;
-			SDL_Rect dest = { (Sint16)x, (Sint16)y, 0, 0 };
-			SDL_BlitSurface(t, NULL, s, &dest);
+extern CArray HighScores;	// of HighScore
 
-			SDL_FreeSurface(t);
-		}
-		y += TTF_FontHeight(font);
+void HighScoresInit(void);
+void HighScoresFree(void);
 
-		if (nl == NULL)
-		{
-			break;
-		}
-		text = nl + 1;
-	}
-}
+// Add and also save the high scores
+void HighScoresAdd(const int s);
+
+typedef struct
+{
+	float y;
+	float dy;
+	int h;
+
+	// Counter from 0 to 1 for animating text colour
+	float textCounter;
+} HighScoreDisplay;
+
+extern TTF_Font *hsFont;
+
+void HighScoreDisplayInit(HighScoreDisplay *h);
+void HighScoreDisplayUpdate(HighScoreDisplay *h, const Uint32 ms);
+void HighScoreDisplayDraw(HighScoreDisplay *h);
