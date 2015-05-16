@@ -2,7 +2,8 @@
 
 Like the fall down games, you are a ball and you must fall into the holes to avoid being crushed by the top of the screen!
 
-![gameplay](http://i.imgur.com/43P9aJN.gif)
+<iframe width="320" height="240" src="https://www.youtube.com/embed/3MVMJkOYHSg" frameborder="0" allowfullscreen></iframe>
+![gameplay](http://i.imgur.com/Yj7XKKP.png)
 
 This game requires SDL 1.2, CMake and a C compiler. It is optimised for low-resolution screens.
 
