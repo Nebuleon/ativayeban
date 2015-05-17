@@ -9,6 +9,10 @@ This game requires SDL 1.2, CMake and a C compiler. It is optimised for low-reso
 
 Code is under the GPL version 2; for asset licenses see the `COPYRIGHT` file.
 
-To compile this for PC, use `cmake . && make` on a PC with SDL. You'll then get a windowed SDL game.
+### Building
+
+Use **CMake**, and the libraries **SDL 1.2**, **SDL_image 1.2** and **SDL_mixer 1.2**.
+
+To compile this for PC, use `cmake . && make`. You'll then get a windowed SDL game.
 
 To compile this for GCW-Zero, run `pkg/make_opk.sh` after installing the toolchain as specified in the developer docs.
