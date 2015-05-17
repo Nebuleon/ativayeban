@@ -8,6 +8,8 @@ libchipmunk.a
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
 Makefile
 install_manifest.txt
 
@@ -17,6 +19,7 @@ install_manifest.txt
 *.sdf
 *.sln
 *.dir/
+Falling Time-*-win32.zip
 Win32/
 
 # OSX

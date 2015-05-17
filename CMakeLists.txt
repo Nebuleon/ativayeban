@@ -111,3 +111,84 @@ target_link_libraries(falling_time
 	chipmunk_static
 	${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLTTF_LIBRARY}
 	${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})
+set_target_properties(falling_time PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}
+	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+
+################
+# Installation #
+################
+
+# Executables
+set(INSTALL_PREFIX ".")
+if(WIN32)
+	set(EXE_EXTENSION ".exe")
+	set(LIB_EXTENSION ".dll")
+elseif(APPLE)
+	set(LIB_EXTENSION ".dylib")
+	set(INSTALL_PREFIX "falling_time")
+else()
+	set(EXE_EXTENSION "")
+	set(LIB_EXTENSION ".so")
+endif()
+if(APPLE)
+	install(
+		DIRECTORY falling_time.app
+		DESTINATION ${INSTALL_PREFIX}
+		USE_SOURCE_PERMISSIONS)
+else()
+	install(
+		PROGRAMS falling_time${EXE_EXTENSION}
+		DESTINATION ${INSTALL_PREFIX})
+endif()
+
+SET(SOURCE_DIRECTORY ".")
+INSTALL(DIRECTORY
+	${SOURCE_DIRECTORY}/data
+	DESTINATION ${INSTALL_PREFIX})
+INSTALL(FILES
+	${SOURCE_DIRECTORY}/README.md
+	DESTINATION ${INSTALL_PREFIX})
+IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
+	# TODO: .desktop file and png icon
+elseif(WIN32)
+	# Package for Windows
+	FILE(GLOB DLLS "${SOURCE_DIRECTORY}/*.dll")
+	FOREACH(DLL ${DLLS})
+		INSTALL(FILES "${DLL}" DESTINATION ${INSTALL_PREFIX})
+	ENDFOREACH()
+elseif(APPLE)
+	set(CMAKE_INSTALL_PREFIX "/Applications/Falling Time")
+endif()
+
+# Packaging
+SET(CPACK_PACKAGE_NAME "Falling Time")
+SET(CPACK_PACKAGE_VENDOR "Falling Time Team")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Falling Time: 2D Physical Arcade Game")
+SET(CPACK_PACKAGE_VERSION 1.0.0)
+SET(CPACK_PACKAGE_VERSION_MAJOR 1)
+SET(CPACK_PACKAGE_VERSION_MINOR 0)
+SET(CPACK_PACKAGE_VERSION_PATCH 0)
+SET(CPACK_PACKAGE_EXECUTABLES "falling_time;Falling Time")
+if(WIN32)
+	SET(CPACK_GENERATOR ZIP)
+elseif(APPLE)
+	set(CPACK_GENERATOR "DragNDrop")
+	set(CPACK_DMG_FORMAT "UDBZ")
+	set(CPACK_DMG_VOLUME_NAME "Falling Time")
+	set(CPACK_SYSTEM_NAME "OSX")
+	set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_BINARY_DIR}/pkg/macosx/icon.icns")
+
+	# copy SDL frameworks into app bundle for Mac OS X
+	set(APPS falling_time)
+	set(LIBS SDL SDL_image SDL_mixer)
+	foreach(APP ${APPS})
+		foreach(LIB ${LIBS})
+			install(DIRECTORY /Library/Frameworks/${LIB}.framework
+				DESTINATION ${INSTALL_PREFIX}/bin/${APP}.app/Contents/Frameworks)
+		endforeach()
+	endforeach()
+endif()
+include(CPack)
