@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "init.h"
 #include "main.h"
 #include "text.h"
+#include "utils.h"
 
 
 #define HIGH_SCORE_FILE "falling_time_high_scores"
@@ -112,7 +113,7 @@ void HighScoresAdd(const int s)
 		printf("Error: cannot open config file %s\n", buf);
 		return;
 	}
-	for (int i = 0; i < min((int)HighScores.size, MAX_HIGH_SCORES); i++)
+	for (int i = 0; i < MIN((int)HighScores.size, MAX_HIGH_SCORES); i++)
 	{
 		const HighScore *hs = CArrayGet(&HighScores, i);
 		struct tm *ptm = gmtime(&hs->Time);
