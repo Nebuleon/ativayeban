@@ -17,3 +17,7 @@ Use **CMake**, and the libraries **SDL 1.2**, **SDL_image 1.2** and **SDL_mixer 
 To compile this for PC, use `cmake . && make`. You'll then get a windowed SDL game.
 
 To compile this for GCW-Zero, run `pkg/make_opk.sh` after installing the toolchain as specified in the developer docs.
+
+### Notes
+
+The game uses a custom version of Chipmunk 2D physics; it cannot be replaced with standard libraries.
