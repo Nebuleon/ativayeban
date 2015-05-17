@@ -92,14 +92,23 @@ file(GLOB HEADERS *.h)
 
 if(APPLE)
     set(EXTRA_FILES
+		pkg/macosx/icon.icns
         pkg/macosx/SDLMain.m
         pkg/macosx/SDLMain.h)
     set_source_files_properties(pkg/macosx/SDLMain.m
         PROPERTIES LANGUAGE C)
+	set_source_files_properties(pkg/macosx/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+	set(MACOSX_BUNDLE_ICON_FILE icon.icns)
     set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
 endif()
 
-add_executable(falling_time ${SOURCES} ${HEADERS} ${EXTRA_FILES})
+add_executable(falling_time MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${EXTRA_FILES})
+if(APPLE)
+	set_target_properties(falling_time PROPERTIES
+		MACOSX_RPATH 1
+		BUILD_WITH_INSTALL_RPATH 1
+		INSTALL_RPATH "@loader_path/Frameworks")
+endif()
 
 # libSDLMain comes with libSDL if needed on certain platforms
 if(NOT SDLMAIN_LIBRARY)
@@ -188,7 +197,7 @@ elseif(APPLE)
 	foreach(APP ${APPS})
 		foreach(LIB ${LIBS})
 			install(DIRECTORY /Library/Frameworks/${LIB}.framework
-				DESTINATION ${INSTALL_PREFIX}/bin/${APP}.app/Contents/Frameworks)
+				DESTINATION ${INSTALL_PREFIX}/${APP}.app/Contents/Frameworks)
 		endforeach()
 	endforeach()
 endif()

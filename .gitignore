@@ -5,6 +5,7 @@ falling_time.opk
 libchipmunk.a
 
 # CMake
+_CPack_Packages/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -26,3 +27,5 @@ Win32/
 CMakeScripts/
 *.build/
 *.xcodeproj/
+*.dmg
+*.app/

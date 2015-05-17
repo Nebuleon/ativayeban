@@ -79,7 +79,9 @@ void InputOnEvent(const SDL_Event* event)
 	}
 }
 
+#ifdef __GCW0__
 static int16_t GetJoyX(SDL_Joystick *joy, const int16_t zero);
+#endif
 int16_t GetMovement(const int player)
 {
 #ifdef __GCW0__
@@ -105,12 +107,14 @@ int16_t GetMovement(const int player)
 		pressed[P1_RIGHT] : (pressed[P2_RIGHT0] || pressed[P2_RIGHT1]);
 	return left ? (right ? 0 : -32768) : (right ? 32767 : 0);
 }
+#ifdef __GCW0__
 static int16_t GetJoyX(SDL_Joystick *joy, const int16_t zero)
 {
 	if (!joy) return 0;
 	// Read X-axis of chosen joystick
 	return (int16_t)SDL_JoystickGetAxis(joy, 0) + zero;
 }
+#endif
 
 void ResetMovement(void)
 {
