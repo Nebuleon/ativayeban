@@ -182,7 +182,7 @@ void HighScoreDisplayDraw(HighScoreDisplay *h)
 	const float scalar =
 		h->textCounter > 0.5f ? 1.0f - h->textCounter : h->textCounter;
 	SDL_Color c;
-	c.b = TEXT_BLUE_LOW + (int)((TEXT_BLUE_HIGH - TEXT_BLUE_LOW) * scalar);
+	c.b = TEXT_BLUE_LOW + (Uint8)((TEXT_BLUE_HIGH - TEXT_BLUE_LOW) * scalar);
 	c.r = c.g = c.b / 2;
 	TextRenderCentered(Screen, hsFont, buf, (int)h->y, c);
 }
