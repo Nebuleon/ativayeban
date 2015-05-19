@@ -2,7 +2,7 @@
 
 Like the fall down games, you are a ball and you must fall into the holes to avoid being crushed by the top of the screen!
 
-<iframe width="320" height="240" src="https://www.youtube.com/embed/3MVMJkOYHSg" frameborder="0" allowfullscreen></iframe>
+[![Gameplay video](http://img.youtube.com/vi/3MVMJkOYHSg/0.jpg)](https://www.youtube.com/watch?v=3MVMJkOYHSg)
 
 ![gameplay](https://github.com/cxong/fallingtime/blob/master/screenshot.png)
 
