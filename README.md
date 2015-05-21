@@ -12,7 +12,7 @@ Code is under the GPL version 2; for asset licenses see the `COPYRIGHT` file.
 
 ### Building
 
-Use **CMake**, and the libraries **SDL 2**, **SDL_image**, **SDL_mixer** and **SDL_ttf**.
+Use **CMake**, and the libraries **SDL 2**, **SDL2_image**, **SDL2_mixer** and **SDL2_ttf**.
 
 To compile this for PC, use `cmake . && make`. You'll then get a windowed SDL game.
 
