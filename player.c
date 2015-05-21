@@ -22,7 +22,7 @@
 #define PLAYER_RESPAWN_COUNTER 0
 #define PLAYER_TAIL_COUNTER 20
 
-SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
+Tex PlayerSpritesheets[MAX_PLAYERS];
 Animation Spark;
 Animation SparkRed;
 Animation Tail;
@@ -134,19 +134,17 @@ void PlayerDraw(const Player *player, const float y)
 		rollFrame += PLAYER_BLINK_FRAME_OFFSET;
 	}
 	SDL_Rect src = {
-		(Sint16)((rollFrame % PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_WIDTH),
-		(Sint16)((rollFrame / PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_HEIGHT),
-		PLAYER_SPRITESHEET_WIDTH,
-		PLAYER_SPRITESHEET_HEIGHT
+		(rollFrame % PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_WIDTH,
+		(rollFrame / PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_HEIGHT,
+		PLAYER_SPRITESHEET_WIDTH, PLAYER_SPRITESHEET_HEIGHT
 	};
 
 	SDL_Rect dest = {
-		(Sint16)(SCREEN_X(player->x) - PLAYER_SPRITESHEET_WIDTH / 2),
-		(Sint16)(SCREEN_Y(player->y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
-		0,
-		0
+		SCREEN_X(player->x) - PLAYER_SPRITESHEET_WIDTH / 2,
+		SCREEN_Y(player->y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y,
+		src.w, src.h
 	};
-	SDL_BlitSurface(player->Sprites, &src, Screen, &dest);
+	RenderTex(player->T.T, &src, &dest);
 }
 
 void PlayerInit(Player *player, const int i, const cpVect pos)
@@ -171,7 +169,7 @@ void PlayerInit(Player *player, const int i, const cpVect pos)
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
 	player->TailCounter = PLAYER_TAIL_COUNTER;
-	player->Sprites = PlayerSpritesheets[i];
+	player->T = PlayerSpritesheets[i];
 }
 
 void PlayerReset(Player *player, const int i)

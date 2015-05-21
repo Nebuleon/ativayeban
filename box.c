@@ -27,6 +27,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <SDL_image.h>
 
+#include "draw.h"
 #include "game.h"
 #include "gap.h"
 #include "main.h"
@@ -35,14 +36,16 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define BLOCK_SPRITE_HEIGHT 15
 
+Tex BoxTexes[6];
+
 static cpBody *MakeBody(const float x, const float y, const float w);
-static SDL_Surface *RandomSurface(void);
+static Tex RandomTex(void);
 void BlockInit(Block *block, const float x, const float y, const float w)
 {
 	block->Body = MakeBody(x, y, w);
 	block->W = w;
 	block->H = GAP_HEIGHT;
-	block->Surface = RandomSurface();
+	block->T = RandomTex();
 }
 static cpBody *MakeBody(const float x, const float y, const float w)
 {
@@ -54,9 +57,9 @@ static cpBody *MakeBody(const float x, const float y, const float w)
 	cpShapeSetFriction(shape, 1.0f);
 	return body;
 }
-static SDL_Surface *RandomSurface(void)
+static Tex RandomTex(void)
 {
-	return GapSurfaces[rand() % 6];
+	return BoxTexes[rand() % 6];
 }
 
 static void RemoveShape(cpBody *body, cpShape *shape, void *data);
@@ -76,15 +79,35 @@ static void RemoveShape(cpBody *body, cpShape *shape, void *data)
 void BlockDraw(const Block *block, const float y)
 {
 	const cpVect pos = cpBodyGetPosition(block->Body);
-	SDL_Rect src =
-	{
-		0, 0, (Sint16)SCREEN_X(block->W), (Sint16)block->Surface->h
-	};
+	SDL_Rect src = { 0, 0,  SCREEN_X(block->W), block->T.H };
 	SDL_Rect dest =
 	{
-		(Sint16)SCREEN_X((float)pos.x - block->W / 2),
-		(Sint16)(SCREEN_Y((float)pos.y + block->H / 2) - y),
-		0, 0
+		SCREEN_X((float)pos.x - block->W / 2),
+		SCREEN_Y((float)pos.y + block->H / 2) - y,
+		src.w, src.h
 	};
-	SDL_BlitSurface(block->Surface, &src, Screen, &dest);
+	RenderTex(block->T.T, &src, &dest);
+}
+
+
+bool BoxTexesLoad(void)
+{
+	for (int i = 0; i < 6; i++)
+	{
+		char buf[256];
+		sprintf(buf, "data/graphics/floor%d.png", i);
+		BoxTexes[i] = LoadTex(buf);
+		if (BoxTexes[i].T == NULL)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+void BoxTexesFree(void)
+{
+	for (int i = 0; i < 6; i++)
+	{
+		SDL_DestroyTexture(BoxTexes[i].T);
+	}
 }

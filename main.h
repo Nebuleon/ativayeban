@@ -1,6 +1,6 @@
 /*
- * Ativayeban, main program header
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,12 +16,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#pragma once
 
 #include <stdbool.h>
-#include "SDL.h"
+
+#include <SDL.h>
 
 #include "bg.h"
 
@@ -29,9 +28,8 @@ typedef void (*TGatherInput) (bool* Continue);
 typedef void (*TDoLogic) (bool* Continue, bool* Error, Uint32 Milliseconds);
 typedef void (*TOutputFrame) (void);
 
-extern SDL_Surface* Screen;
+extern SDL_Window *Window;
+extern SDL_Renderer *Renderer;
 extern TGatherInput GatherInput;
 extern TDoLogic     DoLogic;
 extern TOutputFrame OutputFrame;
-
-#endif /* !defined(_MAIN_H_) */

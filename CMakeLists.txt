@@ -53,29 +53,29 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Check for SDL
-find_package(SDL REQUIRED)
-if(NOT SDL_FOUND)
-	message(FATAL_ERROR "Couldn't find SDL development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl1.2-dev' package.")
+find_package(SDL2 REQUIRED)
+if(NOT SDL2_FOUND)
+	message(FATAL_ERROR "Couldn't find SDL2 development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl2-dev' package.")
 else()
-	include_directories(${SDL_INCLUDE_DIR})
+	include_directories(${SDL2_INCLUDE_DIR})
 endif()
-find_package(SDL_image REQUIRED)
-if(NOT SDLIMAGE_FOUND)
-	message(FATAL_ERROR "Couldn't find SDL-image development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl-image1.2-dev' package.")
+find_package(SDL2_image REQUIRED)
+if(NOT SDL2IMAGE_FOUND)
+	message(FATAL_ERROR "Couldn't find SDL2-image development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl2-image-dev' package.")
 else()
-	include_directories(${SDLIMAGE_INCLUDE_DIR})
+	include_directories(${SDL2IMAGE_INCLUDE_DIR})
 endif()
-find_package(SDL_mixer REQUIRED)
-if(NOT SDLMIXER_FOUND)
-	message(FATAL_ERROR "Couldn't find SDL-mixer development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl-mixer1.2-dev' package.")
+find_package(SDL2_mixer REQUIRED)
+if(NOT SDL2MIXER_FOUND)
+	message(FATAL_ERROR "Couldn't find SDL2-mixer development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl2-mixer-dev' package.")
 else()
-	include_directories(${SDLMIXER_INCLUDE_DIR})
+	include_directories(${SDL2MIXER_INCLUDE_DIR})
 endif()
-find_package(SDL_ttf REQUIRED)
-if(NOT SDLTTF_FOUND)
-	message(FATAL_ERROR "Couldn't find SDL-ttf development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl-ttf1.2-dev' package.")
+find_package(SDL2_ttf REQUIRED)
+if(NOT SDL2TTF_FOUND)
+	message(FATAL_ERROR "Couldn't find SDL2-ttf development files. On Debian-based systems (such as Ubuntu) you should install the 'libsdl2-ttf-dev' package.")
 ELSE()
-	include_directories(${SDLTTF_INCLUDE_DIR})
+	include_directories(${SDL2TTF_INCLUDE_DIR})
 ENDIF()
 
 include_directories(.)
@@ -91,12 +91,7 @@ endif()
 file(GLOB HEADERS *.h)
 
 if(APPLE)
-    set(EXTRA_FILES
-		pkg/macosx/icon.icns
-        pkg/macosx/SDLMain.m
-        pkg/macosx/SDLMain.h)
-    set_source_files_properties(pkg/macosx/SDLMain.m
-        PROPERTIES LANGUAGE C)
+    set(EXTRA_FILES pkg/macosx/icon.icns)
 	set_source_files_properties(pkg/macosx/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	set(MACOSX_BUNDLE_ICON_FILE icon.icns)
     set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
@@ -118,7 +113,7 @@ endif()
 target_link_libraries(falling_time
 	${CMAKE_LD_FLAGS}
 	chipmunk_static
-	${SDL_LIBRARY} ${SDLIMAGE_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLTTF_LIBRARY}
+	${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2MIXER_LIBRARY} ${SDL2TTF_LIBRARY}
 	${SDLMAIN_LIBRARY} ${EXTRA_LIBRARIES})
 set_target_properties(falling_time PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}
@@ -193,7 +188,7 @@ elseif(APPLE)
 
 	# copy SDL frameworks into app bundle for Mac OS X
 	set(APPS falling_time)
-	set(LIBS SDL SDL_image SDL_mixer)
+	set(LIBS SDL2 SDL2_image SDL2_mixer SDL2_ttf)
 	foreach(APP ${APPS})
 		foreach(LIB ${LIBS})
 			install(DIRECTORY /Library/Frameworks/${LIB}.framework

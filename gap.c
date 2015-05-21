@@ -38,8 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #define GAP_SPRITE_WIDTH 318
 #define GAP_SPRITE_HEIGHT 15
 
-SDL_Surface *GapSurfaces[6];
-
 static int compareFloat(const void *a, const void *b);
 void GapInit(struct Gap* gap, const float w, const float y)
 {
@@ -111,26 +109,4 @@ void GapDraw(const struct Gap* gap, const float y)
 float GapBottom(const struct Gap* gap)
 {
 	return gap->Y - GAP_HEIGHT;
-}
-
-bool GapSurfacesLoad(void)
-{
-	for (int i = 0; i < 6; i++)
-	{
-		char buf[256];
-		sprintf(buf, "data/graphics/floor%d.png", i);
-		GapSurfaces[i] = IMG_Load(buf);
-		if (GapSurfaces[i] == NULL)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-void GapSurfacesFree(void)
-{
-	for (int i = 0; i < 6; i++)
-	{
-		SDL_FreeSurface(GapSurfaces[i]);
-	}
 }

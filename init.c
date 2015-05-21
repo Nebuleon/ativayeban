@@ -1,5 +1,4 @@
 /*
- * Ativayeban, initialisation code file
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
  * 2015 Cong Xu <congusbongus@gmail.com>
  * 
@@ -21,10 +20,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "SDL.h"
-#include "SDL_image.h"
+#include <SDL_image.h>
 
-#include "gap.h"
+#include "box.h"
 #include "game.h"
 #include "main.h"
 #include "high_score.h"
@@ -52,23 +50,32 @@ void Initialize(bool* Continue, bool* Error)
 	else
 		printf("SDL initialisation succeeded\n");
 
-	Screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_HWSURFACE |
-#ifdef SDL_TRIPLEBUF
-		SDL_TRIPLEBUF
-#else
-		SDL_DOUBLEBUF
-#endif
-		);
-
-	if (Screen == NULL)
+	Window = SDL_CreateWindow(
+		"Falling Time",
+		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE,
+		SDL_WINDOW_RESIZABLE);
+	if (Window == NULL)
 	{
 		*Continue = false;  *Error = true;
-		printf("SDL_SetVideoMode failed: %s\n", SDL_GetError());
+		printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
 		SDL_ClearError();
 		return;
 	}
 	else
-		printf("SDL_SetVideoMode succeeded\n");
+		printf("SDL_CreateWindow succeeded\n");
+	Renderer = SDL_CreateRenderer(Window, -1, 0);
+	if (Renderer == NULL)
+	{
+		*Continue = false;  *Error = true;
+		printf("SDL_CreateRenderer failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+	else
+		printf("SDL_CreateRenderer succeeded\n");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+	SDL_RenderSetLogicalSize(Renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == -1)
 	{
@@ -93,55 +100,50 @@ void Initialize(bool* Continue, bool* Error)
 	else
 		printf("TTF_Init succeeded\n");
 
-	SDL_WM_SetCaption("FallingTime", NULL);
+	icon = IMG_Load("data/graphics/icon.png");
+	if (icon == NULL)
+	{
+		*Continue = false;  *Error = true;
+		printf("IMG_Load failed: %s\n", SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+	SDL_SetWindowIcon(Window, icon);
 
-#define LOAD_IMG(_surface, _path)\
-	_surface = IMG_Load("data/graphics/" _path);\
-	if (_surface == NULL)\
+#define LOAD_IMG(_t, _path)\
+	_t = LoadTex("data/graphics/" _path);\
+	if (_t.T == NULL)\
 	{\
 		*Continue = false;  *Error = true;\
-		printf("IMG_Load failed: %s\n", SDL_GetError());\
-		SDL_ClearError();\
 		return;\
 	}
-	LOAD_IMG(icon, "icon.png");
-	SDL_WM_SetIcon(icon, NULL);
-
 	LOAD_IMG(PlayerSpritesheets[0], "penguin_ball.png");
 	LOAD_IMG(PlayerSpritesheets[1], "penguin_black.png");
-	LOAD_IMG(PickupImage, "eggplant.png");
+	LOAD_IMG(PickupTex, "eggplant.png");
 
 #define LOAD_ANIM(_anim, _path, _w, _h, _fps)\
 	if (!AnimationLoad(&(_anim), "data/graphics/" _path, (_w), (_h), (_fps)))\
 	{\
 		*Continue = false;  *Error = true;\
-		printf("IMG_Load failed: %s\n", SDL_GetError());\
-		SDL_ClearError();\
 		return;\
 	}
 	LOAD_ANIM(Spark, "sparks.png", 4, 4, 20);
 	LOAD_ANIM(SparkRed, "sparks_red.png", 4, 4, 20);
 	LOAD_ANIM(Tail, "tail.png", 21, 21, 15);
 
-	if (!GapSurfacesLoad())
+	if (!BoxTexesLoad())
 	{
 		*Continue = false;  *Error = true;
-		printf("IMG_Load failed: %s\n", SDL_GetError());
-		SDL_ClearError();
 		return;
 	}
 	if (!TitleImagesLoad())
 	{
 		*Continue = false;  *Error = true;
-		printf("IMG_Load failed: %s\n", SDL_GetError());
-		SDL_ClearError();
 		return;
 	}
 	if (!BackgroundsLoad(&BG))
 	{
 		*Continue = false;  *Error = true;
-		printf("IMG_Load failed: %s\n", SDL_GetError());
-		SDL_ClearError();
 		return;
 	}
 
@@ -203,14 +205,14 @@ void Finalize()
 	SpaceFree(&space);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		SDL_FreeSurface(PlayerSpritesheets[i]);
+		SDL_DestroyTexture(PlayerSpritesheets[i].T);
 	}
-	SDL_FreeSurface(PickupImage);
+	SDL_DestroyTexture(PickupTex.T);
 	SDL_FreeSurface(icon);
 	AnimationFree(&Spark);
 	AnimationFree(&SparkRed);
 	AnimationFree(&Tail);
-	GapSurfacesFree();
+	BoxTexesFree();
 	TitleImagesFree();
 	BackgroundsFree(&BG);
 	Mix_FreeChunk(SoundPlayerBounce);

@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 void TextRenderCentered(
-	SDL_Surface *s, TTF_Font *font, const char *text, const int startY,
+	TTF_Font *font, const char *text, const int startY,
 	const SDL_Color c)
 {
 	int y = startY;
@@ -54,12 +54,12 @@ void TextRenderCentered(
 
 		if (strlen(buf) > 0)
 		{
-			SDL_Surface *t = TTF_RenderText_Blended(font, buf, c);
-			const int x = (SCREEN_WIDTH - t->w) / 2;
-			SDL_Rect dest = { (Sint16)x, (Sint16)y, 0, 0 };
-			SDL_BlitSurface(t, NULL, s, &dest);
-
-			SDL_FreeSurface(t);
+			Tex t = LoadText(buf, font, c);
+			if (t.T == NULL) return;
+			const int x = (SCREEN_WIDTH - t.W) / 2;
+			SDL_Rect dest = { x, y, t.W, t.H };
+			RenderTex(t.T, NULL, &dest);
+			SDL_DestroyTexture(t.T);
 		}
 		y += TTF_FontHeight(font);
 

@@ -184,5 +184,5 @@ void HighScoreDisplayDraw(HighScoreDisplay *h)
 	SDL_Color c;
 	c.b = TEXT_BLUE_LOW + (Uint8)((TEXT_BLUE_HIGH - TEXT_BLUE_LOW) * scalar);
 	c.r = c.g = c.b / 2;
-	TextRenderCentered(Screen, hsFont, buf, (int)h->y, c);
+	TextRenderCentered(hsFont, buf, (int)h->y, c);
 }

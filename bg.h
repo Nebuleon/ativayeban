@@ -1,6 +1,6 @@
 /*
- * Ativayeban, background rendering header
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,7 +21,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <SDL.h>
+#include "draw.h"
+
 
 typedef struct
 {
@@ -32,7 +33,7 @@ typedef struct
 #define MAX_PARTICLES 64
 typedef struct
 {
-	SDL_Surface *S;
+	Tex T;
 	ParticlePos Positions[MAX_PARTICLES];
 } BGParticles;
 

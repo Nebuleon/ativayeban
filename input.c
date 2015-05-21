@@ -23,21 +23,21 @@
 #include "utils.h"
 
 
-#define P1_LEFT SDLK_LEFT
-#define P1_RIGHT SDLK_RIGHT
+#define P1_LEFT SDL_SCANCODE_LEFT
+#define P1_RIGHT SDL_SCANCODE_RIGHT
 #ifdef __GCW0__
-#define P2_LEFT0 SDLK_LSHIFT
-#define P2_RIGHT0 SDLK_LCTRL
-#define P2_LEFT1 SDLK_SPACE
-#define P2_RIGHT1 SDLK_LALT
+#define P2_LEFT0 SDL_SCANCODE_LSHIFT
+#define P2_RIGHT0 SDL_SCANCODE_LCTRL
+#define P2_LEFT1 SDL_SCANCODE_SPACE
+#define P2_RIGHT1 SDL_SCANCODE_LALT
 #else
-#define P2_LEFT0 SDLK_a
-#define P2_RIGHT0 SDLK_d
-#define P2_LEFT1 SDLK_z
-#define P2_RIGHT1 SDLK_x
+#define P2_LEFT0 SDL_SCANCODE_A
+#define P2_RIGHT0 SDL_SCANCODE_D
+#define P2_LEFT1 SDL_SCANCODE_Z
+#define P2_RIGHT1 SDL_SCANCODE_X
 #endif
 
-static bool pressed[SDLK_LAST];
+static bool pressed[SDL_NUM_SCANCODES];
 // TODO: support joysticks for PC
 #ifdef __GCW0__
 static SDL_Joystick *analog = NULL;
@@ -75,7 +75,7 @@ void InputOnEvent(const SDL_Event* event)
 {
 	if (event->type == SDL_KEYUP || event->type == SDL_KEYDOWN)
 	{
-		pressed[event->key.keysym.sym] = event->type == SDL_KEYDOWN;
+		pressed[event->key.keysym.scancode] = event->type == SDL_KEYDOWN;
 	}
 }
 

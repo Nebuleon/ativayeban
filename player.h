@@ -3,7 +3,6 @@
 #include <stdbool.h>
 
 #include <chipmunk/chipmunk.h>
-#include <SDL.h>
 #include <SDL_mixer.h>
 
 #include "animation.h"
@@ -45,7 +44,7 @@ typedef struct
 	// Leave tail particles
 	int TailCounter;
 
-	SDL_Surface *Sprites;
+	Tex T;
 } Player;
 
 #define MAX_PLAYERS 2
@@ -54,7 +53,7 @@ extern Player players[MAX_PLAYERS];
 #define PLAYER_SPRITESHEET_WIDTH 35
 #define PLAYER_SPRITESHEET_HEIGHT 35
 
-extern SDL_Surface* PlayerSpritesheets[MAX_PLAYERS];
+extern Tex PlayerSpritesheets[MAX_PLAYERS];
 extern Animation Spark;
 extern Animation SparkRed;
 extern Animation Tail;

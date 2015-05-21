@@ -25,14 +25,13 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
-#include <SDL.h>
-
 #include "c_array.h"
+#include "draw.h"
 
 
 extern CArray Pickups;	// of Pickup
 
-extern SDL_Surface *PickupImage;
+extern Tex PickupTex;
 
 void PickupsInit(void);
 void PickupsFree(void);
@@ -42,4 +41,4 @@ void PickupsAdd(const float x, const float y);
 
 // Only collides once, and removes the colliding pickup
 bool PickupsCollide(const float x, const float y, const float r);
-void PickupsDraw(SDL_Surface *screen, const float y);
+void PickupsDraw(const float y);

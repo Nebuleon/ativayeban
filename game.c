@@ -190,8 +190,8 @@ void GameOutputFrame(void)
 	DrawBackground(&BG, screenYOff);
 
 	SpaceDraw(&space, screenYOff);
-	PickupsDraw(Screen, screenYOff);
-	ParticlesDraw(Screen, screenYOff);
+	PickupsDraw(screenYOff);
+	ParticlesDraw(screenYOff);
 
 	int c = 0;
 	for (int i = 0; i < MAX_PLAYERS; i++)
@@ -204,25 +204,28 @@ void GameOutputFrame(void)
 		char buf[17];
 		sprintf(buf, "%d", players[i].Score);
 		const SDL_Color white = { 255, 255, 255, 255 };
-		SDL_Surface *t = TTF_RenderText_Blended(font, buf, white);
+		Tex t = LoadText(buf, font, white);
+		if (t.T == NULL) continue;
 		const int x = (c + 1) * SCREEN_WIDTH / (PlayerEnabledCount() + 1);
-		const int wHalf = (t->w + PLAYER_SPRITESHEET_WIDTH) / 2;
+		const int wHalf = (t.W + PLAYER_SPRITESHEET_WIDTH) / 2;
 		// Draw the player icon, followed by the score number
 		SDL_Rect src = {
 			0, 0, PLAYER_SPRITESHEET_WIDTH, PLAYER_SPRITESHEET_HEIGHT
 		};
-		SDL_Rect dest = { (Sint16)(x - wHalf), 0, 0, 0 };
-		SDL_BlitSurface(PlayerSpritesheets[i], &src, Screen, &dest);
+		SDL_Rect dest = { x - wHalf, 0, src.w, src.h };
+		RenderTex(PlayerSpritesheets[i].T, &src, &dest);
 		// Draw score number
 		dest.x = (Sint16)(x - wHalf + PLAYER_SPRITESHEET_WIDTH);
-		dest.y = (Sint16)(PLAYER_SPRITESHEET_HEIGHT - t->h) / 2;
-		SDL_BlitSurface(t, NULL, Screen, &dest);
-		SDL_FreeSurface(t);
+		dest.y = (Sint16)(PLAYER_SPRITESHEET_HEIGHT - t.H) / 2;
+		dest.w = t.W;
+		dest.h = t.H;
+		RenderTex(t.T, NULL, &dest);
+		SDL_DestroyTexture(t.T);
 
 		c++;
 	}
 
-	SDL_Flip(Screen);
+	SDL_RenderPresent(Renderer);
 }
 
 void ToGame(void)

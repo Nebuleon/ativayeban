@@ -28,5 +28,5 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <SDL_ttf.h>
 
 void TextRenderCentered(
-	SDL_Surface *s, TTF_Font *font, const char *text, const int startY,
+	TTF_Font *font, const char *text, const int startY,
 	const SDL_Color c);

@@ -1,6 +1,6 @@
 /*
- * Ativayeban, initialisation header
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,16 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
-#ifndef _INIT_H_
-#define _INIT_H_
+#pragma once
 
 #include <stdbool.h>
 
 #define SCREEN_WIDTH  320
 #define SCREEN_HEIGHT 240
+#ifdef __GCW0__
+#define SCREEN_SCALE 1
+#else
+#define SCREEN_SCALE 2
+#endif
 
 void Initialize(bool* Continue, bool* Error);
 void Finalize(void);
-
-#endif /* !defined(_INIT_H_) */

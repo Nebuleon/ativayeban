@@ -48,10 +48,10 @@ static int winners = 0;
 static Animation TitleAnim;
 static Animation GameOverAnim;
 static HighScoreDisplay HSD;
-SDL_Surface *ControlSurfaces[MAX_PLAYERS];
+Tex ControlTexes[MAX_PLAYERS];
 #ifdef __GCW0__
-SDL_Surface *ControlSurface0Analog = NULL;
-SDL_Surface *ControlSurface0G = NULL;
+Tex ControlTex0Analog = NULL;
+Tex ControlTex0G = NULL;
 #endif
 
 static Block blocks[MAX_PLAYERS];
@@ -152,7 +152,7 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	HighScoreDisplayUpdate(&HSD, Milliseconds);
 }
 
-static SDL_Surface *GetControlSurface(const int i);
+static Tex GetControlTex(const int i);
 static void DrawTitleImg(void);
 void TitleScreenOutputFrame(void)
 {
@@ -162,17 +162,15 @@ void TitleScreenOutputFrame(void)
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		SDL_Surface *s = GetControlSurface(i);
+		Tex t = GetControlTex(i);
 		SDL_Rect dest =
 		{
-			(Sint16)(
-				SCREEN_X((i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1)) -
-				s->w / 2),
-			(Sint16)((SCREEN_HEIGHT - s->h) / 2 - SCREEN_X(PLAYER_RADIUS)),
-			0,
-			0
+			SCREEN_X((i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1)) -
+				t.W / 2,
+			(SCREEN_HEIGHT - t.H) / 2 - SCREEN_X(PLAYER_RADIUS),
+			t.W, t.H
 		};
-		SDL_BlitSurface(s, NULL, Screen, &dest);
+		RenderTex(t.T, NULL, &dest);
 	}
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
@@ -199,33 +197,32 @@ void TitleScreenOutputFrame(void)
 			};
 			SDL_Rect dest =
 			{
-				(Sint16)(left + i * PLAYER_SPRITESHEET_WIDTH),
-				(Sint16)(SCREEN_HEIGHT * 0.66f),
-				0, 0
+				left + i * PLAYER_SPRITESHEET_WIDTH,
+				SCREEN_HEIGHT * 0.66f,
+				src.w, src.h
 			};
-			SDL_BlitSurface(
-				PlayerSpritesheets[playerIndex], &src, Screen, &dest);
+			RenderTex(PlayerSpritesheets[playerIndex].T, &src, &dest);
 		}
 	}
 	SDL_Color c = { 177, 177, 177, 255 };
 	TextRenderCentered(
-		Screen, font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f), c);
+		font, WelcomeMessage, (int)(SCREEN_HEIGHT * 0.75f), c);
 
-	SDL_Flip(Screen);
+	SDL_RenderPresent(Renderer);
 }
-static SDL_Surface *GetControlSurface(const int i)
+static Tex GetControlTex(const int i)
 {
-	SDL_Surface *s = ControlSurfaces[i];
+	Tex t = ControlTexes[i];
 #ifdef __GCW0__
 	if (i == 0)
 	{
 		switch (JoystickIndex)
 		{
 		case 0:
-			s = ControlSurface0Analog;
+			t = ControlTex0Analog;
 			break;
 		case 1:
-			s = ControlSurface0G;
+			t = ControlTex0G;
 			break;
 		default:
 			// Do nothing
@@ -233,12 +230,12 @@ static SDL_Surface *GetControlSurface(const int i)
 		}
 	}
 #endif
-	return s;
+	return t;
 }
 static void DrawTitleImg(void)
 {
 	const Animation *a = Start ? &TitleAnim : &GameOverAnim;
-	AnimationDrawUpperCenter(a, Screen);
+	AnimationDrawUpperCenter(a);
 }
 
 void ToTitleScreen(const bool start)
@@ -347,17 +344,17 @@ bool TitleImagesLoad(void)
 #else
 		sprintf(buf, "data/graphics/keyboard%d.png", i);
 #endif
-		ControlSurfaces[i] = IMG_Load(buf);
-		if (ControlSurfaces[i] == NULL)
+		ControlTexes[i] = LoadTex(buf);
+		if (ControlTexes[i].T == NULL)
 		{
 			return false;
 		}
 	}
 #ifdef __GCW0__
-	ControlSurface0Analog = IMG_Load("data/graphics/gcw0analog.png");
-	if (ControlSurface0Analog == NULL) return false;
-	ControlSurface0G = IMG_Load("data/graphics/gcw0g.png");
-	if (ControlSurface0G == NULL) return false;
+	ControlTex0Analog = LoadTex("data/graphics/gcw0analog.png");
+	if (ControlTex0Analog.T == NULL) return false;
+	ControlTex0G = LoadTex("data/graphics/gcw0g.png");
+	if (ControlTex0G.T == NULL) return false;
 #endif
 	return true;
 }
@@ -367,10 +364,10 @@ void TitleImagesFree(void)
 	AnimationFree(&GameOverAnim);
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
-		SDL_FreeSurface(ControlSurfaces[i]);
+		SDL_DestroyTexture(ControlTexes[i].T);
 	}
 #ifdef __GCW0__
-	SDL_FreeSurface(ControlSurface0Analog);
-	SDL_FreeSurface(ControlSurface0G);
+	SDL_DestroyTexture(ControlTex0Analog.T);
+	SDL_DestroyTexture(ControlTex0G.T);
 #endif
 }

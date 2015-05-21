@@ -26,16 +26,23 @@ POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include <chipmunk/chipmunk.h>
-#include <SDL.h>
+
+#include "draw.h"
+
 
 // Rectangular block with body
 typedef struct
 {
 	cpBody *Body;
 	float W, H;
-	SDL_Surface *Surface;
+	Tex T;
 } Block;
+
+extern Tex BoxTexes[6];
 
 void BlockInit(Block *block, const float x, const float y, const float w);
 void BlockRemove(Block *block);
 void BlockDraw(const Block *block, const float y);
+
+bool BoxTexesLoad(void);
+void BoxTexesFree(void);

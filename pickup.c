@@ -40,7 +40,7 @@ typedef struct
 
 CArray Pickups;
 
-SDL_Surface *PickupImage = NULL;
+Tex PickupTex = { NULL, 0, 0 };
 
 
 void PickupsInit(void)
@@ -98,20 +98,20 @@ static bool PickupCollide(
 	const float r2 = rTotal * rTotal;
 	return d2 <= r2;
 }
-static void PickupDraw(const Pickup *p, SDL_Surface *screen, const float y);
-void PickupsDraw(SDL_Surface *screen, const float y)
+static void PickupDraw(const Pickup *p, const float y);
+void PickupsDraw(const float y)
 {
 	for (int i = 0; i < (int)Pickups.size; i++)
 	{
-		PickupDraw(CArrayGet(&Pickups, i), screen, y);
+		PickupDraw(CArrayGet(&Pickups, i), y);
 	}
 }
-static void PickupDraw(const Pickup *p, SDL_Surface *screen, const float y)
+static void PickupDraw(const Pickup *p, const float y)
 {
 	SDL_Rect dest = {
-		(Sint16)(SCREEN_X(p->x) - PickupImage->w / 2),
-		(Sint16)(SCREEN_Y(p->y) - PickupImage->h / 2 - y),
-		0, 0
+		SCREEN_X(p->x) - PickupTex.W / 2,
+		SCREEN_Y(p->y) - PickupTex.H / 2 - y,
+		PickupTex.W, PickupTex.H
 	};
-	SDL_BlitSurface(PickupImage, NULL, screen, &dest);
+	RenderTex(PickupTex.T, NULL, &dest);
 }

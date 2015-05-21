@@ -99,16 +99,16 @@ static bool ParticleUpdate(Particle *p, const Uint32 ms)
 	p->y += p->dy * ms / 1000;
 	return !AnimationUpdate(&p->anim, ms);
 }
-static void ParticleDraw(const Particle *p, SDL_Surface *screen, const float y);
-void ParticlesDraw(SDL_Surface *screen, const float y)
+static void ParticleDraw(const Particle *p, const float y);
+void ParticlesDraw(const float y)
 {
 	for (int i = 0; i < (int)Particles.size; i++)
 	{
-		ParticleDraw(CArrayGet(&Particles, i), screen, y);
+		ParticleDraw(CArrayGet(&Particles, i), y);
 	}
 }
-static void ParticleDraw(const Particle *p, SDL_Surface *screen, const float y)
+static void ParticleDraw(const Particle *p, const float y)
 {
 	AnimationDraw(
-		&p->anim, screen, (int)SCREEN_X(p->x), (int)(SCREEN_Y(p->y) - y));
+		&p->anim, (int)SCREEN_X(p->x), (int)(SCREEN_Y(p->y) - y));
 }

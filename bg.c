@@ -1,6 +1,6 @@
 /*
- * Ativayeban, background rendering code file
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@
 
 #include <SDL_image.h>
 
+#include "draw.h"
 #include "init.h"
 #include "main.h"
 #include "utils.h"
@@ -83,7 +84,8 @@ static void DrawParticleScroll(
 	const int w, const int h, const int gmin, const int gmax, const int num);
 void DrawBackground(Backgrounds *bg, const float y)
 {
-	SDL_FillRect(Screen, NULL, SDL_MapRGB(Screen->format, 8, 3, 32));
+	SDL_SetRenderDrawColor(Renderer, 8, 3, 32, 255);
+	SDL_RenderClear(Renderer);
 	DrawParticleScroll(
 		&bg->Icicles, (int)(y * SCROLL_FACTOR * SCALE_1),
 		ICICLE_WIDTH, ICICLE_HEIGHT,
@@ -136,15 +138,11 @@ static void DrawParticleScroll(
 		// Draw if in range
 		if (p->Positions[i].Y < s + SCREEN_HEIGHT)
 		{
-			SDL_Rect src =
-			{
-				(Sint16)(p->Positions[i].Index * w), 0, (Uint16)w, (Uint16)h
-			};
+			SDL_Rect src = { p->Positions[i].Index * w, 0, w, h };
 			SDL_Rect dst = {
-				(Sint16)p->Positions[i].X, (Sint16)(p->Positions[i].Y - s),
-				0, 0
+				p->Positions[i].X, p->Positions[i].Y - s, src.w, src.h
 			};
-			SDL_BlitSurface(p->S, &src, Screen, &dst);
+			RenderTex(p->T.T, &src, &dst);
 		}
 
 		lastY = p->Positions[i].Y;
@@ -153,20 +151,20 @@ static void DrawParticleScroll(
 
 bool BackgroundsLoad(Backgrounds* bg)
 {
-#define LOAD_SURFACE(_surface, _filename)\
-	_surface = IMG_Load("data/graphics/" _filename);\
-	if (_surface == NULL)\
+#define LOAD_TEX(_t, _filename)\
+	_t = LoadTex("data/graphics/" _filename);\
+	if (_t.T == NULL)\
 	{\
 		return false;\
 	}
-	LOAD_SURFACE(bg->Icicles.S, "icebergs.png");
-	LOAD_SURFACE(bg->Flares.S, "flare.png");
-	LOAD_SURFACE(bg->Stars.S, "stars.png");
+	LOAD_TEX(bg->Icicles.T, "icebergs.png");
+	LOAD_TEX(bg->Flares.T, "flare.png");
+	LOAD_TEX(bg->Stars.T, "stars.png");
 	return true;
 }
 void BackgroundsFree(Backgrounds* bg)
 {
-	SDL_FreeSurface(bg->Icicles.S);
-	SDL_FreeSurface(bg->Flares.S);
-	SDL_FreeSurface(bg->Stars.S);
+	SDL_DestroyTexture(bg->Icicles.T.T);
+	SDL_DestroyTexture(bg->Flares.T.T);
+	SDL_DestroyTexture(bg->Stars.T.T);
 }

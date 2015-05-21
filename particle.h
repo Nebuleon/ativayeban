@@ -41,4 +41,4 @@ void ParticlesAddExplosion(
 	const float speed);
 
 void ParticlesUpdate(const Uint32 ms);
-void ParticlesDraw(SDL_Surface *screen, const float y);
+void ParticlesDraw(const float y);

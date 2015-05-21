@@ -27,6 +27,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <SDL_image.h>
 
+#include "draw.h"
 #include "init.h"
 
 
@@ -34,8 +35,8 @@ bool AnimationLoad(
 	Animation *a, const char *filename, const int w, const int h,
 	const int frameRate)
 {
-	a->image = IMG_Load(filename);
-	if (a->image == NULL) goto bail;
+	a->T = LoadTex(filename);
+	if (a->T.T == NULL) goto bail;
 	a->w = w;
 	a->h = h;
 	a->frame = 0;
@@ -50,7 +51,7 @@ bail:
 }
 void AnimationFree(Animation *a)
 {
-	SDL_FreeSurface(a->image);
+	SDL_DestroyTexture(a->T.T);
 }
 
 bool AnimationUpdate(Animation *a, const Uint32 ms)
@@ -61,7 +62,7 @@ bool AnimationUpdate(Animation *a, const Uint32 ms)
 	{
 		a->frameCounter -= msPerFrame;
 		a->frame++;
-		if (a->frame == (a->image->w / a->w) * (a->image->h / a->h))
+		if (a->frame == (a->T.W / a->w) * (a->T.H / a->h))
 		{
 			a->frame = 0;
 			return true;
@@ -69,19 +70,17 @@ bool AnimationUpdate(Animation *a, const Uint32 ms)
 	}
 	return false;
 }
-void AnimationDraw(
-	const Animation *a, SDL_Surface *screen, const int x, const int y)
+void AnimationDraw(const Animation *a, const int x, const int y)
 {
-	const int stride = a->image->w / a->w;
+	const int stride = a->T.W / a->w;
 	SDL_Rect src = {
-		(Sint16)((a->frame % stride) * a->w),
-		(Sint16)((a->frame / stride) * a->h),
-		(Sint16)a->w, (Sint16)a->h
+		(a->frame % stride) * a->w, (a->frame / stride) * a->h,
+		a->w, a->h
 	};
-	SDL_Rect dest = { (Sint16)(x - a->w / 2), (Sint16)(y - a->h / 2), 0, 0 };
-	SDL_BlitSurface(a->image, &src, screen, &dest);
+	SDL_Rect dest = { x - a->w / 2, y - a->h / 2, src.w, src.h };
+	RenderTex(a->T.T, &src, &dest);
 }
-void AnimationDrawUpperCenter(const Animation *a, SDL_Surface *screen)
+void AnimationDrawUpperCenter(const Animation *a)
 {
-	AnimationDraw(a, screen, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4);
+	AnimationDraw(a, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4);
 }

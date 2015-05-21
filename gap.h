@@ -46,13 +46,8 @@ struct Gap
 	bool Passed[MAX_PLAYERS];
 };
 
-extern SDL_Surface *GapSurfaces[6];
-
 void GapInit(struct Gap* gap, const float w, const float y);
 void GapRemove(struct Gap* gap);
 void GapDraw(const struct Gap* gap, const float y);
 
 extern float GapBottom(const struct Gap* gap);
-
-bool GapSurfacesLoad(void);
-void GapSurfacesFree(void);

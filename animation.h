@@ -25,14 +25,13 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
-#include <SDL.h>
-
 #include "c_array.h"
+#include "draw.h"
 
 
 typedef struct
 {
-	SDL_Surface *image;
+	Tex T;
 	int w;
 	int h;
 	int frame;
@@ -48,6 +47,5 @@ void AnimationFree(Animation *a);
 
 // Return whether the animation looped
 bool AnimationUpdate(Animation *a, const Uint32 ms);
-void AnimationDraw(
-	const Animation *a, SDL_Surface *screen, const int x, const int y);
-void AnimationDrawUpperCenter(const Animation *a, SDL_Surface *screen);
+void AnimationDraw(const Animation *a, const int x, const int y);
+void AnimationDrawUpperCenter(const Animation *a);
