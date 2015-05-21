@@ -26,6 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include <chipmunk/chipmunk.h>
+#include <stdbool.h>
 
 #include "draw.h"
 
