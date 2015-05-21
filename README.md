@@ -6,13 +6,13 @@ Like the fall down games, you are a ball and you must fall into the holes to avo
 
 ![gameplay](https://github.com/cxong/fallingtime/blob/master/screenshot.png)
 
-This game requires SDL 1.2, CMake and a C compiler. It is optimised for low-resolution screens.
+This game requires SDL 2, CMake and a C compiler. It is optimised for low-resolution screens.
 
 Code is under the GPL version 2; for asset licenses see the `COPYRIGHT` file.
 
 ### Building
 
-Use **CMake**, and the libraries **SDL 1.2**, **SDL_image 1.2** and **SDL_mixer 1.2**.
+Use **CMake**, and the libraries **SDL 2**, **SDL_image**, **SDL_mixer** and **SDL_ttf**.
 
 To compile this for PC, use `cmake . && make`. You'll then get a windowed SDL game.
 
