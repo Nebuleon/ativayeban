@@ -26,6 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "gap.h"
 
 #include <math.h>
+#include <string.h>
 
 #include "SDL_image.h"
 

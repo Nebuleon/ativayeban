@@ -26,6 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "text.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #include "init.h"
 #include "main.h"

@@ -25,6 +25,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #include "space.h"
 
+#include <string.h>
+
 #include "box.h"
 #include "game.h"
 #include "gap.h"

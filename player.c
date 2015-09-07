@@ -140,8 +140,8 @@ void PlayerDraw(const Player *player, const float y)
 	};
 
 	SDL_Rect dest = {
-		SCREEN_X(player->x) - PLAYER_SPRITESHEET_WIDTH / 2,
-		SCREEN_Y(player->y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y,
+		(int)SCREEN_X(player->x) - PLAYER_SPRITESHEET_WIDTH / 2,
+		(int)(SCREEN_Y(player->y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
 		src.w, src.h
 	};
 	RenderTex(player->T.T, &src, &dest);

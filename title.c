@@ -22,6 +22,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "SDL_image.h"
 
@@ -198,7 +199,7 @@ void TitleScreenOutputFrame(void)
 			SDL_Rect dest =
 			{
 				left + i * PLAYER_SPRITESHEET_WIDTH,
-				SCREEN_HEIGHT * 0.66f,
+				(int)(SCREEN_HEIGHT * 0.66f),
 				src.w, src.h
 			};
 			RenderTex(PlayerSpritesheets[playerIndex].T, &src, &dest);

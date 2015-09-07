@@ -82,8 +82,8 @@ void BlockDraw(const Block *block, const float y)
 	SDL_Rect src = { 0, 0,  SCREEN_X(block->W), block->T.H };
 	SDL_Rect dest =
 	{
-		SCREEN_X((float)pos.x - block->W / 2),
-		SCREEN_Y((float)pos.y + block->H / 2) - y,
+		(int)SCREEN_X((float)pos.x - block->W / 2),
+		(int)(SCREEN_Y((float)pos.y + block->H / 2) - y),
 		src.w, src.h
 	};
 	RenderTex(block->T.T, &src, &dest);

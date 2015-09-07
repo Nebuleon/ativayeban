@@ -26,6 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "pickup.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #include "game.h"
 
@@ -109,8 +110,8 @@ void PickupsDraw(const float y)
 static void PickupDraw(const Pickup *p, const float y)
 {
 	SDL_Rect dest = {
-		SCREEN_X(p->x) - PickupTex.W / 2,
-		SCREEN_Y(p->y) - PickupTex.H / 2 - y,
+		(int)SCREEN_X(p->x) - PickupTex.W / 2,
+		(int)(SCREEN_Y(p->y) - PickupTex.H / 2 - y),
 		PickupTex.W, PickupTex.H
 	};
 	RenderTex(PickupTex.T, NULL, &dest);
