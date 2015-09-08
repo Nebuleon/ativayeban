@@ -6,60 +6,96 @@
 #include "game.h"
 #include "init.h"
 #include "main.h"
+#include "particle.h"
 #include "player.h"
+#include "space.h"
+#include "sound.h"
+#include "utils.h"
 
-#define PLAYER_SPRITESHEET_WIDTH 35
-#define PLAYER_SPRITESHEET_HEIGHT 35
 #define PLAYER_SPRITESHEET_STRIDE 8
 #define PLAYER_SPRITESHEET_COUNT 16
 #define PLAYER_ROLL_SCALE 0.015f
 #define PLAYER_BLINK_FRAME_OFFSET 16
-#define PLAYER_BLINK_FRAMES 200
-#define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 500) + 500)
+#define PLAYER_BLINK_FRAMES 20
+#define PLAYER_BLINK_INTERVAL_FRAMES ((rand() % 100) + 100)
 #define PLAYER_BLINK_CHANCE 50
+#define PLAYER_RESPAWN_COUNTER 0
+#define PLAYER_TAIL_COUNTER 20
 
-SDL_Surface* PlayerSpritesheet = NULL;
+Tex PlayerSpritesheets[MAX_PLAYERS];
+Animation Spark;
+Animation SparkRed;
+Animation Tail;
+Mix_Chunk* SoundPlayerBounce = NULL;
 
-void PlayerUpdate(struct Player *player)
+Player players[MAX_PLAYERS];
+int NumPlayers;
+#ifndef __GCW0__
+int NumJoysticks;
+#endif
+
+typedef struct
 {
-	// Update the ball scroll.
-	player->Y += FIELD_SCROLL / 1000;
+	cpVect BounceForce;
+	int Num;
+} OnArbiterData;
+static void OnArbiter(cpBody *body, cpArbiter *arb, void *data);
+void PlayerUpdate(Player *player, const Uint32 ms)
+{
+	if (!player->Enabled) return;
+
+	if (player->RespawnCounter > 0)
+	{
+		player->RespawnCounter -= ms;
+		if (player->RespawnCounter < 0)
+		{
+			player->RespawnCounter = 0;
+		}
+	}
+
+	if (!player->Alive) return;
 
 	// Update the speed at which the player is going.
-	player->SpeedX += ((float) player->AccelX / 32767.0f) * ACCELERATION / 1000;
+	// Provide positive bonus for:
+	// - when the player is very slow
+	// - when the player is rolling
+	// And negative bonus for:
+	// - when the player is above max speed
+	float accel = ACCELERATION;
+	const cpVect vel = cpBodyGetVelocity(player->Body);
+	const float relVelX = (float)fabs(vel.x) * SIGN(vel.x * player->AccelX);
+	if (relVelX > MAX_SPEED) accel = ACCELERATION_MAX_SPEED;
+	if (relVelX < MIN_SPEED) accel += MIN_SPEED_ACCEL_BONUS;
+	if (player->WasOnSurface) accel += ROLL_ACCEL_BONUS;
+	cpBodySetForce(player->Body, cpv(player->AccelX / 32767.0f * accel, 0));
 
-	// Update the player's position and speed.
-
-	// Left and right edges (X). If the horizontal speed would run the
-	// ball into an edge, use up some of the energy in the impact and
-	// rebound the ball.
-	if (player->SpeedX < 0 && player->X - PLAYER_SIZE / 2 + player->SpeedX / 1000 < 0)
+	// Detect bounces
+	OnArbiterData o = { cpvzero, 0 };
+	cpBodyEachArbiter(player->Body, OnArbiter, &o);
+	if (o.Num > 0)
 	{
-		player->X = PLAYER_SIZE / 2
-			+ ((player->X - PLAYER_SIZE / 2) - (player->SpeedX / 1000)) * FIELD_REBOUND;
-		player->SpeedX = -player->SpeedX * FIELD_REBOUND;
-	}
-	else if (player->SpeedX > 0 && player->X + PLAYER_SIZE / 2 + player->SpeedX / 1000 > FIELD_WIDTH)
-	{
-		player->X = FIELD_WIDTH - PLAYER_SIZE / 2
-			+ (FIELD_WIDTH - (player->X + PLAYER_SIZE / 2) - (player->SpeedX / 1000)) * FIELD_REBOUND;
-		player->SpeedX = -player->SpeedX * FIELD_REBOUND;
+		if (!cpveql(o.BounceForce, cpvzero))
+		{
+			SoundPlayBounce((float)cpvlength(o.BounceForce));
+		}
+		if (player->WasOnSurface)
+		{
+			float angularV = (float)cpBodyGetAngularVelocity(player->Body);
+			//printf("angularV %f\n", angularV);
+			SoundPlayRoll(player->Index, angularV);
+		}
+		player->WasOnSurface = true;
+		player->ScoredInAir = false;
 	}
 	else
 	{
-		player->X += player->SpeedX / 1000;
+		SoundStopRoll(player->Index);
+		player->WasOnSurface = false;
 	}
 
-	// Update roll animation based on speed
-	player->Roll += player->SpeedX * PLAYER_ROLL_SCALE;
-	if (player->Roll < 0)
-	{
-		player->Roll += PLAYER_SPRITESHEET_COUNT;
-	}
-	else if (player->Roll >= PLAYER_SPRITESHEET_COUNT)
-	{
-		player->Roll -= PLAYER_SPRITESHEET_COUNT;
-	}
+	player->Roll = (int)(-cpBodyGetAngle(player->Body) / (2 * M_PI) * PLAYER_SPRITESHEET_COUNT);
+	player->Roll = player->Roll % PLAYER_SPRITESHEET_COUNT;
+	if (player->Roll < 0) player->Roll += PLAYER_SPRITESHEET_COUNT;
 
 	// Randomly blink after not blinking for a while
 	player->BlinkCounter--;
@@ -69,12 +105,33 @@ void PlayerUpdate(struct Player *player)
 		player->BlinkCounter = PLAYER_BLINK_FRAMES;
 		player->NextBlinkCounter = PLAYER_BLINK_INTERVAL_FRAMES;
 	}
+
+	// Leave a tail
+	player->TailCounter -= ms;
+	if (player->TailCounter <= 0)
+	{
+		player->TailCounter = PLAYER_TAIL_COUNTER;
+		ParticlesAdd(&Tail, player->x, player->y, 0, 0);
+	}
+
+	const cpVect pos = cpBodyGetPosition(player->Body);
+	player->x = (float)pos.x;
+	player->y = (float)pos.y;
+}
+static void OnArbiter(cpBody *body, cpArbiter *arb, void *data)
+{
+	UNUSED(body);
+	OnArbiterData *o = data;
+	o->BounceForce = cpvadd(o->BounceForce, cpArbiterTotalImpulse(arb));
+	o->Num++;
 }
 
-void PlayerDraw(const struct Player *player)
+void PlayerDraw(const Player *player, const float y)
 {
+	if (!player->Enabled) return;
+
 	// Draw the character.
-	int rollFrame = (int)floor(player->Roll);
+	int rollFrame = player->Roll;
 	if (player->BlinkCounter > 0)
 	{
 		rollFrame += PLAYER_BLINK_FRAME_OFFSET;
@@ -82,26 +139,115 @@ void PlayerDraw(const struct Player *player)
 	SDL_Rect src = {
 		(rollFrame % PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_WIDTH,
 		(rollFrame / PLAYER_SPRITESHEET_STRIDE) * PLAYER_SPRITESHEET_HEIGHT,
-		PLAYER_SPRITESHEET_WIDTH,
-		PLAYER_SPRITESHEET_HEIGHT
+		PLAYER_SPRITESHEET_WIDTH, PLAYER_SPRITESHEET_HEIGHT
 	};
+
 	SDL_Rect dest = {
-		(int) roundf(player->X * SCREEN_WIDTH / FIELD_WIDTH) - (PLAYER_SPRITESHEET_WIDTH / 2),
-		(int) roundf(SCREEN_HEIGHT - player->Y * SCREEN_HEIGHT / FIELD_HEIGHT) - (PLAYER_SPRITESHEET_HEIGHT / 2),
-		0,
-		0
+		(int)SCREEN_X(player->x) - PLAYER_SPRITESHEET_WIDTH / 2,
+		(int)(SCREEN_Y(player->y) - PLAYER_SPRITESHEET_HEIGHT / 2 - y),
+		src.w, src.h
 	};
-	SDL_BlitSurface(PlayerSpritesheet, &src, Screen, &dest);
+	RenderTex(player->T.T, &src, &dest);
 }
 
-void PlayerReset(struct Player *player)
+void PlayerInit(Player *player, const int i, const cpVect pos)
 {
-	player->X = FIELD_WIDTH / 2;
-	player->Y = FIELD_HEIGHT - PLAYER_SIZE / 2;
-	player->SpeedX = 0.0f;
-	player->SpeedY = GRAVITY / 200 - FIELD_SCROLL / 200;
+	player->Index = i;
+	player->Enabled = true;
+	player->Alive = true;
+	player->RespawnCounter = 0;
+	player->Score = 0;
+	player->Body = cpSpaceAddBody(
+		space.Space,
+		cpBodyNew(10.0f, cpMomentForCircle(10.0f, 0.0f, PLAYER_RADIUS, cpvzero)));
+	cpBodySetPosition(player->Body, pos);
+	cpShape *shape = cpSpaceAddShape(
+		space.Space, cpCircleShapeNew(player->Body, PLAYER_RADIUS, cpvzero));
+	cpShapeSetElasticity(shape, PLAYER_ELASTICITY);
+	cpShapeSetFriction(shape, 0.9f);
 	player->AccelX = 0;
-	player->Roll = 0.0f;
+	player->WasOnSurface = false;
+	player->ScoredInAir = false;
+	player->Roll = 0;
 	player->BlinkCounter = 0;
 	player->NextBlinkCounter = 1;
+	player->TailCounter = PLAYER_TAIL_COUNTER;
+	player->T = PlayerSpritesheets[i];
+}
+
+void PlayerReset(Player *player, const int i)
+{
+	player->Score = 0;
+	if (!player->Enabled) return;
+	cpBody *body = player->Body;
+	cpBodySetPosition(body, cpv(
+		(i + 1) * FIELD_WIDTH / (PlayerAliveCount() + 1),
+		FIELD_HEIGHT * 0.75f));
+	cpBodySetVelocity(body, cpvzero);
+}
+
+void PlayerScore(Player *player, const bool air)
+{
+	// Score extra if consecutive in air
+	player->Score += (air && player->ScoredInAir) ? 2 : 1;
+	// Add sparks at player position
+	ParticlesAddExplosion(
+		(air && player->ScoredInAir) ? &SparkRed : &Spark,
+		player->x, player->y, 100, 2.5f);
+	if (air)
+	{
+		player->ScoredInAir = true;
+	}
+	SoundPlay(SoundScore, 1.0);
+}
+
+void PlayerKill(Player *player)
+{
+	if (player->Alive)
+	{
+		SoundPlay(SoundLose, 1.0);
+	}
+	player->Alive = false;
+	player->RespawnCounter = PLAYER_RESPAWN_COUNTER;
+	// This ensures drawing the player with eyes closed
+	player->BlinkCounter = 1;
+	SoundStopRoll(player->Index);
+}
+
+void PlayerRespawn(Player *player, const float x, const float y)
+{
+	player->x = x;
+	player->y = y;
+	player->RespawnCounter = -1;
+}
+
+void PlayerRevive(Player *player)
+{
+	player->Alive = true;
+	SoundPlay(SoundStart, 1.0);
+	// Reset body to cached position
+	cpBodySetPosition(player->Body, cpv(player->x, player->y));
+	cpBodySetVelocity(player->Body, cpvzero);
+}
+
+int PlayerAliveCount(void)
+{
+	int num = 0;
+	for (int i = 0; i < NumPlayers; i++)
+	{
+		if (!players[i].Alive) continue;
+		num++;
+	}
+	return num;
+}
+
+int PlayerEnabledCount(void)
+{
+	int num = 0;
+	for (int i = 0; i < NumPlayers; i++)
+	{
+		if (!players[i].Enabled) continue;
+		num++;
+	}
+	return num;
 }
