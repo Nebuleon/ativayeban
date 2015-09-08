@@ -20,6 +20,7 @@
 
 #include <stdbool.h>
 
+#include "player.h"
 #include "utils.h"
 
 
@@ -38,30 +39,33 @@
 #endif
 
 static bool pressed[SDL_NUM_SCANCODES];
-// TODO: support joysticks for PC
+#define JOY_DEADZONE 2000
 #ifdef __GCW0__
 static SDL_Joystick *analog = NULL;
 static SDL_Joystick *gSensor = NULL;
 static int16_t gZero = 0;
 int JoystickIndex = -1;
-#define JOY_DEADZONE 500
 #define G_SENSITIVITY 7
+#else
+static SDL_Joystick *joysticks[MAX_PLAYERS];
 #endif
 
 
 void InputInit(void)
 {
 	memset(pressed, 0, sizeof pressed);
-#ifdef __GCW0__
-	// Look for the right joysticks by name
 	for (int i = 0; i < SDL_NumJoysticks(); i++)
 	{
+#ifdef __GCW0__
+		// Look for the right joysticks by name
 		if (strcmp(SDL_JoystickName(i), "linkdev device (Analog 2-axis 8-button 2-hat)") == 0)
 			analog = SDL_JoystickOpen(i);
 		else if (strcmp(SDL_JoystickName(i), "mxc6225") == 0)
 			gSensor = SDL_JoystickOpen(i);
-	}
+#else
+		joysticks[i] = SDL_JoystickOpen(i);
 #endif
+	}
 }
 void InputFree(void)
 {
@@ -79,9 +83,7 @@ void InputOnEvent(const SDL_Event* event)
 	}
 }
 
-#ifdef __GCW0__
 static int16_t GetJoyX(SDL_Joystick *joy, const int16_t zero);
-#endif
 int16_t GetMovement(const int player)
 {
 #ifdef __GCW0__
@@ -100,21 +102,37 @@ int16_t GetMovement(const int player)
 			return (int16_t)CLAMP(gx, -32768, 32767);
 		}
 	}
-#endif
 	const bool left = player == 0 ?
 		pressed[P1_LEFT] : (pressed[P2_LEFT0] || pressed[P2_LEFT1]);
 	const bool right = player == 0 ?
 		pressed[P1_RIGHT] : (pressed[P2_RIGHT0] || pressed[P2_RIGHT1]);
 	return left ? (right ? 0 : -32768) : (right ? 32767 : 0);
+#else
+	if (player < NumJoysticks)
+	{
+		// Joystick player; return analog stick
+		const int16_t x = GetJoyX(joysticks[player], 0);
+		if (abs(x) > JOY_DEADZONE) return x;
+		return 0;
+		// TODO: use D-pad as well
+	}
+	else
+	{
+		// Keyboards
+		const bool left = player == NumJoysticks ?
+			pressed[P1_LEFT] : (pressed[P2_LEFT0] || pressed[P2_LEFT1]);
+		const bool right = player == NumJoysticks ?
+			pressed[P1_RIGHT] : (pressed[P2_RIGHT0] || pressed[P2_RIGHT1]);
+		return left ? (right ? 0 : -32768) : (right ? 32767 : 0);
+	}
+#endif
 }
-#ifdef __GCW0__
 static int16_t GetJoyX(SDL_Joystick *joy, const int16_t zero)
 {
 	if (!joy) return 0;
 	// Read X-axis of chosen joystick
 	return (int16_t)SDL_JoystickGetAxis(joy, 0) + zero;
 }
-#endif
 
 void ResetMovement(void)
 {

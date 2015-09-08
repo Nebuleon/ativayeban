@@ -107,7 +107,7 @@ void SpaceUpdate(
 		{
 			// If the player is past a gap, award the player with a
 			// point.
-			for (int j = 0; j < MAX_PLAYERS; j++)
+			for (int j = 0; j < NumPlayers; j++)
 			{
 				Player *p = ps + j;
 				if (!g->Passed[j] && g->Y > p->y + PLAYER_RADIUS)

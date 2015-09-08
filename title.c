@@ -41,6 +41,7 @@
 #include "game.h"
 #include "bg.h"
 #include "sys_specifics.h"
+#include "utils.h"
 
 static bool Start = false;
 static char WelcomeMessage[256];
@@ -56,7 +57,7 @@ Tex ControlTex0G = NULL;
 #endif
 
 static Block blocks[MAX_PLAYERS];
-#define BLOCK_WIDTH (FIELD_WIDTH / MAX_PLAYERS * 0.25f)
+#define BLOCK_WIDTH (FIELD_WIDTH / NumPlayers * 0.25f)
 #define BLOCK_Y (FIELD_HEIGHT * 0.5f)
 
 // Countdown to start the game automatically; starts when a player is enabled
@@ -80,7 +81,7 @@ void TitleScreenGatherInput(bool* Continue)
 			return;
 		}
 		InputOnEvent(&ev);
-		for (int i = 0; i < MAX_PLAYERS; i++)
+		for (int i = 0; i < NumPlayers; i++)
 		{
 			players[i].AccelX = GetMovement(i);
 		}
@@ -97,7 +98,7 @@ void TitleScreenGatherInput(bool* Continue)
 }
 static void TitleScreenEnd(void)
 {
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		BlockRemove(&blocks[i]);
 		// Kill players that have not been enabled
@@ -111,7 +112,7 @@ void TitleScreenDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	(void)Continue;
 	(void)Error;
 	cpSpaceStep(space.Space, Milliseconds * 0.001);
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		PlayerUpdate(&players[i], Milliseconds);
 
@@ -161,25 +162,24 @@ void TitleScreenOutputFrame(void)
 
 	HighScoreDisplayDraw(&HSD);
 
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		Tex t = GetControlTex(i);
 		SDL_Rect dest =
 		{
-			SCREEN_X((i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1)) -
-				t.W / 2,
+			SCREEN_X((i + 1) * FIELD_WIDTH / (NumPlayers + 1)) - t.W / 2,
 			(SCREEN_HEIGHT - t.H) / 2 - SCREEN_X(PLAYER_RADIUS),
 			t.W, t.H
 		};
 		RenderTex(t.T, NULL, &dest);
 	}
 
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		PlayerDraw(&players[i], 0);
 	}
 
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		BlockDraw(&blocks[i], 0);
 	}
@@ -257,12 +257,12 @@ void ToTitleScreen(const bool start)
 	{
 		// Find out the result of the game
 		int maxScore = 0;
-		for (int i = 0; i < MAX_PLAYERS; i++)
+		for (int i = 0; i < NumPlayers; i++)
 		{
 			if (players[i].Score > maxScore) maxScore = players[i].Score;
 		}
 		winners = 0;
-		for (int i = 0; i < MAX_PLAYERS; i++)
+		for (int i = 0; i < NumPlayers; i++)
 		{
 			if (!players[i].Enabled) continue;
 			if (players[i].Score == maxScore)
@@ -303,20 +303,28 @@ void ToTitleScreen(const bool start)
 	SpaceAddBottomEdge(&space);
 
 	// Initialise players here
-	for (int i = 0; i < MAX_PLAYERS; i++)
+#ifdef __GCW0__
+	// Only support "left" and "right" players
+	NumPlayers = 2;
+#else
+	// One player per joystick, plus two keyboards for the rest
+	NumJoysticks = SDL_NumJoysticks();
+	NumPlayers = MIN(NumJoysticks + 2, MAX_PLAYERS);
+#endif
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		PlayerInit(&players[i], i, cpv(
-			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1),
+			(i + 1) * FIELD_WIDTH / (NumPlayers + 1),
 			FIELD_HEIGHT * 0.75f));
 		playersEnabled[i] = false;
 	}
 
 	// Add platforms for players to jump off
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		BlockInit(
 			&blocks[i],
-			(i + 1) * FIELD_WIDTH / (MAX_PLAYERS + 1) - BLOCK_WIDTH / 2,
+			(i + 1) * FIELD_WIDTH / (NumPlayers + 1) - BLOCK_WIDTH / 2,
 			BLOCK_Y,
 			BLOCK_WIDTH);
 	}
@@ -337,13 +345,28 @@ bool TitleImagesLoad(void)
 	{
 		return false;
 	}
-	for (int i = 0; i < MAX_PLAYERS; i++)
+#ifdef __GCW0__
+	// Only support "left" and "right" players
+	const int numPlayers = 2;
+#else
+	// One player per joystick, plus two keyboards for the rest
+	const int numJoysticks = SDL_NumJoysticks();
+	const int numPlayers = numJoysticks + 2;
+#endif
+	for (int i = 0; i < MIN(MAX_PLAYERS, numPlayers); i++)
 	{
 		char buf[256];
 #ifdef __GCW0__
 		sprintf(buf, "data/graphics/gcw%d.png", i);
 #else
-		sprintf(buf, "data/graphics/keyboard%d.png", i);
+		if (i < numJoysticks)
+		{
+			strcpy(buf, "data/graphics/360.png");
+		}
+		else
+		{
+			sprintf(buf, "data/graphics/keyboard%d.png", i - numJoysticks);
+		}
 #endif
 		ControlTexes[i] = LoadTex(buf);
 		if (ControlTexes[i].T == NULL)

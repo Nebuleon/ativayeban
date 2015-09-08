@@ -47,8 +47,12 @@ typedef struct
 	Tex T;
 } Player;
 
-#define MAX_PLAYERS 2
+#define MAX_PLAYERS 4
 extern Player players[MAX_PLAYERS];
+extern int NumPlayers;
+#ifndef __GCW0__
+extern int NumJoysticks;
+#endif
 
 #define PLAYER_SPRITESHEET_WIDTH 35
 #define PLAYER_SPRITESHEET_HEIGHT 35

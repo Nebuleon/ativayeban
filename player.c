@@ -29,6 +29,10 @@ Animation Tail;
 Mix_Chunk* SoundPlayerBounce = NULL;
 
 Player players[MAX_PLAYERS];
+int NumPlayers;
+#ifndef __GCW0__
+int NumJoysticks;
+#endif
 
 typedef struct
 {
@@ -230,7 +234,7 @@ void PlayerRevive(Player *player)
 int PlayerAliveCount(void)
 {
 	int num = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		if (!players[i].Alive) continue;
 		num++;
@@ -241,7 +245,7 @@ int PlayerAliveCount(void)
 int PlayerEnabledCount(void)
 {
 	int num = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		if (!players[i].Enabled) continue;
 		num++;

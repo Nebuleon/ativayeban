@@ -68,7 +68,7 @@ void GameGatherInput(bool* Continue)
 			return;
 		}
 	}
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		if (!players[i].Alive) continue;
 		players[i].AccelX = GetMovement(i);
@@ -88,7 +88,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 	CameraUpdate(&camera, PlayerMiddleY(), Milliseconds);
 
 	bool hasPlayers = false;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		Player *p = &players[i];
 		if (!p->Enabled) continue;
@@ -143,7 +143,7 @@ void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 static float PlayerMiddleY(void)
 {
 	float sum = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		const Player *p = &players[i];
 		if (!p->Alive) continue;
@@ -154,7 +154,7 @@ static float PlayerMiddleY(void)
 static float PlayerMinY(void)
 {
 	float y = NAN;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		const Player *p = &players[i];
 		if (!p->Enabled) continue;
@@ -169,7 +169,7 @@ static float PlayerMinY(void)
 static float PlayerMaxY(void)
 {
 	float y = NAN;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		const Player *p = &players[i];
 		if (!p->Alive) continue;
@@ -194,7 +194,7 @@ void GameOutputFrame(void)
 	ParticlesDraw(screenYOff);
 
 	int c = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		PlayerDraw(&players[i], screenYOff);
 
@@ -235,7 +235,7 @@ void ToGame(void)
 	SpaceReset(&space);
 
 	// Reset player positions and velocity
-	for (int i = 0, c = 0; i < MAX_PLAYERS; i++)
+	for (int i = 0, c = 0; i < NumPlayers; i++)
 	{
 		PlayerReset(&players[i], c);
 		if (!players[i].Enabled) continue;

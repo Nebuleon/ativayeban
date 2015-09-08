@@ -120,6 +120,8 @@ void Initialize(bool* Continue, bool* Error)
 	}
 	LOAD_IMG(PlayerSpritesheets[0], "penguin_ball.png");
 	LOAD_IMG(PlayerSpritesheets[1], "penguin_black.png");
+	LOAD_IMG(PlayerSpritesheets[2], "penguin_blue.png");
+	LOAD_IMG(PlayerSpritesheets[3], "penguin_red.png");
 	LOAD_IMG(PickupTex, "eggplant.png");
 
 #define LOAD_ANIM(_anim, _path, _w, _h, _fps)\
