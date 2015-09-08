@@ -29,13 +29,14 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <SDL_mixer.h>
 
-extern Mix_Chunk* SoundPlayerRoll;
 extern Mix_Music *music;
 
 void SoundPlay(Mix_Chunk *sound, const float volume);
 void SoundPlayBounce(const float speed);
 void SoundPlayRoll(const int player, const float speed);
 void SoundStopRoll(const int player);
+void SoundPlayCall(const int player);
+void SoundStopCall(const int player);
 
 void MusicSetLoud(const bool fullVolume);
 

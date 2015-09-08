@@ -26,6 +26,8 @@
 
 #define P1_LEFT SDL_SCANCODE_LEFT
 #define P1_RIGHT SDL_SCANCODE_RIGHT
+#define P1_CALL1 SDL_SCANCODE_UP
+#define P1_CALL2 SDL_SCANCODE_DOWN
 #ifdef __GCW0__
 #define P2_LEFT0 SDL_SCANCODE_LSHIFT
 #define P2_RIGHT0 SDL_SCANCODE_LCTRL
@@ -36,6 +38,8 @@
 #define P2_RIGHT0 SDL_SCANCODE_D
 #define P2_LEFT1 SDL_SCANCODE_Z
 #define P2_RIGHT1 SDL_SCANCODE_X
+#define P2_CALL1 SDL_SCANCODE_W
+#define P2_CALL2 SDL_SCANCODE_S
 #endif
 
 static bool pressed[SDL_NUM_SCANCODES];
@@ -77,9 +81,14 @@ void InputFree(void)
 
 void InputOnEvent(const SDL_Event* event)
 {
-	if (event->type == SDL_KEYUP || event->type == SDL_KEYDOWN)
+	switch (event->type)
 	{
+	case SDL_KEYUP:
+	case SDL_KEYDOWN:
 		pressed[event->key.keysym.scancode] = event->type == SDL_KEYDOWN;
+		break;
+	default:
+		break;
 	}
 }
 
@@ -150,5 +159,34 @@ void InputSwitchJoystick(const int inc)
 	}
 #else
 	UNUSED(inc);
+#endif
+}
+
+bool InputIsCalling(const int player)
+{
+#ifdef __GCW0__
+	if (player == 0)
+	{
+		// Left shoulder
+		return pressed[SDLK_TAB];
+	}
+	else
+	{
+		// Right shoulder
+		return pressed[SDLK_BACKSPACE];
+	}
+#else
+	if (player < NumJoysticks)
+	{
+		// Joystick player; return button 1
+		return SDL_JoystickGetButton(joysticks[player], 0);
+	}
+	else
+	{
+		// Keyboards
+		return player == NumJoysticks ?
+			(pressed[P1_CALL1] || pressed[P1_CALL2]) :
+			(pressed[P2_CALL1] || pressed[P2_CALL2]);
+	}
 #endif
 }

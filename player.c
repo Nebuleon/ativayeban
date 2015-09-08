@@ -68,7 +68,6 @@ void PlayerUpdate(Player *player, const Uint32 ms)
 	if (relVelX < MIN_SPEED) accel += MIN_SPEED_ACCEL_BONUS;
 	if (player->WasOnSurface) accel += ROLL_ACCEL_BONUS;
 	cpBodySetForce(player->Body, cpv(player->AccelX / 32767.0f * accel, 0));
-	//printf("%f\n", vel.x);
 
 	// Detect bounces
 	OnArbiterData o = { cpvzero, 0 };

@@ -72,6 +72,19 @@ void GameGatherInput(bool* Continue)
 	{
 		if (!players[i].Alive) continue;
 		players[i].AccelX = GetMovement(i);
+
+		// Make bird call sounds
+		// Also force blink if we're calling
+		if (InputIsCalling(i))
+		{
+			SoundPlayCall(i);
+			players[i].BlinkCounter = 2;
+			players[i].NextBlinkCounter = 100;
+		}
+		else
+		{
+			SoundStopCall(i);
+		}
 	}
 }
 

@@ -95,6 +95,21 @@ void TitleScreenGatherInput(bool* Continue)
 		}
 #endif
 	}
+	for (int i = 0; i < NumPlayers; i++)
+	{
+		// Make bird call sounds
+		// Also force blink if we're calling
+		if (InputIsCalling(i))
+		{
+			SoundPlayCall(i);
+			players[i].BlinkCounter = 2;
+			players[i].NextBlinkCounter = 100;
+		}
+		else
+		{
+			SoundStopCall(i);
+		}
+	}
 }
 static void TitleScreenEnd(void)
 {

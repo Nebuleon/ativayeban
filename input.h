@@ -43,3 +43,5 @@ int16_t GetMovement(const int player);
 void ResetMovement(void);
 
 void InputSwitchJoystick(const int inc);
+
+bool InputIsCalling(const int player);
