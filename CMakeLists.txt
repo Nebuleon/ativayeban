@@ -139,12 +139,12 @@ else()
 endif()
 if(APPLE)
 	install(
-		DIRECTORY falling_time.app
+		DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/falling_time.app
 		DESTINATION ${INSTALL_PREFIX}
 		USE_SOURCE_PERMISSIONS)
 else()
 	install(
-		PROGRAMS falling_time${EXE_EXTENSION}
+		PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/falling_time${EXE_EXTENSION}
 		DESTINATION ${INSTALL_PREFIX})
 endif()
 
