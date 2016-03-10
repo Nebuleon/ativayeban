@@ -1,5 +1,5 @@
 # Falling Time
-[![Github Releases](https://img.shields.io/github/downloads/cxong/fallingtime/latest/total.svg)]()
+[![Github All Releases](https://img.shields.io/github/downloads/cxong/fallingtime/total.svg)]()
 
 Like the fall down games, you are a ball and you must fall into the holes to avoid being crushed by the top of the screen!
 
