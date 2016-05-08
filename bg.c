@@ -26,6 +26,7 @@
 #include "draw.h"
 #include "init.h"
 #include "main.h"
+#include "sys_config.h"
 #include "utils.h"
 
 #define ICICLE_WIDTH 58
@@ -155,7 +156,7 @@ static void DrawParticleScroll(
 bool BackgroundsLoad(Backgrounds* bg)
 {
 #define LOAD_TEX(_t, _filename)\
-	_t = LoadTex("data/graphics/" _filename);\
+	_t = LoadTex(DATA_DIR "graphics/" _filename);\
 	if (_t.T == NULL)\
 	{\
 		return false;\

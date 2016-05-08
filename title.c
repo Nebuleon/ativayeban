@@ -23,6 +23,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "SDL_image.h"
 
@@ -40,6 +41,7 @@
 #include "text.h"
 #include "game.h"
 #include "bg.h"
+#include "sys_config.h"
 #include "sys_specifics.h"
 #include "utils.h"
 
@@ -351,12 +353,12 @@ void ToTitleScreen(const bool start)
 
 bool TitleImagesLoad(void)
 {
-	if (!AnimationLoad(&TitleAnim, "data/graphics/anim.png", 169, 40, 12))
+	if (!AnimationLoad(&TitleAnim, DATA_DIR "graphics/anim.png", 169, 40, 12))
 	{
 		return false;
 	}
 	if (!AnimationLoad(
-		&GameOverAnim, "data/graphics/gameover.png", 131, 40, 3))
+		&GameOverAnim, DATA_DIR "graphics/gameover.png", 131, 40, 3))
 	{
 		return false;
 	}
@@ -372,15 +374,15 @@ bool TitleImagesLoad(void)
 	{
 		char buf[256];
 #ifdef __GCW0__
-		sprintf(buf, "data/graphics/gcw%d.png", i);
+		sprintf(buf, DATA_DIR "graphics/gcw%d.png", i);
 #else
 		if (i < numJoysticks)
 		{
-			strcpy(buf, "data/graphics/360.png");
+			strcpy(buf, DATA_DIR "graphics/360.png");
 		}
 		else
 		{
-			sprintf(buf, "data/graphics/keyboard%d.png", i - numJoysticks);
+			sprintf(buf, DATA_DIR "graphics/keyboard%d.png", i - numJoysticks);
 		}
 #endif
 		ControlTexes[i] = LoadTex(buf);
@@ -390,9 +392,9 @@ bool TitleImagesLoad(void)
 		}
 	}
 #ifdef __GCW0__
-	ControlTex0Analog = LoadTex("data/graphics/gcw0analog.png");
+	ControlTex0Analog = LoadTex(DATA_DIR "graphics/gcw0analog.png");
 	if (ControlTex0Analog.T == NULL) return false;
-	ControlTex0G = LoadTex("data/graphics/gcw0g.png");
+	ControlTex0G = LoadTex(DATA_DIR "graphics/gcw0g.png");
 	if (ControlTex0G.T == NULL) return false;
 #endif
 	return true;

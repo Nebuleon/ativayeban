@@ -1,5 +1,8 @@
 project(FallingTime)
 cmake_minimum_required(VERSION 2.8.10)
+if("${CMAKE_VERSION}" VERSION_GREATER 3.1)
+	cmake_policy(SET CMP0054 NEW)
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -77,6 +80,11 @@ if(NOT SDL2TTF_FOUND)
 ELSE()
 	include_directories(${SDL2TTF_INCLUDE_DIR})
 ENDIF()
+
+set(DATA_DIR "./data/" CACHE STRING "Data directory")
+message("Data dir is ${DATA_DIR}")
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/sys_config.h.cmake ${CMAKE_SOURCE_DIR}/sys_config.h)
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/sys_config.h PROPERTIES GENERATED TRUE)
 
 include_directories(.)
 include_directories(chipmunk/include)

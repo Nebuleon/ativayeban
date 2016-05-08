@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "player.h"
+#include "sys_config.h"
 #include "utils.h"
 
 #define BOUNCE_SPEED_MAX_VOLUME 150.0f
@@ -22,7 +23,7 @@ Mix_Chunk *SoundPlayerCalls[MAX_PLAYERS];
 bool SoundLoad(void)
 {
 #define LOAD_SOUND(_sound, _path)\
-	_sound = Mix_LoadWAV("data/sounds/" _path);\
+	_sound = Mix_LoadWAV(DATA_DIR "sounds/" _path);\
 	if (_sound == NULL)\
 	{\
 		printf("Mix_LoadWAV failed: %s\n", SDL_GetError());\

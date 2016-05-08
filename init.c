@@ -35,6 +35,7 @@
 #include "player.h"
 #include "space.h"
 #include "sound.h"
+#include "sys_config.h"
 #include "title.h"
 
 SDL_Surface *icon = NULL;
@@ -101,7 +102,7 @@ void Initialize(bool* Continue, bool* Error)
 	else
 		printf("TTF_Init succeeded\n");
 
-	icon = IMG_Load("data/graphics/icon.png");
+	icon = IMG_Load(DATA_DIR "graphics/icon.png");
 	if (icon == NULL)
 	{
 		*Continue = false;  *Error = true;
@@ -112,7 +113,7 @@ void Initialize(bool* Continue, bool* Error)
 	SDL_SetWindowIcon(Window, icon);
 
 #define LOAD_IMG(_t, _path)\
-	_t = LoadTex("data/graphics/" _path);\
+	_t = LoadTex(DATA_DIR "graphics/" _path);\
 	if (_t.T == NULL)\
 	{\
 		*Continue = false;  *Error = true;\
@@ -125,7 +126,7 @@ void Initialize(bool* Continue, bool* Error)
 	LOAD_IMG(PickupTex, "eggplant.png");
 
 #define LOAD_ANIM(_anim, _path, _w, _h, _fps)\
-	if (!AnimationLoad(&(_anim), "data/graphics/" _path, (_w), (_h), (_fps)))\
+	if (!AnimationLoad(&(_anim), DATA_DIR "graphics/" _path, (_w), (_h), (_fps)))\
 	{\
 		*Continue = false;  *Error = true;\
 		return;\
@@ -151,7 +152,7 @@ void Initialize(bool* Continue, bool* Error)
 	}
 
 #define LOAD_SOUND(_sound, _path)\
-	_sound = Mix_LoadWAV("data/sounds/" _path);\
+	_sound = Mix_LoadWAV(DATA_DIR "sounds/" _path);\
 	if (_sound == NULL)\
 	{\
 		*Continue = false;  *Error = true;\
@@ -166,7 +167,7 @@ void Initialize(bool* Continue, bool* Error)
 	LOAD_SOUND(SoundScore, "score.ogg");
 	SoundLoad();
 
-	music = Mix_LoadMUS("data/sounds/music.ogg");
+	music = Mix_LoadMUS(DATA_DIR "sounds/music.ogg");
 	if (music == NULL)
 	{
 		*Continue = false;  *Error = true;
@@ -176,7 +177,7 @@ void Initialize(bool* Continue, bool* Error)
 	}
 
 #define LOAD_FONT(_f, _file, _size)\
-	_f = TTF_OpenFont("data/" _file, _size);\
+	_f = TTF_OpenFont(DATA_DIR _file, _size);\
 	if (_f == NULL)\
 	{\
 		*Continue = false;  *Error = true;\

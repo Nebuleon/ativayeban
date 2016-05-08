@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "gap.h"
 #include "main.h"
 #include "space.h"
+#include "sys_config.h"
 #include "utils.h"
 
 #define BLOCK_SPRITE_HEIGHT 15
@@ -95,7 +96,7 @@ bool BoxTexesLoad(void)
 	for (int i = 0; i < 6; i++)
 	{
 		char buf[256];
-		sprintf(buf, "data/graphics/floor%d.png", i);
+		sprintf(buf, DATA_DIR "graphics/floor%d.png", i);
 		BoxTexes[i] = LoadTex(buf);
 		if (BoxTexes[i].T == NULL)
 		{
