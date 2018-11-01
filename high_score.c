@@ -52,7 +52,7 @@ void HighScoresInit(void)
 	FILE *f = fopen(buf, "r");
 	if (f == NULL)
 	{
-		printf("Error: cannot open config file %s\n", buf);
+		// No high score file found
 		return;
 	}
 	while (fgets(buf, sizeof buf, f))
