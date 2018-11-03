@@ -24,9 +24,6 @@
 
 #include "platform.h"
 
-static bool    LeftPressed;
-static bool    RightPressed;
-
 void InitializePlatform(void)
 {
 }
@@ -40,53 +37,30 @@ Uint32 ToNextFrame(void)
 bool IsEnterGamePressingEvent(const SDL_Event* event)
 {
 	return event->type == SDL_KEYDOWN
-	    && (event->key.keysym.sym == SDLK_LCTRL  /* A */
-	     || event->key.keysym.sym == SDLK_RETURN /* Start */);
+	    && (event->key.keysym.sym == SDLK_RETURN /* Start */);
 }
 
 bool IsEnterGameReleasingEvent(const SDL_Event* event)
 {
 	return event->type == SDL_KEYUP
-	    && (event->key.keysym.sym == SDLK_LCTRL  /* A */
-	     || event->key.keysym.sym == SDLK_RETURN /* Start */);
+	    && (event->key.keysym.sym == SDLK_RETURN /* Start */);
 }
 
 const char* GetEnterGamePrompt(void)
 {
-	return "A/Start";
+	return "Start";
 }
 
 bool IsExitGameEvent(const SDL_Event* event)
 {
 	return event->type == SDL_QUIT
 	    || (event->type == SDL_KEYDOWN
-	     && (event->key.keysym.sym == SDLK_LALT   /* B */
-	      || event->key.keysym.sym == SDLK_ESCAPE /* Select */));
+	     && (event->key.keysym.sym == SDLK_ESCAPE /* Select */));
 }
 
 const char* GetExitGamePrompt(void)
 {
-	return "B/Select";
-}
-
-int16_t GetMovement(const SDL_Event* event)
-{
-	if (event->type == SDL_KEYUP
-	 || event->type == SDL_KEYDOWN)
-	{
-		if (event->key.keysym.sym == SDLK_LEFT)
-			LeftPressed = event->type == SDL_KEYDOWN;
-		else if (event->key.keysym.sym == SDLK_RIGHT)
-			RightPressed = event->type == SDL_KEYDOWN;
-	}
-	return (LeftPressed)
-		? ((RightPressed) ?     0 : -32768)
-		: ((RightPressed) ? 32767 :      0);
-}
-
-const char* GetMovementPrompt(void)
-{
-	return "D-pad Left/Right";
+	return "Select";
 }
 
 bool IsPauseEvent(const SDL_Event* event)
@@ -98,9 +72,4 @@ bool IsPauseEvent(const SDL_Event* event)
 const char* GetPausePrompt(void)
 {
 	return "Start";
-}
-
-void ResetMovement(void)
-{
-	LeftPressed = RightPressed = false;
 }

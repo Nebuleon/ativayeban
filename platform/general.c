@@ -25,8 +25,7 @@
 #include "platform.h"
 
 static Uint32 LastTicks = 0;
-static bool   LeftPressed;
-static bool   RightPressed;
+static Uint32 TicksElapsed = 0;
 
 void InitializePlatform(void)
 {
@@ -35,11 +34,21 @@ void InitializePlatform(void)
 
 Uint32 ToNextFrame(void)
 {
-	SDL_Delay(8);
-	Uint32 Ticks = SDL_GetTicks();
-	Uint32 Duration = Ticks - LastTicks;
-	LastTicks = Ticks;
-	return Duration;
+	const Uint32 duration = 1000 / FPS;
+	for (;;)
+	{
+		Uint32 Ticks = SDL_GetTicks();
+		TicksElapsed += Ticks - LastTicks;
+		LastTicks = Ticks;
+		if (TicksElapsed <= duration)
+		{
+			SDL_Delay(1);
+			continue;
+		}
+		break;
+	}
+	TicksElapsed -= duration;
+	return duration;
 }
 
 bool IsEnterGamePressingEvent(const SDL_Event* event)
@@ -73,26 +82,6 @@ const char* GetExitGamePrompt(void)
 	return "Esc";
 }
 
-int16_t GetMovement(const SDL_Event* event)
-{
-	if (event->type == SDL_KEYUP
-	 || event->type == SDL_KEYDOWN)
-	{
-		if (event->key.keysym.sym == SDLK_LEFT)
-			LeftPressed = event->type == SDL_KEYDOWN;
-		else if (event->key.keysym.sym == SDLK_RIGHT)
-			RightPressed = event->type == SDL_KEYDOWN;
-	}
-	return (LeftPressed)
-		? ((RightPressed) ?     0 : -32768)
-		: ((RightPressed) ? 32767 :      0);
-}
-
-const char* GetMovementPrompt(void)
-{
-	return "Left/Right";
-}
-
 bool IsPauseEvent(const SDL_Event* event)
 {
 	return event->type == SDL_KEYDOWN
@@ -102,9 +91,4 @@ bool IsPauseEvent(const SDL_Event* event)
 const char* GetPausePrompt(void)
 {
 	return "P";
-}
-
-void ResetMovement(void)
-{
-	LeftPressed = RightPressed = false;
 }

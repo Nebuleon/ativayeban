@@ -1,5 +1,32 @@
 *.o
-ativayeban
-ativayeban-od
-ativayeban-od.opk
+falling_time
+falling_time.opk
 .opk_data/
+libchipmunk.a
+sys_config.h
+
+# CMake
+_CPack_Packages/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+Makefile
+install_manifest.txt
+
+# Windows
+*.vcxproj*
+*.opensdf
+*.sdf
+*.sln
+*.dir/
+Falling Time-*-win32.zip
+Win32/
+
+# OSX
+CMakeScripts/
+*.build/
+*.xcodeproj/
+*.dmg
+*.app/

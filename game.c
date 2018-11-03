@@ -24,31 +24,34 @@
 #include <inttypes.h>
 #include <math.h>
 
-#include "SDL.h"
-#include "SDL_image.h"
+#include <SDL.h>
 
+#include "camera.h"
 #include "main.h"
 #include "init.h"
+#include "input.h"
+#include "particle.h"
+#include "pickup.h"
 #include "platform.h"
 #include "player.h"
+#include "sound.h"
+#include "space.h"
+#include "title.h"
+#include "utils.h"
 #include "game.h"
-#include "score.h"
+#include "gap.h"
 #include "draw.h"
 #include "bg.h"
-#include "text.h"
 
-static uint32_t               Score;
-
-static bool                   Boost;
 static bool                   Pause;
 
-static struct Player          Player;
+Mix_Chunk* SoundBeep = NULL;
+Mix_Chunk* SoundStart = NULL;
+Mix_Chunk* SoundLose = NULL;
+Mix_Chunk* SoundScore = NULL;
 
-// What the player avoids.
-static struct AtivayebanRect* Rectangles     = NULL;
-static uint32_t               RectangleCount = 0;
+TTF_Font *font = NULL;
 
-static float                  GenDistance;
 
 void GameGatherInput(bool* Continue)
 {
@@ -56,7 +59,7 @@ void GameGatherInput(bool* Continue)
 
 	while (SDL_PollEvent(&ev))
 	{
-		Player.AccelX = GetMovement(&ev);
+		InputOnEvent(&ev);
 		if (IsPauseEvent(&ev))
 			Pause = !Pause;
 		else if (IsExitGameEvent(&ev))
@@ -65,204 +68,195 @@ void GameGatherInput(bool* Continue)
 			return;
 		}
 	}
+	for (int i = 0; i < NumPlayers; i++)
+	{
+		if (!players[i].Alive) continue;
+		players[i].AccelX = GetMovement(i);
+
+		// Make bird call sounds
+		// Also force blink if we're calling
+		if (InputIsCalling(i))
+		{
+			SoundPlayCall(i);
+			players[i].BlinkCounter = 2;
+			players[i].NextBlinkCounter = 100;
+		}
+		else
+		{
+			SoundStopCall(i);
+		}
+	}
 }
 
-static void AnimationControl(Uint32 Milliseconds)
-{
-}
-
+static float PlayerMiddleY(void);
+static float PlayerMinY(void);
+static float PlayerMaxY(void);
 void GameDoLogic(bool* Continue, bool* Error, Uint32 Milliseconds)
 {
-	if (!Pause)
+	(void)Continue;
+	(void)Error;
+	if (Pause) return;
+
+	cpSpaceStep(space.Space, Milliseconds * 0.001);
+	CameraUpdate(&camera, PlayerMiddleY(), Milliseconds);
+
+	bool hasPlayers = false;
+	for (int i = 0; i < NumPlayers; i++)
 	{
-		bool PointAwarded = false;
-		uint32_t Millisecond;
-		for (Millisecond = 0; Millisecond < Milliseconds; Millisecond++)
+		Player *p = &players[i];
+		if (!p->Enabled) continue;
+		PlayerUpdate(p, Milliseconds);
+		// Check if the player needs to be respawned
+		if (p->RespawnCounter == 0 && !p->Alive && space.Gaps.size > 0)
 		{
-			// Scroll all rectangles toward the top...
-			int32_t i;
-			for (i = RectangleCount - 1; i >= 0; i--)
+			SpaceRespawnPlayer(&space, p);
+		}
+		if (!p->Alive)
+		{
+			// Check if any players are past ones that await reenabling
+			if (p->RespawnCounter == -1 && PlayerMinY() < p->y)
 			{
-				Rectangles[i].Top += FIELD_SCROLL / 1000;
-				Rectangles[i].Bottom += FIELD_SCROLL / 1000;
-				// If the player is past a rectangle, award the player with a
-				// point. But there is a pair of them per row!
-				if (!Rectangles[i].Passed
-				 && Rectangles[i].Top > Player.Y + PLAYER_SIZE / 2)
-				{
-					Rectangles[i].Passed = true;
-					if (!PointAwarded)
-					{
-						Score++;
-						PointAwarded = true;
-					}
-				}
-				// If a rectangle is past the top side, remove it.
-				if (Rectangles[i].Bottom > FIELD_HEIGHT)
-				{
-					memmove(&Rectangles[i], &Rectangles[i + 1], (RectangleCount - i) * sizeof(struct AtivayebanRect));
-					RectangleCount--;
-				}
-			}
-			// Generate a pair of rectangles now if needed.
-			if (RectangleCount == 0 || Rectangles[RectangleCount - 1].Bottom >= GenDistance)
-			{
-				float Top;
-				if (RectangleCount == 0)
-					Top = FIELD_SCROLL / 1000;
-				else
-				{
-					Top = Rectangles[RectangleCount - 1].Bottom - GenDistance;
-					GenDistance += RECT_GEN_SPEED;
-				}
-				Rectangles = realloc(Rectangles, (RectangleCount + 2) * sizeof(struct AtivayebanRect));
-				RectangleCount += 2;
-				Rectangles[RectangleCount - 2].Passed = Rectangles[RectangleCount - 1].Passed = false;
-				Rectangles[RectangleCount - 2].Top = Rectangles[RectangleCount - 1].Top = Top;
-				Rectangles[RectangleCount - 2].Bottom = Rectangles[RectangleCount - 1].Bottom = Top - RECT_HEIGHT;
-				// Where's the place for the player to go through?
-				float GapLeft = (FIELD_WIDTH / 16.0f) + ((float) rand() / (float) RAND_MAX) * (FIELD_WIDTH - GAP_WIDTH - (FIELD_WIDTH / 16.0f));
-				Rectangles[RectangleCount - 2].Left = 0;
-				Rectangles[RectangleCount - 2].Right = GapLeft;
-				Rectangles[RectangleCount - 1].Left = GapLeft + GAP_WIDTH;
-				Rectangles[RectangleCount - 1].Right = FIELD_WIDTH;
-			}
-			
-			PlayerUpdate(&Player);
-
-			// Is the ball on a rectangle?
-			bool OnRectangle = false;
-
-			for (i = RectangleCount - 1; i >= 0; i--)
-			{
-				// Stop considering rectangles if they are higher than the ball
-				// (Y).
-				if (Player.Y - PLAYER_SIZE / 2 < Rectangles[i].Top + LOWER_EPSILON)
-					break;
-				// If the ball is in range (X)...
-				// TODO Circle physics.
-				if ((Player.X - PLAYER_SIZE / 2 >= Rectangles[i].Left
-				  && Player.X - PLAYER_SIZE / 2 <= Rectangles[i].Right)
-				 || (Player.X + PLAYER_SIZE / 2 >= Rectangles[i].Left
-				  && Player.X + PLAYER_SIZE / 2 <= Rectangles[i].Right))
-				{
-					// Is the distance in range, and is the ball going up slowly
-					// enough (Y)?
-					if (Player.Y - PLAYER_SIZE / 2 <  Rectangles[i].Top + UPPER_EPSILON
-					 && Player.SpeedY              >= 0.0f
-					 && Player.SpeedY              <  UPPER_EPSILON)
-					{
-						OnRectangle = true;
-						Player.SpeedY = 0.0f;
-						// Also make sure the ball appears to be on the rectangle (Y).
-						Player.Y = Rectangles[i].Top + PLAYER_SIZE / 2;
-						break;
-					}
-					// If the ball would cross the rectangle during this
-					// millisecond, make it rebound instead (Y).
-					else if (Player.Y - PLAYER_SIZE / 2                       >= Rectangles[i].Top
-					      && Player.Y - PLAYER_SIZE / 2 + Player.SpeedY / 1000 <  Rectangles[i].Top)
-					{
-						Player.Y = Player.Y
-							+ ((Player.Y - PLAYER_SIZE / 2) - Rectangles[i].Top - (Player.SpeedY / 1000)) * RECT_REBOUND;
-						Player.SpeedY = -Player.SpeedY * RECT_REBOUND;
-						break;
-					}
-				}
-			}
-
-			if (OnRectangle)
-			{
-				// If so, apply friction to the player's speed (X).
-				Player.SpeedX *= 1.0f - FRICTION;
+				PlayerRevive(p);
 			}
 			else
 			{
-				// If not, apply gravity (Y).
-				Player.SpeedY += GRAVITY / 1000;
-				Player.Y += Player.SpeedY / 1000;
-			}
-
-			// Bottom edge (Y).
-			// If the ball arrives below the bottom edge, act as if it had
-			// arrived on the bottom edge.
-			if (Player.Y - PLAYER_SIZE / 2 < 0)
-			{
-				Player.Y = PLAYER_SIZE / 2;
-				Player.SpeedY = -Player.SpeedY * FIELD_REBOUND;
-			}
-
-			// If the ball has collided with the top of the field,
-			// and it is not going down, the player's game is over.
-			if (Player.Y + PLAYER_SIZE / 2 >= FIELD_HEIGHT
-			 && Player.SpeedY              >= 0.0f)
-			{
-				ToScore(Score);
-				break;
+				continue;
 			}
 		}
+		hasPlayers = true;
 
-		AdvanceBackground(Milliseconds);
+		// Check player pickups
+		if (PickupsCollide(p->x, p->y, PLAYER_RADIUS))
+		{
+			PlayerScore(p, false);
+		}
+
+		// Players that hit the top of the screen die
+		if (cpBodyGetPosition(p->Body).y + PLAYER_RADIUS >=
+			camera.Y + FIELD_HEIGHT / 2)
+		{
+			PlayerKill(p);
+		}
 	}
+	// If no players left alive, end the game
+	if (!hasPlayers)
+	{
+		ToTitleScreen(false);
+	}
+	SpaceUpdate(&space, PlayerMinY(), camera.Y, PlayerMaxY(), &players[0]);
 
-	AnimationControl(Milliseconds);
+	ParticlesUpdate(Milliseconds);
+
+	// Players that hit the top of the screen die
+	if (PlayerMaxY() + PLAYER_RADIUS >= camera.Y + FIELD_HEIGHT / 2)
+	{
+		ToTitleScreen(false);
+	}
+}
+static float PlayerMiddleY(void)
+{
+	float sum = 0;
+	for (int i = 0; i < NumPlayers; i++)
+	{
+		const Player *p = &players[i];
+		if (!p->Alive) continue;
+		sum += (float)cpBodyGetPosition(p->Body).y;
+	}
+	return sum / PlayerAliveCount();
+}
+static float PlayerMinY(void)
+{
+	float y = NAN;
+	for (int i = 0; i < NumPlayers; i++)
+	{
+		const Player *p = &players[i];
+		if (!p->Enabled) continue;
+		const float py = (float)cpBodyGetPosition(p->Body).y;
+		if (isnan(y) || py < y)
+		{
+			y = py;
+		}
+	}
+	return y;
+}
+static float PlayerMaxY(void)
+{
+	float y = NAN;
+	for (int i = 0; i < NumPlayers; i++)
+	{
+		const Player *p = &players[i];
+		if (!p->Alive) continue;
+		const float py = (float)cpBodyGetPosition(p->Body).y;
+		if (isnan(y) || py > y)
+		{
+			y = py;
+		}
+	}
+	return y;
 }
 
-void GameOutputFrame()
+void GameOutputFrame(void)
 {
+	const float screenYOff =
+		(float)MAX(-SCREEN_HEIGHT, SCREEN_Y(camera.Y) - SCREEN_HEIGHT / 2);
 	// Draw the background.
-	DrawBackground();
+	DrawBackground(&BG, screenYOff);
 
-	// Draw the rectangles.
-	uint32_t i;
-	for (i = 0; i < RectangleCount; i++)
+	SpaceDraw(&space, screenYOff);
+	PickupsDraw(screenYOff);
+	ParticlesDraw(screenYOff);
+
+	int c = 0;
+	for (int i = 0; i < NumPlayers; i++)
 	{
-		SDL_Rect ColumnDestRect = {
-			.x = (int) roundf(Rectangles[i].Left * SCREEN_WIDTH / FIELD_WIDTH),
-			.y = SCREEN_HEIGHT - (int) roundf(Rectangles[i].Top * SCREEN_HEIGHT / FIELD_HEIGHT),
-			.w = (int) ((Rectangles[i].Right - Rectangles[i].Left) * SCREEN_WIDTH / FIELD_WIDTH),
-			.h = (int) ((Rectangles[i].Top - Rectangles[i].Bottom) * SCREEN_HEIGHT / FIELD_HEIGHT)
+		PlayerDraw(&players[i], screenYOff);
+
+		if (!players[i].Enabled) continue;
+
+		// Draw each player's current score.
+		char buf[17];
+		sprintf(buf, "%d", players[i].Score);
+		const SDL_Color white = { 255, 255, 255, 255 };
+		Tex t = LoadText(buf, font, white);
+		if (t.T == NULL) continue;
+		const int x = (c + 1) * SCREEN_WIDTH / (PlayerEnabledCount() + 1);
+		const int wHalf = (t.W + PLAYER_SPRITESHEET_WIDTH) / 2;
+		// Draw the player icon, followed by the score number
+		SDL_Rect src = {
+			0, 0, PLAYER_SPRITESHEET_WIDTH, PLAYER_SPRITESHEET_HEIGHT
 		};
-		SDL_FillRect(Screen, &ColumnDestRect, SDL_MapRGB(Screen->format, 128, 128, 128));
+		SDL_Rect dest = { x - wHalf, 0, src.w, src.h };
+		RenderTex(PlayerSpritesheets[i].T, &src, &dest);
+		// Draw score number
+		dest.x = (Sint16)(x - wHalf + PLAYER_SPRITESHEET_WIDTH);
+		dest.y = (Sint16)(PLAYER_SPRITESHEET_HEIGHT - t.H) / 2;
+		dest.w = t.W;
+		dest.h = t.H;
+		RenderTex(t.T, NULL, &dest);
+		SDL_DestroyTexture(t.T);
+
+		c++;
 	}
 
-	PlayerDraw(&Player);
-
-	// Draw the player's current score.
-	char ScoreString[17];
-	sprintf(ScoreString, "Score%10" PRIu32, Score);
-	if (SDL_MUSTLOCK(Screen))
-		SDL_LockSurface(Screen);
-	PrintStringOutline32(ScoreString,
-		SDL_MapRGB(Screen->format, 255, 255, 255),
-		SDL_MapRGB(Screen->format, 0, 0, 0),
-		Screen->pixels,
-		Screen->pitch,
-		0,
-		0,
-		SCREEN_WIDTH,
-		SCREEN_HEIGHT,
-		RIGHT,
-		TOP);
-	if (SDL_MUSTLOCK(Screen))
-		SDL_UnlockSurface(Screen);
-
-	SDL_Flip(Screen);
+	SDL_RenderPresent(Renderer);
 }
 
 void ToGame(void)
 {
-	Score = 0;
-	Boost = false;
 	Pause = false;
-	PlayerReset(&Player);
-	if (Rectangles != NULL)
+
+	SpaceReset(&space);
+
+	// Reset player positions and velocity
+	for (int i = 0, c = 0; i < NumPlayers; i++)
 	{
-		free(Rectangles);
-		Rectangles = NULL;
+		PlayerReset(&players[i], c);
+		if (!players[i].Enabled) continue;
+		c++;
 	}
-	RectangleCount = 0;
-	GenDistance = RECT_GEN_START;
+	CameraInit(&camera);
+	SoundPlay(SoundStart, 1.0);
+	MusicSetLoud(true);
 
 	GatherInput = GameGatherInput;
 	DoLogic     = GameDoLogic;

@@ -1,6 +1,6 @@
 /*
- * Ativayeban, main program file
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,17 +20,17 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "SDL.h"
+#include <SDL_image.h>
 
 #include "main.h"
 #include "init.h"
 #include "platform.h"
-#include "SDL_image.h"
 
 static bool         Continue                         = true;
 static bool         Error                            = false;
 
-       SDL_Surface* Screen                           = NULL;
+SDL_Window *Window = NULL;
+SDL_Renderer *Renderer = NULL;
 
        TGatherInput GatherInput;
        TDoLogic     DoLogic;
@@ -38,6 +38,8 @@ static bool         Error                            = false;
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
 	Initialize(&Continue, &Error);
 	Uint32 Duration = 16;
 	while (Continue)
