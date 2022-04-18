@@ -1,0 +1,11 @@
+[Desktop Entry]
+
+Name=Falling Time
+Comment=Guide a falling ball through blocks. Avoid getting crushed!
+Icon=icon
+Exec=falling_time
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=games;
+X-OD-NeedsGSensor=true

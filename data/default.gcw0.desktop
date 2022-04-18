@@ -1,9 +1,0 @@
-[Desktop Entry]
-
-Name=Ativayeban
-Comment=Fall through a labyrinth. Avoid getting crushed!
-Exec=ativayeban-od
-Terminal=false
-Type=Application
-StartupNotify=true
-Categories=games;

@@ -1,6 +1,6 @@
 /*
- * Ativayeban, background rendering header
  * Copyright (C) 2014 Nebuleon Fumika <nebuleon@gcw-zero.com>
+ * 2015 Cong Xu <congusbongus@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,13 +16,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#pragma once
 
-#ifndef _BG_H_
-#define _BG_H_
-
+#include <stdbool.h>
 #include <stdint.h>
 
-extern void AdvanceBackground(uint32_t Milliseconds);
-extern void DrawBackground(void);
+#include "draw.h"
 
-#endif /* !defined(_BG_H_) */
+
+typedef struct
+{
+	int X;
+	int Y;
+	int Index;
+} ParticlePos;
+#define MAX_PARTICLES 64
+typedef struct
+{
+	Tex T;
+	ParticlePos Positions[MAX_PARTICLES];
+} BGParticles;
+
+typedef struct
+{
+	BGParticles Icicles;
+	BGParticles Flares;
+	BGParticles Stars;
+} Backgrounds;
+extern Backgrounds BG;
+
+void BackgroundsInit(Backgrounds *bg);
+
+void DrawBackground(Backgrounds *bg, const float y);
+
+bool BackgroundsLoad(Backgrounds *bg);
+void BackgroundsFree(Backgrounds *bg);
